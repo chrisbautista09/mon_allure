@@ -1,8 +1,5 @@
 # Découpage Epics → Issues GitHub — Mon Allure
 
-Ce document liste chaque Epic comme une **issue parente** (à créer en premier, label `epic`), suivie de ses User Stories en **sous-issues** (à créer et lier à l'Epic via la fonctionnalité "Sub-issues" de GitHub, ou en cochant les cases dans la description de l'Epic).
-
-Pour chaque US, un découpage en tâches techniques est proposé — tu peux les garder en checklist dans l'issue, ou les éclater en issues encore plus petites si tu préfères un suivi plus fin.
 
 ---
 
