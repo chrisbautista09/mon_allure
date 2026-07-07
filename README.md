@@ -19,10 +19,10 @@ Permettre à un coureur, débutant ou confirmé, de définir un objectif de cour
 
 ## 🏗️ Stack technique
 
-- **Backend** : Symfony (PHP)
-- **Base de données** : MySQL / MariaDB (via Doctrine ORM)
-- **Frontend** : _à préciser_
-- **Autres** : _à compléter au fur et à mesure_
+- **Backend** : **Symfony (PHP)** : Choisi pour sa robustesse, sa sécurité native et sa puissance dans la gestion des bases de données relationnelles. Symfony servira exclusivement d'API pour piloter de maniére ultra-fiable la logique métier, les algorithmes de calcul (VMA/VO2 max) et la génération dynamique des plans d'entraînement.
+- **Base de données** : **MySQL** (via Doctrine ORM)
+- **Frontend** : **React.js** Utilisé pour concevoir une interface utilisateur de type Single Page Application (SPA). Ce framework garantit une navigation instantanée, fluide et sans rechargement de page, ce qui est idéal pour l'interactivité. Ce choix technique "découplé" ouvre également la porte à une évolution future trés simple vers une application mobile native (via React Native).
+- **Design & UI (Tailwind CSS)** : Ce framework CSS utilitaire permettra de concevoir une interface épurée, moderne et respectant scrupuleusement les contraintes d'affichage Mobile-First, indispensables pour un coureur consultant ses séances sur le terrain.
 
 ## 📐 Documentation & conception
 
