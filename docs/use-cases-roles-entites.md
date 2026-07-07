@@ -1,4 +1,4 @@
-# Uses Cases — Mon Allure — Rôles et Entités (version corrigée)
+# Uses Cases — Mon Allure — Rôles et Entités 
 
 ## 1. RÔLES
 
@@ -169,11 +169,3 @@ Entités : Comment (D)
 
 ---
 
-## Changements apportés dans cette version
-
-- ✅ Ajout de l'entité **IntensityZone** dans la liste des entités
-- ✅ Ajout de **UC-302** enrichi (Session + IntensityZone) et **UC-304** (consultation dédiée des zones d'intensité)
-- ✅ **UC-201** corrigé : `TrainingPlan (C)` au lieu de `(U)` — le pôle est fixé à la création du plan, non modifiable ensuite
-- ✅ **UC-403** corrigé : export limité à `TrainingPlan (R), Session (R)` — retiré Performance et Profile
-- ✅ **Matrice CRUD complétée** : les 20 UC sont désormais tous listés (contre 7 dans la version précédente)
-- ⏸️ Météo (US 4.4) volontairement laissée de côté pour l'instant, à réintégrer plus tard si besoin
