@@ -1,0 +1,38 @@
+# ==========================================
+# 🏃 CONFIGURATION GITIGNORE - MON ALLURE
+# ==========================================
+
+# --- 🛠️ DOSSIERS SYSTÈME & IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# --- 📁 BACKEND (Symfony) ---
+backend/.env.local
+backend/.env.*.local
+backend/vendor/
+backend/var/
+backend/public/bundles/
+
+# Si tu utilises PHPUnit pour tes tests
+backend/.phpunit.result.cache
+
+# --- 💻 FRONTEND (React / Node.js) ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env.local
+frontend/.env.*.local
+
+# Fichiers de log de npm/yarn
+frontend/*.log
+frontend/.pnpm-debug.log*
+
+# --- 🚀 INFRASTRUCTURE & DOCKER (Optionnel pour plus tard) ---
+.env.local
