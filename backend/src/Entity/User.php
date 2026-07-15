@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -40,9 +42,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Profile $profile = null;
+
+    /**
+     * @var Collection<int, TrainingPlan>
+     */
+    #[ORM\OneToMany(targetEntity: TrainingPlan::class, mappedBy: 'user')]
+    private Collection $trainingPlans;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->trainingPlans = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -154,5 +166,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 
         return $data;
+    }
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(Profile $profile): static
+    {
+        // set the owning side of the relation if necessary
+        if ($profile->getUser() !== $this) {
+            $profile->setUser($this);
+        }
+
+        $this->profile = $profile;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TrainingPlan>
+     */
+    public function getTrainingPlans(): Collection
+    {
+        return $this->trainingPlans;
+    }
+
+    public function addTrainingPlan(TrainingPlan $trainingPlan): static
+    {
+        if (!$this->trainingPlans->contains($trainingPlan)) {
+            $this->trainingPlans->add($trainingPlan);
+            $trainingPlan->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrainingPlan(TrainingPlan $trainingPlan): static
+    {
+        if ($this->trainingPlans->removeElement($trainingPlan)) {
+            // set the owning side to null (unless already changed)
+            if ($trainingPlan->getUser() === $this) {
+                $trainingPlan->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }
