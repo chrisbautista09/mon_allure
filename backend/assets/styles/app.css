@@ -1,3 +1,7 @@
-body {
-    background-color: skyblue;
+@import "tailwindcss";
+
+@layer utilities {
+    .bg-mon-allure {
+        background: radial-gradient(circle, #1e40af 0%, #0a0e1a 70%);
+    }
 }
