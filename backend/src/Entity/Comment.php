@@ -20,6 +20,18 @@ class Comment
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $created_at = null;
 
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Session $session = null;
+
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?TrainingPlan $training_plan = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,6 +57,42 @@ class Comment
     public function setCreatedAt(\DateTime $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getSession(): ?Session
+    {
+        return $this->session;
+    }
+
+    public function setSession(?Session $session): static
+    {
+        $this->session = $session;
+
+        return $this;
+    }
+
+    public function getTrainingPlan(): ?TrainingPlan
+    {
+        return $this->training_plan;
+    }
+
+    public function setTrainingPlan(?TrainingPlan $training_plan): static
+    {
+        $this->training_plan = $training_plan;
 
         return $this;
     }

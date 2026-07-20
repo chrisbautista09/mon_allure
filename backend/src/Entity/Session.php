@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SessionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -46,6 +48,28 @@ class Session
 
     #[ORM\OneToOne(mappedBy: 'session', cascade: ['persist', 'remove'])]
     private ?Performance $performance = null;
+
+    /**
+     * @var Collection<int, SessionIntensityZone>
+     */
+    #[ORM\OneToMany(targetEntity: SessionIntensityZone::class, mappedBy: 'session')]
+    private Collection $sessionIntensityZones;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'session')]
+    private Collection $comments;
+
+    #[ORM\ManyToOne(inversedBy: 'sessions')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?TrainingPlan $training_plan = null;
+
+    public function __construct()
+    {
+        $this->sessionIntensityZones = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -190,6 +214,78 @@ class Session
         }
 
         $this->performance = $performance;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SessionIntensityZone>
+     */
+    public function getSessionIntensityZones(): Collection
+    {
+        return $this->sessionIntensityZones;
+    }
+
+    public function addSessionIntensityZone(SessionIntensityZone $sessionIntensityZone): static
+    {
+        if (!$this->sessionIntensityZones->contains($sessionIntensityZone)) {
+            $this->sessionIntensityZones->add($sessionIntensityZone);
+            $sessionIntensityZone->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSessionIntensityZone(SessionIntensityZone $sessionIntensityZone): static
+    {
+        if ($this->sessionIntensityZones->removeElement($sessionIntensityZone)) {
+            // set the owning side to null (unless already changed)
+            if ($sessionIntensityZone->getSession() === $this) {
+                $sessionIntensityZone->setSession(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getSession() === $this) {
+                $comment->setSession(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTrainingPlan(): ?TrainingPlan
+    {
+        return $this->training_plan;
+    }
+
+    public function setTrainingPlan(?TrainingPlan $training_plan): static
+    {
+        $this->training_plan = $training_plan;
 
         return $this;
     }

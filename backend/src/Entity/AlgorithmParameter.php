@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\AlgorithmParameterRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: AlgorithmParameterRepository::class)]
 class AlgorithmParameter
@@ -47,13 +49,22 @@ class AlgorithmParameter
     private ?int $default_plan_min_weeks = null;
 
     #[ORM\Column]
-    private ?int $defautl_plan_max_weeks = null;
+    private ?int $default_plan_max_weeks = null;
 
     #[ORM\Column]
     private ?int $missed_session_tolerance = null;
 
     #[ORM\Column]
-    private ?float $succes_validation_rate = null;
+    private ?float $success_validation_rate = null;
+
+    #[ORM\OneToMany(mappedBy: 'algorithmParameter', targetEntity: TrainingPlan::class)]
+    private Collection $trainingPlans;
+
+    /**
+     * @var Collection<int, TrainingPlan>
+     */
+    #[ORM\OneToMany(targetEntity: TrainingPlan::class, mappedBy: 'algorithm_parameter')]
+    private Collection $trainings_plans;
 
     public function getId(): ?int
     {
@@ -227,4 +238,67 @@ class AlgorithmParameter
 
         return $this;
     }
+
+    public function __construct()
+    {
+        $this->trainingPlans = new ArrayCollection();
+        $this->trainings_plans = new ArrayCollection();
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'progression_max_percent' => $this->progression_max_percent,
+            'recovery_week_frequency' => $this->recovery_week_frequency,
+
+            'max_sessions_discovery' => $this->max_sessions_discovery,
+            'max_sessions_intermediate' => $this->max_sessions_intermediate,
+            'max_sessions_performance' => $this->max_sessions_performance,
+
+            'long_run_ratio_max' => $this->long_run_ratio_max,
+
+            'coef_endurance' => $this->coef_endurance,
+            'coef_active' => $this->coef_active,
+            'coef_threshold' => $this->coef_threshold,
+            'coef_vma' => $this->coef_vma,
+
+            'default_plan_min_weeks' => $this->default_plan_min_weeks,
+            'default_plan_max_weeks' => $this->default_plan_max_weeks,
+
+            'missed_session_tolerance' => $this->missed_session_tolerance,
+            'success_validation_rate' => $this->success_validation_rate,
+        ];
+    }
+
+    /**
+     * @return Collection<int, TrainingPlan>
+     */
+    public function getTrainingsPlans(): Collection
+    {
+        return $this->trainings_plans;
+    }
+
+    public function addTrainingsPlan(TrainingPlan $trainingsPlan): static
+    {
+        if (!$this->trainings_plans->contains($trainingsPlan)) {
+            $this->trainings_plans->add($trainingsPlan);
+            $trainingsPlan->setAlgorithmParameter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrainingsPlan(TrainingPlan $trainingsPlan): static
+    {
+        if ($this->trainings_plans->removeElement($trainingsPlan)) {
+            // set the owning side to null (unless already changed)
+            if ($trainingsPlan->getAlgorithmParameter() === $this) {
+                $trainingsPlan->setAlgorithmParameter(null);
+            }
+        }
+
+        return $this;
+    }
+
+    
 }
