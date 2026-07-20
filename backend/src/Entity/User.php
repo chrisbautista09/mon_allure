@@ -57,11 +57,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
     private Collection $comments;
 
+    /**
+     * @var Collection<int, Performance>
+     */
+    #[ORM\OneToMany(targetEntity: Performance::class, mappedBy: 'user')]
+    private Collection $performances;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->trainingPlans = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->performances = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -246,6 +253,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($comment->getUser() === $this) {
                 $comment->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Performance>
+     */
+    public function getPerformances(): Collection
+    {
+        return $this->performances;
+    }
+
+    public function addPerformance(Performance $performance): static
+    {
+        if (!$this->performances->contains($performance)) {
+            $this->performances->add($performance);
+            $performance->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePerformance(Performance $performance): static
+    {
+        if ($this->performances->removeElement($performance)) {
+            // set the owning side to null (unless already changed)
+            if ($performance->getUser() === $this) {
+                $performance->setUser(null);
             }
         }
 

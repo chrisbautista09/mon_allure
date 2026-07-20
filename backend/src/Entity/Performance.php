@@ -32,6 +32,10 @@ class Performance
     #[ORM\OneToOne(inversedBy: 'performance', cascade: ['persist', 'remove'])]
     private ?Session $session = null;
 
+    #[ORM\ManyToOne(inversedBy: 'performances')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +109,18 @@ class Performance
     public function setSession(?Session $session): static
     {
         $this->session = $session;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }
