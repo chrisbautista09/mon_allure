@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TrainingPlanRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -58,6 +60,32 @@ class TrainingPlan
 
     #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
     private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?AlgorithmParameter $algorithmParameter = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'training_plan')]
+    private Collection $comments;
+
+    /**
+     * @var Collection<int, Session>
+     */
+    #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'training_plan')]
+    private Collection $sessions;
+
+    #[ORM\ManyToOne(inversedBy: 'trainings_plans')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?AlgorithmParameter $algorithm_parameter = null;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+        $this->sessions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -243,4 +271,77 @@ class TrainingPlan
 
         return $this;
     }
+
+    public function getAlgorithmParameter(): ?AlgorithmParameter
+    {
+        return $this->algorithmParameter;
+    }
+    
+    public function setAlgorithmParameter(?AlgorithmParameter $algorithmParameter): static
+    {
+        $this->algorithmParameter = $algorithmParameter;
+    
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setTrainingPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getTrainingPlan() === $this) {
+                $comment->setTrainingPlan(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Session>
+     */
+    public function getSessions(): Collection
+    {
+        return $this->sessions;
+    }
+
+    public function addSession(Session $session): static
+    {
+        if (!$this->sessions->contains($session)) {
+            $this->sessions->add($session);
+            $session->setTrainingPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSession(Session $session): static
+    {
+        if ($this->sessions->removeElement($session)) {
+            // set the owning side to null (unless already changed)
+            if ($session->getTrainingPlan() === $this) {
+                $session->setTrainingPlan(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

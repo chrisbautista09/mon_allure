@@ -13,22 +13,41 @@ class SessionIntensityZone
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?float $duration_pcent = null;
+    #[ORM\ManyToOne(inversedBy: 'sessionIntensityZones')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?IntensityZone $intensityZone = null;
+
+    #[ORM\ManyToOne(inversedBy: 'sessionIntensityZones')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Session $session = null;
+
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDurationPcent(): ?float
+    public function getIntensityZone(): ?IntensityZone
+{
+    return $this->intensityZone;
+}
+
+    public function setIntensityZone(?IntensityZone $intensityZone): static
     {
-        return $this->duration_pcent;
+        $this->intensityZone = $intensityZone;
+
+        return $this;
+    }
+ 
+
+    public function getSession(): ?Session
+    {
+        return $this->session;
     }
 
-    public function setDurationPcent(float $duration_pcent): static
+    public function setSession(?Session $session): static
     {
-        $this->duration_pcent = $duration_pcent;
+        $this->session = $session;
 
         return $this;
     }
