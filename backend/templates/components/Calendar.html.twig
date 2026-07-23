@@ -1,0 +1,143 @@
+<section
+    class="
+        mt-3
+        min-h-[345px]
+        rounded-xl
+        border
+        border-cyan-100/70
+        border-t-cyan-300
+        bg-[radial-gradient(circle_at_85%_0%,rgba(37,99,235,0.75),transparent_48%),linear-gradient(145deg,#10265a_0%,#07142d_55%,#020611_100%)]
+        px-5
+        py-3
+        shadow-[0_-2px_10px_rgba(34,211,238,0.18)]
+    "
+>
+    <div class="grid grid-cols-[28px_1fr_1fr_28px] items-center gap-2">
+        <button
+            type="button"
+            aria-label="Mois précédent"
+            class="
+                text-2xl
+                text-cyan-950
+                transition
+                hover:text-cyan-300
+            "
+        >
+            ‹
+        </button>
+
+        <select
+            aria-label="Sélectionner le mois"
+            class="
+                h-7
+                rounded-lg
+                border
+                border-blue-400
+                bg-blue-950/80
+                px-3
+                text-xs
+                text-cyan-300
+                outline-none
+            "
+        >
+            <option>Août</option>
+            <option selected>Sep</option>
+            <option>Oct</option>
+        </select>
+
+        <select
+            aria-label="Sélectionner l'année"
+            class="
+                h-7
+                rounded-lg
+                border
+                border-blue-400
+                bg-blue-950/80
+                px-3
+                text-xs
+                text-cyan-300
+                outline-none
+            "
+        >
+            <option selected>2025</option>
+            <option>2026</option>
+        </select>
+
+        <button
+            type="button"
+            aria-label="Mois suivant"
+            class="
+                text-2xl
+                text-cyan-950
+                transition
+                hover:text-cyan-300
+            "
+        >
+            ›
+        </button>
+    </div>
+
+    <div
+        class="
+            mt-5
+            grid
+            grid-cols-7
+            text-center
+            text-[9px]
+            text-blue-400
+        "
+    >
+        <span>Su</span>
+        <span>Mo</span>
+        <span>Tu</span>
+        <span>We</span>
+        <span>Th</span>
+        <span>Fr</span>
+        <span>Sa</span>
+    </div>
+
+    {% set days = [
+        null, 1, 2, 3, 4, 5, 6,
+        7, 8, 9, 10, 11, 12, 13,
+        14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27,
+        28, 29, 30, 1, 2, 3, 4
+    ] %}
+
+    <div class="mt-2 grid grid-cols-7 gap-y-1 text-center">
+        {% for day in days %}
+            {% if day is null %}
+                <span class="h-9"></span>
+            {% else %}
+                {% set dayClass = 'text-cyan-300 hover:bg-cyan-300/10' %}
+
+                {% if day == 9 %}
+                    {% set dayClass = 'border border-cyan-300 bg-black text-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.4)]' %}
+                {% elseif day in [10, 11, 12] %}
+                    {% set dayClass = 'bg-emerald-400 text-emerald-950' %}
+                {% elseif day == 13 %}
+                    {% set dayClass = 'bg-cyan-300 text-cyan-950 shadow-[0_0_12px_rgba(34,211,238,0.85)]' %}
+                {% elseif loop.index > 31 %}
+                    {% set dayClass = 'text-slate-500' %}
+                {% endif %}
+
+                <button
+                    type="button"
+                    class="
+                        mx-auto
+                        flex
+                        size-9
+                        items-center
+                        justify-center
+                        rounded-lg
+                        text-xs
+                        transition
+                        {{ dayClass }}
+                    "
+                >
+                    {{ day }}
+                </button>
+            {% endif %}
+        {% endfor %}
+    </div>
+</section>

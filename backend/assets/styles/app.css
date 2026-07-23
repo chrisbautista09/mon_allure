@@ -1,7 +1,51 @@
 @import "tailwindcss";
 
-@layer utilities {
-    .bg-mon-allure {
-        background: radial-gradient(circle, #1e40af 0%, #0a0e1a 70%);
+@theme {
+    --color-mon-allure-cyan: #00d9ff;
+    --color-mon-allure-blue: #17399a;
+    --color-mon-allure-dark: #050b18;
+    --color-mon-allure-card: #0d1d42;
+    --color-mon-allure-success: #13ca8a;
+}
+
+@layer base {
+    html {
+        min-height: 100%;
     }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        color: white;
+        background:
+            radial-gradient(
+                circle at 80% 10%,
+                rgba(39, 91, 255, 0.55),
+                transparent 35%
+            ),
+            linear-gradient(
+                180deg,
+                #17399a 0%,
+                #102769 35%,
+                #07142e 70%,
+                #030812 100%
+            );
+    }
+}
+
+@utility bg-mon-allure {
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(39, 91, 255, 0.55),
+            transparent 35%
+        ),
+        linear-gradient(
+            180deg,
+            #17399a 0%,
+            #102769 35%,
+            #07142e 70%,
+            #030812 100%
+        );
 }
