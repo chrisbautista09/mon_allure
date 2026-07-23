@@ -17,20 +17,25 @@ class Comment
     #[ORM\Column(type: Types::TEXT)]
     private ?string $content = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $created_at = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?Session $session = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?TrainingPlan $training_plan = null;
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?TrainingPlan $trainingPlan = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -44,19 +49,20 @@ class Comment
 
     public function setContent(string $content): static
     {
-        $this->content = $content;
+        $this->content = trim($content);
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $created_at): static
-    {
-        $this->created_at = $created_at;
+    public function setCreatedAt(
+        \DateTimeImmutable $createdAt
+    ): static {
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -82,17 +88,26 @@ class Comment
     {
         $this->session = $session;
 
+        if ($session !== null) {
+            $this->trainingPlan = null;
+        }
+
         return $this;
     }
 
     public function getTrainingPlan(): ?TrainingPlan
     {
-        return $this->training_plan;
+        return $this->trainingPlan;
     }
 
-    public function setTrainingPlan(?TrainingPlan $training_plan): static
-    {
-        $this->training_plan = $training_plan;
+    public function setTrainingPlan(
+        ?TrainingPlan $trainingPlan
+    ): static {
+        $this->trainingPlan = $trainingPlan;
+
+        if ($trainingPlan !== null) {
+            $this->session = null;
+        }
 
         return $this;
     }

@@ -10,7 +10,10 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[ORM\UniqueConstraint(
+    name: 'UNIQ_IDENTIFIER_EMAIL',
+    fields: ['email']
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,13 +25,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     /**
-     * @var list<string> The user roles
+     * @var list<string>
      */
     #[ORM\Column]
     private array $roles = [];
 
     /**
-     * @var string The hashed password
+     * Mot de passe haché de l'utilisateur.
      */
     #[ORM\Column]
     private ?string $password = null;
@@ -42,25 +45,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(
+        mappedBy: 'user',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private ?Profile $profile = null;
 
     /**
      * @var Collection<int, TrainingPlan>
      */
-    #[ORM\OneToMany(targetEntity: TrainingPlan::class, mappedBy: 'user')]
+    #[ORM\OneToMany(
+        targetEntity: TrainingPlan::class,
+        mappedBy: 'user',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $trainingPlans;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'user')]
+    #[ORM\OneToMany(
+        targetEntity: Comment::class,
+        mappedBy: 'user',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $comments;
 
     /**
      * @var Collection<int, Performance>
      */
-    #[ORM\OneToMany(targetEntity: Performance::class, mappedBy: 'user')]
+    #[ORM\OneToMany(
+        targetEntity: Performance::class,
+        mappedBy: 'user',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     private Collection $performances;
 
     public function __construct()
@@ -83,31 +105,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setEmail(string $email): static
     {
-        $this->email = $email;
+        $this->email = mb_strtolower(trim($email));
 
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
     /**
-     * @see UserInterface
+     * @return list<string>
      */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        return array_values(array_unique($roles));
     }
 
     /**
@@ -115,14 +131,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
+        $this->roles = array_values(array_unique($roles));
 
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -142,7 +155,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPseudo(string $pseudo): static
     {
-        $this->pseudo = $pseudo;
+        $this->pseudo = trim($pseudo);
 
         return $this;
     }
@@ -168,16 +181,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = $createdAt;
 
-    return $this;
+        return $this;
     }
 
     /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
+     * Empêche le stockage du véritable hash du mot de passe
+     * dans les données sérialisées de la session.
      */
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+
+        $data["\0" . self::class . "\0password"] = hash(
+            'crc32c',
+            (string) $this->password
+        );
 
         return $data;
     }
@@ -187,17 +205,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->profile;
     }
 
-    public function setProfile(Profile $profile): static
-    {
-        // set the owning side of the relation if necessary
-        if ($profile->getUser() !== $this) {
-            $profile->setUser($this);
-        }
-
-        $this->profile = $profile;
-
-        return $this;
+    public function setProfile(?Profile $profile): static
+{
+    if ($profile !== null && $profile->getUser() !== $this) {
+        $profile->setUser($this);
     }
+
+    $this->profile = $profile;
+
+    return $this;
+}
 
     /**
      * @return Collection<int, TrainingPlan>
@@ -219,11 +236,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeTrainingPlan(TrainingPlan $trainingPlan): static
     {
-        if ($this->trainingPlans->removeElement($trainingPlan)) {
-            // set the owning side to null (unless already changed)
-            if ($trainingPlan->getUser() === $this) {
-                $trainingPlan->setUser(null);
-            }
+        if (
+            $this->trainingPlans->removeElement($trainingPlan)
+            && $trainingPlan->getUser() === $this
+        ) {
+            $trainingPlan->setUser(null);
         }
 
         return $this;
@@ -249,11 +266,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeComment(Comment $comment): static
     {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getUser() === $this) {
-                $comment->setUser(null);
-            }
+        if (
+            $this->comments->removeElement($comment)
+            && $comment->getUser() === $this
+        ) {
+            $comment->setUser(null);
         }
 
         return $this;
@@ -279,11 +296,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removePerformance(Performance $performance): static
     {
-        if ($this->performances->removeElement($performance)) {
-            // set the owning side to null (unless already changed)
-            if ($performance->getUser() === $this) {
-                $performance->setUser(null);
-            }
+        if (
+            $this->performances->removeElement($performance)
+            && $performance->getUser() === $this
+        ) {
+            $performance->setUser(null);
         }
 
         return $this;

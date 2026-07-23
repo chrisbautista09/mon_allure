@@ -15,19 +15,47 @@ class IntensityZone
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    /**
+     * Exemples : Z1, Z2, Z3, Z4, Z5.
+     */
+    #[ORM\Column(length: 10, unique: true)]
     private ?string $name = null;
 
+    /**
+     * Borne minimale exprimée sous forme de coefficient.
+     * Exemple : 0.60 pour 60 % de la VMA.
+     */
     #[ORM\Column]
-    private ?float $heart_rate_min_pcent = null;
+    private ?float $vmaCoefMin = null;
 
+    /**
+     * Borne maximale exprimée sous forme de coefficient.
+     * Exemple : 0.70 pour 70 % de la VMA.
+     */
     #[ORM\Column]
-    private ?float $heart_rate_max_pcent = null;
+    private ?float $vmaCoefMax = null;
+
+    /**
+     * Pourcentage minimal de la FCM.
+     * Exemple : 60.0 pour 60 %.
+     */
+    #[ORM\Column]
+    private ?float $fcmPercentMin = null;
+
+    /**
+     * Pourcentage maximal de la FCM.
+     * Exemple : 70.0 pour 70 %.
+     */
+    #[ORM\Column]
+    private ?float $fcmPercentMax = null;
 
     /**
      * @var Collection<int, SessionIntensityZone>
      */
-    #[ORM\OneToMany(targetEntity: SessionIntensityZone::class, mappedBy: 'intensityZone')]
+    #[ORM\OneToMany(
+        targetEntity: SessionIntensityZone::class,
+        mappedBy: 'intensityZone'
+    )]
     private Collection $sessionIntensityZones;
 
     public function __construct()
@@ -47,31 +75,55 @@ class IntensityZone
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = strtoupper(trim($name));
 
         return $this;
     }
 
-    public function getHeartRateMinPcent(): ?float
+    public function getVmaCoefMin(): ?float
     {
-        return $this->heart_rate_min_pcent;
+        return $this->vmaCoefMin;
     }
 
-    public function setHeartRateMinPcent(float $heart_rate_min_pcent): static
+    public function setVmaCoefMin(float $vmaCoefMin): static
     {
-        $this->heart_rate_min_pcent = $heart_rate_min_pcent;
+        $this->vmaCoefMin = $vmaCoefMin;
 
         return $this;
     }
 
-    public function getHeartRateMaxPcent(): ?float
+    public function getVmaCoefMax(): ?float
     {
-        return $this->heart_rate_max_pcent;
+        return $this->vmaCoefMax;
     }
 
-    public function setHeartRateMaxPcent(float $heart_rate_max_pcent): static
+    public function setVmaCoefMax(float $vmaCoefMax): static
     {
-        $this->heart_rate_max_pcent = $heart_rate_max_pcent;
+        $this->vmaCoefMax = $vmaCoefMax;
+
+        return $this;
+    }
+
+    public function getFcmPercentMin(): ?float
+    {
+        return $this->fcmPercentMin;
+    }
+
+    public function setFcmPercentMin(float $fcmPercentMin): static
+    {
+        $this->fcmPercentMin = $fcmPercentMin;
+
+        return $this;
+    }
+
+    public function getFcmPercentMax(): ?float
+    {
+        return $this->fcmPercentMax;
+    }
+
+    public function setFcmPercentMax(float $fcmPercentMax): static
+    {
+        $this->fcmPercentMax = $fcmPercentMax;
 
         return $this;
     }
@@ -84,8 +136,9 @@ class IntensityZone
         return $this->sessionIntensityZones;
     }
 
-    public function addSessionIntensityZone(SessionIntensityZone $sessionIntensityZone): static
-    {
+    public function addSessionIntensityZone(
+        SessionIntensityZone $sessionIntensityZone
+    ): static {
         if (!$this->sessionIntensityZones->contains($sessionIntensityZone)) {
             $this->sessionIntensityZones->add($sessionIntensityZone);
             $sessionIntensityZone->setIntensityZone($this);
@@ -94,13 +147,14 @@ class IntensityZone
         return $this;
     }
 
-    public function removeSessionIntensityZone(SessionIntensityZone $sessionIntensityZone): static
-    {
-        if ($this->sessionIntensityZones->removeElement($sessionIntensityZone)) {
-            // set the owning side to null (unless already changed)
-            if ($sessionIntensityZone->getIntensityZone() === $this) {
-                $sessionIntensityZone->setIntensityZone(null);
-            }
+    public function removeSessionIntensityZone(
+        SessionIntensityZone $sessionIntensityZone
+    ): static {
+        if (
+            $this->sessionIntensityZones->removeElement($sessionIntensityZone)
+            && $sessionIntensityZone->getIntensityZone() === $this
+        ) {
+            $sessionIntensityZone->setIntensityZone(null);
         }
 
         return $this;

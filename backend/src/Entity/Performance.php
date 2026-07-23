@@ -14,89 +14,125 @@ class Performance
     #[ORM\Column]
     private ?int $id = null;
 
+    /**
+     * Distance réellement parcourue, en kilomètres.
+     */
     #[ORM\Column]
-    private ?int $time_realized = null;
+    private ?float $distanceKm = null;
 
+    /**
+     * Durée réellement effectuée, en secondes.
+     */
     #[ORM\Column]
-    private ?float $distance_realized = null;
+    private ?int $durationSec = null;
 
+    /**
+     * Dénivelé positif réellement parcouru.
+     */
     #[ORM\Column(nullable: true)]
-    private ?int $elevation_d_plus = null;
+    private ?int $elevationDPlus = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $terrain_type = null;
+    /**
+     * Fréquence cardiaque moyenne.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $avgHr = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $create_at = null;
+    /**
+     * Commentaire libre de l'utilisateur.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $comment = null;
 
-    #[ORM\OneToOne(inversedBy: 'performance', cascade: ['persist', 'remove'])]
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'performances')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Session $session = null;
 
     #[ORM\ManyToOne(inversedBy: 'performances')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getTimeRealized(): ?int
+    public function getDistanceKm(): ?float
     {
-        return $this->time_realized;
+        return $this->distanceKm;
     }
 
-    public function setTimeRealized(int $time_realized): static
+    public function setDistanceKm(float $distanceKm): static
     {
-        $this->time_realized = $time_realized;
+        $this->distanceKm = $distanceKm;
 
         return $this;
     }
 
-    public function getDistanceRealized(): ?float
+    public function getDurationSec(): ?int
     {
-        return $this->distance_realized;
+        return $this->durationSec;
     }
 
-    public function setDistanceRealized(float $distance_realized): static
+    public function setDurationSec(int $durationSec): static
     {
-        $this->distance_realized = $distance_realized;
+        $this->durationSec = $durationSec;
 
         return $this;
     }
 
     public function getElevationDPlus(): ?int
     {
-        return $this->elevation_d_plus;
+        return $this->elevationDPlus;
     }
 
-    public function setElevationDPlus(?int $elevation_d_plus): static
+    public function setElevationDPlus(?int $elevationDPlus): static
     {
-        $this->elevation_d_plus = $elevation_d_plus;
+        $this->elevationDPlus = $elevationDPlus;
 
         return $this;
     }
 
-    public function getTerrainType(): ?string
+    public function getAvgHr(): ?int
     {
-        return $this->terrain_type;
+        return $this->avgHr;
     }
 
-    public function setTerrainType(string $terrain_type): static
+    public function setAvgHr(?int $avgHr): static
     {
-        $this->terrain_type = $terrain_type;
+        $this->avgHr = $avgHr;
 
         return $this;
     }
 
-    public function getCreateAt(): ?\DateTime
+    public function getComment(): ?string
     {
-        return $this->create_at;
+        return $this->comment;
     }
 
-    public function setCreateAt(\DateTime $create_at): static
+    public function setComment(?string $comment): static
     {
-        $this->create_at = $create_at;
+        $this->comment = $comment;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }
