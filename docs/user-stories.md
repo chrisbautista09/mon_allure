@@ -1,12 +1,12 @@
-# Issues GitHub — Mon Allure
+# Découpage Epics → Issues GitHub — Mon Allure
 
 
 ---
 
-## EPIC 1 — User Authentication
+## EPIC 1 — Authentification & compte
 **Label epic** : `epic:auth` · **Labels génériques** : `backend`, `security`
 
-### Issue — US 1.1 : Register a New Account
+### Issue — US 1.1 : Création de compte
 > En tant qu'utilisateur, je veux pouvoir créer un compte afin d'accéder à l'application.
 
 **Critères d'acceptation :**
@@ -25,7 +25,7 @@
 
 ---
 
-### Issue — US 1.2 : Log In / Log Out
+### Issue — US 1.2 : Connexion / déconnexion
 > En tant qu'utilisateur, je veux pouvoir me connecter et me déconnecter afin de sécuriser mes données personnelles.
 
 **Critères d'acceptation :**
@@ -44,10 +44,10 @@
 
 ---
 
-## EPIC 2 — User Profile & Training Calibration
+## EPIC 2 — Profil & calibrage sportif
 **Label epic** : `epic:profile` · **Labels génériques** : `backend`, `frontend`
 
-### Issue — US 2.1 : Complete the Physiological Profile
+### Issue — US 2.1 : Compléter le profil physiologique
 > En tant que nouvel utilisateur, je veux compléter un profil physiologique (âge, VMA, FCM, FCR) afin que l'application adapte mes entraînements.
 
 **Critères d'acceptation :**
@@ -65,7 +65,7 @@
 
 ---
 
-### Issue — US 2.2 : Update Physiological Data
+### Issue — US 2.2 : Mettre à jour les données physiologiques
 > En tant qu'utilisateur, je veux pouvoir mettre à jour mes données physiologiques afin que le plan reste cohérent avec mon niveau réel.
 
 **Critères d'acceptation :**
@@ -81,7 +81,7 @@
 
 ---
 
-### Issue — US 2.3 : Define a Training Goal 
+### Issue — US 2.3 : Définir un objectif de course
 > En tant qu'utilisateur, je veux définir un objectif de course (distance et/ou durée avec unité) afin de préparer un plan d'entraînement adapté.
 
 **Critères d'acceptation :**
@@ -98,10 +98,10 @@
 
 ---
 
-## EPIC 3 — Training Plan Generation
+## EPIC 3 — Génération du plan d'entraînement
 **Label epic** : `epic:plan-generation` · **Labels génériques** : `backend`, `algorithm`
 
-### Issue — US 3.1 : View a Personalized Training Plan
+### Issue — US 3.1 : Consulter un plan d'entraînement personnalisé
 > En tant qu'utilisateur, je veux consulter un plan d'entraînement personnalisé généré dynamiquement afin de savoir quoi faire chaque semaine.
 
 **Critères d'acceptation :**
@@ -119,7 +119,7 @@
 
 ---
 
-### Issue — US 3.2 : Automatically Adapt the Training Plan
+### Issue — US 3.2 : Adaptation automatique du plan
 > En tant qu'utilisateur, je veux que mon plan s'adapte automatiquement à mes performances réelles afin de progresser efficacement.
 
 **Critères d'acceptation :**
@@ -135,7 +135,7 @@
 
 ---
 
-### Issue — US 3.3 : Recalculate the Training Plan Based on Completed and Missed
+### Issue — US 3.3 : Recalcul du plan selon séances ratées/réussies
 > En tant qu'utilisateur, je veux que mon plan soit recalculé si je rate ou réussis plusieurs séances afin de maintenir un niveau de progression optimal.
 
 **Critères d'acceptation :**
@@ -152,7 +152,7 @@
 
 ---
 
-### Issue — US 3.4 : Export the Training Plan as PDF
+### Issue — US 3.4 : Export du plan en PDF
 > En tant qu'utilisateur, je veux exporter mon plan au format PDF afin de pouvoir le consulter hors ligne.
 
 **Critères d'acceptation :**
@@ -168,10 +168,10 @@
 
 ---
 
-## EPIC 4 — User Dashboard
+## EPIC 4 — Dashboard utilisateur
 **Label epic** : `epic:dashboard` · **Labels génériques** : `frontend`, `backend`
 
-### Issue — US 4.1 : View Training Progress
+### Issue — US 4.1 : État d'avancement du plan
 > En tant qu'utilisateur, je veux voir l'état d'avancement de mon plan afin de savoir où j'en suis dans ma préparation.
 
 **Critères d'acceptation :**
@@ -182,7 +182,7 @@
 
 ---
 
-### Issue — US 4.2 : View Remaining Time Until the Goal
+### Issue — US 4.2 : Temps restant avant l'objectif
 > En tant qu'utilisateur, je veux visualiser le temps restant avant mon objectif afin de me projeter dans ma préparation.
 
 **Critères d'acceptation :**
@@ -192,7 +192,7 @@
 
 ---
 
-### Issue — US 4.3 :  View Current Fitness Status
+### Issue — US 4.3 : État de forme actuel
 > En tant qu'utilisateur, je veux connaître mon état de forme actuel basé sur mes performances récentes afin d'adapter mon effort.
 
 **Critères d'acceptation :**
@@ -205,7 +205,7 @@
 
 ---
 
-### Issue — US 4.4 : View Weather Forecast
+### Issue — US 4.4 : Consultation météo
 > En tant qu'utilisateur, je veux consulter la météo afin d'adapter ma tenue et mes conditions d'entraînement.
 
 **Critères d'acceptation :**
@@ -220,10 +220,10 @@
 
 ---
 
-## EPIC 5 — Progress Tracking & Statistics
+## EPIC 5 — Suivi & statistiques
 **Label epic** : `epic:stats` · **Labels génériques** : `backend`, `frontend`
 
-### Issue — US 5.1 : View Training History
+### Issue — US 5.1 : Historique des séances
 > En tant qu'utilisateur, je veux consulter l'historique de mes séances afin de suivre ma progression.
 
 **Critères d'acceptation :**
@@ -233,7 +233,7 @@
 
 ---
 
-### Issue — US 5.2 : View Performance History
+### Issue — US 5.2 : Visualisation des performances passées
 > En tant qu'utilisateur, je veux visualiser mes performances passées afin d'analyser mon évolution (distance, temps, dénivelé).
 
 **Critères d'acceptation :**
@@ -243,7 +243,7 @@
 
 ---
 
-### Issue — US 5.3 : View Training Intensity Distribution
+### Issue — US 5.3 : Répartition par zones d'intensité
 > En tant qu'utilisateur, je veux connaître la répartition de mes entraînements par zones d'intensité afin d'évaluer la qualité de mon plan.
 
 **Critères d'acceptation :**
@@ -253,10 +253,10 @@
 
 ---
 
-## EPIC 6 — Administration & Algorithm Management
+## EPIC 6 — Administration & algorithme
 **Label epic** : `epic:admin` · **Labels génériques** : `backend`, `admin`
 
-### Issue — US 6.1 : Manage User Accounts
+### Issue — US 6.1 : Gestion des comptes utilisateurs
 > En tant qu'administrateur, je veux pouvoir gérer les comptes utilisateurs afin de supprimer ou désactiver les comptes inactifs.
 
 **Critères d'acceptation :**
@@ -272,7 +272,7 @@
 
 ---
 
-### Issue — US 6.2 : Manage Algorithm Parameters
+### Issue — US 6.2 : Modifier les paramètres de l'algorithme
 > En tant qu'administrateur, je veux pouvoir modifier les paramètres de l'algorithme afin d'ajuster les plans d'entraînement sans modifier le code.
 
 **Critères d'acceptation :**
@@ -288,7 +288,7 @@
 
 ---
 
-### Issue — US 6.3 : Monitor Generated Training Plans
+### Issue — US 6.3 : Superviser le comportement des plans générés
 > En tant qu'administrateur, je veux pouvoir superviser le comportement des plans générés afin de détecter d'éventuelles incohérences dans l'algorithme.
 
 **Critères d'acceptation :**
@@ -299,7 +299,7 @@
 
 ---
 
-### Issue — US 6.4 : Manage Product Evolution
+### Issue — US 6.4 : Faire évoluer l'interface et les fonctionnalités
 > En tant qu'administrateur, je veux pouvoir faire évoluer l'interface et les fonctionnalités afin d'améliorer l'expérience utilisateur.
 
 **Critères d'acceptation :**

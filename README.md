@@ -31,11 +31,11 @@ Toute la documentation de conception se trouve dans le dossier [`/docs`](./docs)
 | Fichier | Contenu |
 |---|---|
 | `docs/user-stories.md` | Epics et user stories du projet |
-| `docs/use-cases-roles-entites.md` | Use case et entités rôles |
-| `docs/mcd-mon-allure.png` / `docs/mld-mon-allure.png` | Modèle Conceptuel et Logique de Données |
-| `diagramme séquence flux génération plan.png` | Flux de génération d'un plan d'entraînement |
-| `diagram de flux complet Mon Allure.png` | Diagramme de flux complet Mon Allure |
-| `diagramme boucle d'adaptation .png` | Diagramme de séquence — boucle continue d'adaptation |
+| `docs/mcd.png` / `docs/mld.png` | Modèle Conceptuel et Logique de Données |
+| `docs/diagrams/er-diagram.md` | Diagramme entité-relation (Mermaid) |
+| `docs/diagrams/flowchart-generation.md` | Flux de génération d'un plan d'entraînement |
+| `docs/diagrams/sequence-generation.md` | Diagramme de séquence — génération initiale |
+| `docs/diagrams/sequence-adaptation.md` | Diagramme de séquence — boucle d'adaptation |
 
 ## 🗺️ Roadmap (Epics)
 
