@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\SessionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,52 +16,131 @@ class Session
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTime $date = null;
+    /**
+     * Numéro de la semaine dans le plan.
+     */
+    #[ORM\Column]
+    private ?int $weekIndex = null;
 
-    #[ORM\Column(length: 255)]
+    /**
+     * Jour de la semaine :
+     * 1 = lundi, 7 = dimanche.
+     */
+    #[ORM\Column]
+    private ?int $dayOfWeek = null;
+
+    #[ORM\Column(length: 150)]
     private ?string $title = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $instructions = null;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
 
-    #[ORM\Column]
-    private ?int $target_duration = null;
+    /**
+     * Exemples :
+     * endurance, active, threshold, vma,
+     * long_run, recovery.
+     */
+    #[ORM\Column(length: 30)]
+    private ?string $sessionType = null;
 
-    #[ORM\Column]
-    private ?float $target_distance = null;
+    #[ORM\Column(nullable: true)]
+    private ?float $plannedDistanceKm = null;
 
-    #[ORM\Column]
-    private ?float $target_speed = null;
+    #[ORM\Column(nullable: true)]
+    private ?int $plannedDurationMin = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $target_pace = null;
+    #[ORM\Column(nullable: true)]
+    private ?int $plannedElevationDPlus = null;
 
-    #[ORM\Column]
-    private ?int $target_hr_min = null;
+    /**
+     * Coefficient appliqué à la VMA.
+     * Exemple : 0.70 pour l'endurance fondamentale.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?float $plannedVmaCoef = null;
 
-    #[ORM\Column]
-    private ?int $target_hr_max = null;
+    /**
+     * Zone cardiaque prévue :
+     * Z1, Z2, Z3, Z4 ou Z5.
+     */
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $plannedFcmZone = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $date = null;
 
-    #[ORM\OneToOne(mappedBy: 'session', cascade: ['persist', 'remove'])]
-    private ?Performance $performance = null;
+    /**
+     * Valeurs prévues :
+     * planned, done, missed.
+     */
+    #[ORM\Column(length: 20, options: ['default' => 'planned'])]
+    private string $status = 'planned';
+
+    #[ORM\ManyToOne(inversedBy: 'sessions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?TrainingPlan $trainingPlan = null;
+
+    /**
+     * @var Collection<int, Performance>
+     */
+    #[ORM\OneToMany(
+        targetEntity: Performance::class,
+        mappedBy: 'session'
+    )]
+    private Collection $performances;
+
+    /**
+     * @var Collection<int, SessionIntensityZone>
+     */
+    #[ORM\OneToMany(
+        targetEntity: SessionIntensityZone::class,
+        mappedBy: 'session',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $sessionIntensityZones;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(
+        targetEntity: Comment::class,
+        mappedBy: 'session'
+    )]
+    private Collection $comments;
+
+    public function __construct()
+    {
+        $this->performances = new ArrayCollection();
+        $this->sessionIntensityZones = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDate(): ?\DateTime
+    public function getWeekIndex(): ?int
     {
-        return $this->date;
+        return $this->weekIndex;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setWeekIndex(int $weekIndex): static
     {
-        $this->date = $date;
+        $this->weekIndex = $weekIndex;
+
+        return $this;
+    }
+
+    public function getDayOfWeek(): ?int
+    {
+        return $this->dayOfWeek;
+    }
+
+    public function setDayOfWeek(int $dayOfWeek): static
+    {
+        $this->dayOfWeek = $dayOfWeek;
 
         return $this;
     }
@@ -71,96 +152,113 @@ class Session
 
     public function setTitle(string $title): static
     {
-        $this->title = $title;
+        $this->title = trim($title);
 
         return $this;
     }
 
-    public function getInstructions(): ?string
+    public function getDescription(): ?string
     {
-        return $this->instructions;
+        return $this->description;
     }
 
-    public function setInstructions(string $instructions): static
+    public function setDescription(?string $description): static
     {
-        $this->instructions = $instructions;
+        $this->description = $description;
 
         return $this;
     }
 
-    public function getTargetDuration(): ?int
+    public function getSessionType(): ?string
     {
-        return $this->target_duration;
+        return $this->sessionType;
     }
 
-    public function setTargetDuration(int $target_duration): static
+    public function setSessionType(string $sessionType): static
     {
-        $this->target_duration = $target_duration;
+        $this->sessionType = $sessionType;
 
         return $this;
     }
 
-    public function getTargetDistance(): ?float
+    public function getPlannedDistanceKm(): ?float
     {
-        return $this->target_distance;
+        return $this->plannedDistanceKm;
     }
 
-    public function setTargetDistance(float $target_distance): static
-    {
-        $this->target_distance = $target_distance;
+    public function setPlannedDistanceKm(
+        ?float $plannedDistanceKm
+    ): static {
+        $this->plannedDistanceKm = $plannedDistanceKm;
 
         return $this;
     }
 
-    public function getTargetSpeed(): ?float
+    public function getPlannedDurationMin(): ?int
     {
-        return $this->target_speed;
+        return $this->plannedDurationMin;
     }
 
-    public function setTargetSpeed(float $target_speed): static
-    {
-        $this->target_speed = $target_speed;
+    public function setPlannedDurationMin(
+        ?int $plannedDurationMin
+    ): static {
+        $this->plannedDurationMin = $plannedDurationMin;
 
         return $this;
     }
 
-    public function getTargetPace(): ?string
+    public function getPlannedElevationDPlus(): ?int
     {
-        return $this->target_pace;
+        return $this->plannedElevationDPlus;
     }
 
-    public function setTargetPace(string $target_pace): static
-    {
-        $this->target_pace = $target_pace;
+    public function setPlannedElevationDPlus(
+        ?int $plannedElevationDPlus
+    ): static {
+        $this->plannedElevationDPlus = $plannedElevationDPlus;
 
         return $this;
     }
 
-    public function getTargetHrMin(): ?int
+    public function getPlannedVmaCoef(): ?float
     {
-        return $this->target_hr_min;
+        return $this->plannedVmaCoef;
     }
 
-    public function setTargetHrMin(int $target_hr_min): static
-    {
-        $this->target_hr_min = $target_hr_min;
+    public function setPlannedVmaCoef(
+        ?float $plannedVmaCoef
+    ): static {
+        $this->plannedVmaCoef = $plannedVmaCoef;
 
         return $this;
     }
 
-    public function getTargetHrMax(): ?int
+    public function getPlannedFcmZone(): ?string
     {
-        return $this->target_hr_max;
+        return $this->plannedFcmZone;
     }
 
-    public function setTargetHrMax(int $target_hr_max): static
-    {
-        $this->target_hr_max = $target_hr_max;
+    public function setPlannedFcmZone(
+        ?string $plannedFcmZone
+    ): static {
+        $this->plannedFcmZone = $plannedFcmZone;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getDate(): ?\DateTimeImmutable
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeImmutable $date): static
+    {
+        $this->date = $date;
+
+        return $this;
+    }
+
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -172,24 +270,115 @@ class Session
         return $this;
     }
 
-    public function getPerformance(): ?Performance
+    public function getTrainingPlan(): ?TrainingPlan
     {
-        return $this->performance;
+        return $this->trainingPlan;
     }
 
-    public function setPerformance(?Performance $performance): static
-    {
-        // unset the owning side of the relation if necessary
-        if ($performance === null && $this->performance !== null) {
-            $this->performance->setSession(null);
-        }
+    public function setTrainingPlan(
+        ?TrainingPlan $trainingPlan
+    ): static {
+        $this->trainingPlan = $trainingPlan;
 
-        // set the owning side of the relation if necessary
-        if ($performance !== null && $performance->getSession() !== $this) {
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Performance>
+     */
+    public function getPerformances(): Collection
+    {
+        return $this->performances;
+    }
+
+    public function addPerformance(
+        Performance $performance
+    ): static {
+        if (!$this->performances->contains($performance)) {
+            $this->performances->add($performance);
             $performance->setSession($this);
         }
 
-        $this->performance = $performance;
+        return $this;
+    }
+
+    public function removePerformance(
+        Performance $performance
+    ): static {
+        if (
+            $this->performances->removeElement($performance)
+            && $performance->getSession() === $this
+        ) {
+            $performance->setSession(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SessionIntensityZone>
+     */
+    public function getSessionIntensityZones(): Collection
+    {
+        return $this->sessionIntensityZones;
+    }
+
+    public function addSessionIntensityZone(
+        SessionIntensityZone $sessionIntensityZone
+    ): static {
+        if (
+            !$this->sessionIntensityZones
+                ->contains($sessionIntensityZone)
+        ) {
+            $this->sessionIntensityZones
+                ->add($sessionIntensityZone);
+
+            $sessionIntensityZone->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSessionIntensityZone(
+        SessionIntensityZone $sessionIntensityZone
+    ): static {
+        if (
+            $this->sessionIntensityZones
+                ->removeElement($sessionIntensityZone)
+            && $sessionIntensityZone->getSession() === $this
+        ) {
+            $sessionIntensityZone->setSession(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if (
+            $this->comments->removeElement($comment)
+            && $comment->getSession() === $this
+        ) {
+            $comment->setSession(null);
+        }
 
         return $this;
     }

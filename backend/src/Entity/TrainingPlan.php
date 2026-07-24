@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TrainingPlanRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,50 +16,104 @@ class TrainingPlan
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 150)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $pole_type = null;
+    /**
+     * Valeurs prévues :
+     * discovery, intermediate, performance
+     */
+    #[ORM\Column(length: 30)]
+    private ?string $poleType = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $target_type = null;
+    /**
+     * Valeurs prévues :
+     * distance, time
+     */
+    #[ORM\Column(length: 20)]
+    private ?string $targetType = null;
 
     #[ORM\Column]
-    private ?float $target_value = null;
+    private ?float $targetValue = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $target_unit = null;
+    /**
+     * Valeurs prévues :
+     * km, min
+     */
+    #[ORM\Column(length: 10)]
+    private ?string $targetUnit = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $terrain_type = null;
+    /**
+     * Valeurs prévues :
+     * route, trail
+     */
+    #[ORM\Column(length: 20)]
+    private ?string $terrainType = null;
 
+    /**
+     * Dénivelé cible facultatif pour un objectif sur route.
+     */
     #[ORM\Column(nullable: true)]
-    private ?int $elevation_target = null;
+    private ?int $elevationTargetDPlus = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $feasibility_indicator = null;
+    /**
+     * Valeurs possibles :
+     * realistic, ambitious, dangerous
+     */
+    #[ORM\Column(length: 30)]
+    private ?string $feasibilityIndicator = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $start_date = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $startDate = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $end_date = null;
-
-    #[ORM\Column]
-    private ?int $duration_weeks = null;
-
-    #[ORM\Column]
-    private ?bool $is_active = null;
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $endDate = null;
 
     #[ORM\Column]
-    private ?int $current_week = null;
+    private ?int $durationWeeks = null;
 
-    #[ORM\Column]
-    private ?float $progress_score = null;
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isActive = true;
+
+    #[ORM\Column(options: ['default' => 1])]
+    private int $currentWeek = 1;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private float $progressScore = 0.0;
 
     #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(
+        targetEntity: Comment::class,
+        mappedBy: 'trainingPlan'
+    )]
+    private Collection $comments;
+
+    /**
+     * @var Collection<int, Session>
+     */
+    #[ORM\OneToMany(
+        targetEntity: Session::class,
+        mappedBy: 'trainingPlan',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[ORM\OrderBy([
+        'weekIndex' => 'ASC',
+        'dayOfWeek' => 'ASC',
+    ])]
+    private Collection $sessions;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+        $this->sessions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -71,163 +127,167 @@ class TrainingPlan
 
     public function setName(string $name): static
     {
-        $this->name = $name;
+        $this->name = trim($name);
 
         return $this;
     }
 
     public function getPoleType(): ?string
     {
-        return $this->pole_type;
+        return $this->poleType;
     }
 
-    public function setPoleType(string $pole_type): static
+    public function setPoleType(string $poleType): static
     {
-        $this->pole_type = $pole_type;
+        $this->poleType = $poleType;
 
         return $this;
     }
 
     public function getTargetType(): ?string
     {
-        return $this->target_type;
+        return $this->targetType;
     }
 
-    public function setTargetType(string $target_type): static
+    public function setTargetType(string $targetType): static
     {
-        $this->target_type = $target_type;
+        $this->targetType = $targetType;
 
         return $this;
     }
 
     public function getTargetValue(): ?float
     {
-        return $this->target_value;
+        return $this->targetValue;
     }
 
-    public function setTargetValue(float $target_value): static
+    public function setTargetValue(float $targetValue): static
     {
-        $this->target_value = $target_value;
+        $this->targetValue = $targetValue;
 
         return $this;
     }
 
     public function getTargetUnit(): ?string
     {
-        return $this->target_unit;
+        return $this->targetUnit;
     }
 
-    public function setTargetUnit(string $target_unit): static
+    public function setTargetUnit(string $targetUnit): static
     {
-        $this->target_unit = $target_unit;
+        $this->targetUnit = $targetUnit;
 
         return $this;
     }
 
     public function getTerrainType(): ?string
     {
-        return $this->terrain_type;
+        return $this->terrainType;
     }
 
-    public function setTerrainType(string $terrain_type): static
+    public function setTerrainType(string $terrainType): static
     {
-        $this->terrain_type = $terrain_type;
+        $this->terrainType = $terrainType;
 
         return $this;
     }
 
-    public function getElevationTarget(): ?int
+    public function getElevationTargetDPlus(): ?int
     {
-        return $this->elevation_target;
+        return $this->elevationTargetDPlus;
     }
 
-    public function setElevationTarget(?int $elevation_target): static
-    {
-        $this->elevation_target = $elevation_target;
+    public function setElevationTargetDPlus(
+        ?int $elevationTargetDPlus
+    ): static {
+        $this->elevationTargetDPlus = $elevationTargetDPlus;
 
         return $this;
     }
 
     public function getFeasibilityIndicator(): ?string
     {
-        return $this->feasibility_indicator;
+        return $this->feasibilityIndicator;
     }
 
-    public function setFeasibilityIndicator(string $feasibility_indicator): static
-    {
-        $this->feasibility_indicator = $feasibility_indicator;
+    public function setFeasibilityIndicator(
+        string $feasibilityIndicator
+    ): static {
+        $this->feasibilityIndicator = $feasibilityIndicator;
 
         return $this;
     }
 
-    public function getStartDate(): ?\DateTime
+    public function getStartDate(): ?\DateTimeImmutable
     {
-        return $this->start_date;
+        return $this->startDate;
     }
 
-    public function setStartDate(\DateTime $start_date): static
-    {
-        $this->start_date = $start_date;
+    public function setStartDate(
+        \DateTimeImmutable $startDate
+    ): static {
+        $this->startDate = $startDate;
 
         return $this;
     }
 
-    public function getEndDate(): ?\DateTime
+    public function getEndDate(): ?\DateTimeImmutable
     {
-        return $this->end_date;
+        return $this->endDate;
     }
 
-    public function setEndDate(\DateTime $end_date): static
-    {
-        $this->end_date = $end_date;
+    public function setEndDate(
+        \DateTimeImmutable $endDate
+    ): static {
+        $this->endDate = $endDate;
 
         return $this;
     }
 
     public function getDurationWeeks(): ?int
     {
-        return $this->duration_weeks;
+        return $this->durationWeeks;
     }
 
-    public function setDurationWeeks(int $duration_weeks): static
+    public function setDurationWeeks(int $durationWeeks): static
     {
-        $this->duration_weeks = $duration_weeks;
+        $this->durationWeeks = $durationWeeks;
 
         return $this;
     }
 
-    public function isActive(): ?bool
+    public function isActive(): bool
     {
-        return $this->is_active;
+        return $this->isActive;
     }
 
-    public function setIsActive(bool $is_active): static
+    public function setIsActive(bool $isActive): static
     {
-        $this->is_active = $is_active;
+        $this->isActive = $isActive;
 
         return $this;
     }
 
-    public function getCurrentWeek(): ?int
+    public function getCurrentWeek(): int
     {
-        return $this->current_week;
+        return $this->currentWeek;
     }
 
-    public function setCurrentWeek(int $current_week): static
+    public function setCurrentWeek(int $currentWeek): static
     {
-        $this->current_week = $current_week;
+        $this->currentWeek = $currentWeek;
 
         return $this;
     }
 
-    public function getProgressScore(): ?float
+    public function getProgressScore(): float
     {
-        return $this->progress_score;
+        return $this->progressScore;
     }
 
-    public function setProgressScore(float $progress_score): static
+    public function setProgressScore(float $progressScore): static
     {
-        $this->progress_score = $progress_score;
+        $this->progressScore = $progressScore;
 
         return $this;
     }
@@ -240,6 +300,66 @@ class TrainingPlan
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setTrainingPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if (
+            $this->comments->removeElement($comment)
+            && $comment->getTrainingPlan() === $this
+        ) {
+            $comment->setTrainingPlan(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Session>
+     */
+    public function getSessions(): Collection
+    {
+        return $this->sessions;
+    }
+
+    public function addSession(Session $session): static
+    {
+        if (!$this->sessions->contains($session)) {
+            $this->sessions->add($session);
+            $session->setTrainingPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSession(Session $session): static
+    {
+        if (
+            $this->sessions->removeElement($session)
+            && $session->getTrainingPlan() === $this
+        ) {
+            $session->setTrainingPlan(null);
+        }
 
         return $this;
     }
