@@ -78,7 +78,7 @@ class TrainingPlan
     #[ORM\Column(options: ['default' => 1])]
     private int $currentWeek = 1;
 
-    #[ORM\Column(options: ['default' => 0])]
+    #[ORM\Column]
     private float $progressScore = 0.0;
 
     #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
