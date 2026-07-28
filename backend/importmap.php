@@ -27,4 +27,13 @@ return [
     '@hotwired/stimulus' => ['version' => '3.2.2'],
     '@symfony/stimulus-bundle' => ['path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js'],
     '@hotwired/turbo' => ['version' => '8.0.23'],
+    'fullcalendar' => ['version' => '5.11.5'],
+    '@fullcalendar/common' => ['version' => '5.11.5'],
+    '@fullcalendar/core' => ['version' => '5.11.5'],
+    '@fullcalendar/daygrid' => ['version' => '5.11.5'],
+    '@fullcalendar/interaction' => ['version' => '5.11.5'],
+    'tslib' => ['version' => '2.5.0'],
+    'preact' => ['version' => '10.12.1'],
+    'preact/compat' => ['version' => '10.12.1'],
+    'preact/hooks' => ['version' => '10.12.1'],
 ];
