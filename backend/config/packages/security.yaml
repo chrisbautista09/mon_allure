@@ -26,10 +26,10 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/training, roles: PUBLIC_ACCESS }
 
         - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/dashboard, roles: ROLE_USER }
-        - { path: ^/training, roles: ROLE_USER }
 
 when@test:
     security:
