@@ -14,13 +14,10 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $Profile = null;
+    private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $first_name = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $last_name = null;
+    private ?string $lastName = null;
 
     #[ORM\Column]
     private ?int $age = null;
@@ -38,7 +35,7 @@ class Profile
     private ?int $fcr = null;
 
     #[ORM\Column]
-    private ?\DateTime $updated_at = null;
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
@@ -48,39 +45,27 @@ class Profile
     {
         return $this->id;
     }
-
-    public function getProfile(): ?string
-    {
-        return $this->Profile;
-    }
-
-    public function setProfile(string $Profile): static
-    {
-        $this->Profile = $Profile;
-
-        return $this;
-    }
-
+   
     public function getFirstName(): ?string
     {
-        return $this->first_name;
+        return $this->firstName;
     }
 
-    public function setFirstName(string $first_name): static
+    public function setFirstName(string $firstName): static
     {
-        $this->first_name = $first_name;
+        $this->firstName = $firstName;
 
         return $this;
     }
 
     public function getLastName(): ?string
     {
-        return $this->last_name;
+        return $this->lastName;
     }
 
     public function setLastName(string $last_name): static
     {
-        $this->last_name = $last_name;
+        $this->lastName = $last_name;
 
         return $this;
     }
@@ -145,12 +130,12 @@ class Profile
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTime
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(\DateTime $updated_at): static
+    public function setUpdatedAt(\DateTimeImmutable $updated_at): static
     {
         $this->updated_at = $updated_at;
 
