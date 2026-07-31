@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ma journée d’entraînement{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-5 py-10 text-cyan-300">
+
+        <section class="mx-auto max-w-4xl">
+
+            <h1 class="mb-10 text-center text-3xl font-bold text-cyan-300">
+                Ma journée d’entraînement
+            </h1>
+
+            <div class="rounded-3xl border border-cyan-400/40 bg-slate-950/70 p-7 shadow-2xl">
+
+                <h2 class="mb-8 border border-cyan-400 px-5 py-4 text-2xl font-semibold">
+                    Plan d’entraînement journalier
+                </h2>
+
+                <p class="mb-8 text-xl">
+                    Date :
+                    <strong>{{ session.date }}</strong>
+                </p>
+
+                <div class="space-y-5 text-lg leading-relaxed">
+
+                    <p>
+                        <strong>{{ session.type }}</strong>
+                    </p>
+
+                    <p>
+                        <span class="font-semibold">Titre :</span>
+                        {{ session.title }}
+                    </p>
+
+                    <p>
+                        <span class="font-semibold">Description :</span>
+                        {{ session.description }}
+                    </p>
+
+                </div>
+            </div>
+
+            <div class="mt-12 flex justify-center gap-5">
+
+                <a
+                    href="{{ path('app_training_weekly') }}"
+                    class="rounded-full border border-cyan-400 px-8 py-4 font-semibold text-cyan-300"
+                >
+                    Ma semaine
+                </a>
+
+                <a
+                    href="{{ path('app_home') }}"
+                    class="rounded-full bg-cyan-400 px-10 py-4 font-bold text-slate-950 shadow-lg shadow-cyan-400/30"
+                >
+                    Accueil
+                </a>
+
+            </div>
+
+        </section>
+    </main>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ma semaine d’entraînement{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-5 py-10 text-cyan-300">
+
+        <section class="mx-auto max-w-4xl">
+
+            <h1 class="mb-10 text-center text-3xl font-bold text-cyan-300">
+                Ma semaine d’entraînement
+            </h1>
+
+            <div class="rounded-3xl bg-blue-900/70 p-6 shadow-2xl">
+
+                <h2 class="mb-8 text-2xl font-semibold">
+                    Plan journalier
+                </h2>
+
+                <div class="space-y-6">
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 1}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Lundi : Repos complet
+                        <span class="opacity-75">(Assimilation)</span>
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 2}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Mardi : Séance VMA courte
+                        <span class="opacity-75">(fractionné sur piste)</span>
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 3}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Mercredi : Footing de récupération en endurance fondamentale
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 4}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Jeudi : Séance de côtes
+                        <span class="opacity-75">(Puissance musculaire)</span>
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 5}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Vendredi : Repos ou étirements
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 6}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Samedi : Footing plaisir de transition
+                    </a>
+
+                    <a
+                        href="{{ path('app_training_daily', {id: 7}) }}"
+                        class="block rounded-2xl bg-neutral-800 p-6 text-cyan-300 transition hover:bg-neutral-700"
+                    >
+                        Dimanche : Sortie longue avec intégration de blocs à allure cible
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a
+                    href="{{ path('app_home') }}"
+                    class="inline-block rounded-full bg-cyan-400 px-10 py-4 font-bold text-slate-950 shadow-lg shadow-cyan-400/30"
+                >
+                    Accueil
+                </a>
+            </div>
+
+        </section>
+    </main>
+{% endblock %}

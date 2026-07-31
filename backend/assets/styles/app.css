@@ -1,7 +1,409 @@
 @import "tailwindcss";
 
-@layer utilities {
-    .bg-mon-allure {
-        background: radial-gradient(circle, #1e40af 0%, #0a0e1a 70%);
+@theme {
+    --color-mon-allure-cyan: #00d9ff;
+    --color-mon-allure-blue: #17399a;
+    --color-mon-allure-dark: #050b18;
+    --color-mon-allure-card: #0d1d42;
+    --color-mon-allure-success: #13ca8a;
+}
+
+@layer base {
+    html {
+        min-height: 100%;
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        color: white;
+        background:
+            radial-gradient(
+                circle at 80% 10%,
+                rgba(39, 91, 255, 0.55),
+                transparent 35%
+            ),
+            linear-gradient(
+                180deg,
+                #17399a 0%,
+                #102769 35%,
+                #07142e 70%,
+                #030812 100%
+            );
+    }
+}
+
+@utility bg-mon-allure {
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(39, 91, 255, 0.55),
+            transparent 35%
+        ),
+        linear-gradient(
+            180deg,
+            #17399a 0%,
+            #102769 35%,
+            #07142e 70%,
+            #030812 100%
+        );
+}
+
+/* =========================================================
+   CALENDRIER D'ENTRAÎNEMENT
+   ========================================================= */
+
+.training-calendar-section {
+    width: min(100% - 2rem, 72rem);
+    margin: 3rem auto 7rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(0, 217, 255, 0.45);
+    border-radius: 1.5rem;
+    background: linear-gradient(
+        145deg,
+        rgba(25, 64, 173, 0.78),
+        rgba(5, 13, 31, 0.95)
+    );
+    box-shadow:
+        0 0 2rem rgba(0, 217, 255, 0.12),
+        inset 0 0 1.5rem rgba(44, 91, 219, 0.15);
+}
+
+.training-calendar-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.training-calendar-eyebrow {
+    margin: 0 0 0.25rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.training-calendar-title {
+    margin: 0;
+    color: #08d9ff;
+    font-size: clamp(1.35rem, 4vw, 2rem);
+    font-weight: 700;
+}
+
+.training-calendar-help {
+    margin: 0 0 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.training-calendar-week-link {
+    flex-shrink: 0;
+    padding: 0.7rem 1rem;
+    border: 1px solid #08d9ff;
+    border-radius: 999px;
+    color: #08d9ff;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        background-color 180ms ease,
+        color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.training-calendar-week-link:hover {
+    background: #08d9ff;
+    color: #061025;
+    box-shadow: 0 0 1rem rgba(8, 217, 255, 0.45);
+}
+
+.training-calendar {
+    --fc-border-color: rgba(8, 217, 255, 0.2);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: rgba(255, 255, 255, 0.04);
+    --fc-list-event-hover-bg-color: rgba(8, 217, 255, 0.1);
+    --fc-today-bg-color: rgba(8, 217, 255, 0.12);
+    --fc-button-bg-color: rgba(8, 217, 255, 0.12);
+    --fc-button-border-color: rgba(8, 217, 255, 0.6);
+    --fc-button-hover-bg-color: #08d9ff;
+    --fc-button-hover-border-color: #08d9ff;
+    --fc-button-active-bg-color: #08d9ff;
+    --fc-button-active-border-color: #08d9ff;
+
+    color: #ffffff;
+}
+
+.training-calendar .fc-toolbar-title {
+    color: #ffffff;
+    font-size: clamp(1rem, 4vw, 1.45rem);
+    text-transform: capitalize;
+}
+
+.training-calendar .fc-button {
+    color: #08d9ff;
+    box-shadow: none;
+}
+
+.training-calendar .fc-button:hover,
+.training-calendar .fc-button:focus {
+    color: #061025;
+    box-shadow: 0 0 0.8rem rgba(8, 217, 255, 0.35);
+}
+
+.training-calendar .fc-col-header-cell-cushion,
+.training-calendar .fc-daygrid-day-number {
+    color: rgba(255, 255, 255, 0.88);
+    text-decoration: none;
+}
+
+.training-calendar .fc-daygrid-day {
+    cursor: pointer;
+    transition: background-color 150ms ease;
+}
+
+.training-calendar .fc-daygrid-day:hover {
+    background: rgba(8, 217, 255, 0.07);
+}
+
+.training-calendar .fc-day-other {
+    opacity: 0.42;
+}
+
+.training-calendar .fc-event {
+    overflow: hidden;
+    padding: 0.15rem 0.3rem;
+    border: 0;
+    border-radius: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.training-event--vma {
+    background: #d9385e;
+}
+
+.training-event--threshold {
+    background: #ee8b2d;
+}
+
+.training-event--endurance {
+    background: #0788c9;
+}
+
+.training-event--recovery {
+    background: #557080;
+}
+
+.training-event--long-run {
+    background: #6748c7;
+}
+
+@media (max-width: 640px) {
+    .training-calendar-section {
+        width: calc(100% - 1.25rem);
+        padding: 1rem 0.65rem;
+        border-radius: 1rem;
+    }
+
+    .training-calendar-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .training-calendar-week-link {
+        align-self: flex-start;
+    }
+
+    .training-calendar .fc-toolbar {
+        gap: 0.5rem;
+    }
+
+    .training-calendar .fc-toolbar-title {
+        font-size: 1rem;
+    }
+
+    .training-calendar .fc-button {
+        padding: 0.4rem 0.6rem;
+    }
+
+    .training-calendar .fc-col-header-cell-cushion {
+        font-size: 0.7rem;
+    }
+
+    .training-calendar .fc-daygrid-day-number {
+        padding: 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    .training-calendar .fc-event {
+        padding: 0.1rem;
+        font-size: 0.6rem;
+    }
+}
+
+/* =========================================
+   Période du plan d'entraînement
+   ========================================= */
+
+/*
+ * Cases appartenant à la durée totale
+ * du plan d'entraînement.
+ */
+.training-calendar .fc-daygrid-day.training-period-day {
+    background-color: rgba(74, 222, 128, 0.12);
+}
+
+/*
+ * Léger changement au survol.
+ */
+.training-calendar .fc-daygrid-day.training-period-day:hover {
+    background-color: rgba(74, 222, 128, 0.2);
+}
+
+/*
+ * Jours qui ne font pas partie du plan.
+ * Nous conservons leur structure,
+ * mais ils deviennent plus discrets.
+ */
+.training-calendar .fc-daygrid-day.outside-training-period {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/*
+ * Numéro des jours extérieurs au plan.
+ */
+.training-calendar
+    .fc-daygrid-day.outside-training-period
+    .fc-daygrid-day-number {
+    opacity: 0.45;
+}
+
+/*
+ * Les jours appartenant au plan gardent
+ * leur numéro bien visible.
+ */
+.training-calendar .fc-daygrid-day.training-period-day .fc-daygrid-day-number {
+    opacity: 1;
+}
+
+/* =========================================
+   Repères des semaines du plan
+   ========================================= */
+
+.training-calendar .fc-day-sun .fc-daygrid-day-frame .fc-daygrid-day-events {
+    padding-right: 3.8rem;
+}
+
+/*
+ * Repère général.
+ */
+.training-calendar .calendar-week-marker {
+    position: absolute;
+
+    top: 50%;
+    right: 0.35rem;
+
+    transform: translateY(-50%);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+
+    min-width: 3.2rem;
+    height: 2rem;
+
+    padding: 0 0.55rem;
+
+    border: 1px solid transparent;
+    border-radius: 999px;
+
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        opacity 150ms ease,
+        transform 150ms ease;
+}
+
+/*
+ * Symbole d’état.
+ */
+.training-calendar .calendar-week-marker__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 0.9rem;
+
+    font-size: 0.75rem;
+}
+
+/*
+ * Numéro de semaine.
+ */
+.training-calendar .calendar-week-marker__label {
+    white-space: nowrap;
+}
+
+/* Semaine terminée */
+.training-calendar .calendar-week-marker--completed {
+    background-color: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.25);
+    color: rgba(134, 239, 172, 0.75);
+}
+
+/* Semaine actuellement suivie */
+.training-calendar .calendar-week-marker--current {
+    background-color: rgba(74, 222, 128, 0.24);
+    border-color: rgba(74, 222, 128, 0.65);
+    color: rgb(187, 247, 208);
+}
+
+/* Petite mise en évidence de la semaine active */
+.training-calendar .calendar-week-marker--current .calendar-week-marker__icon {
+    animation: calendar-current-week-pulse 1.8s ease-in-out infinite;
+}
+
+/* Semaine à venir */
+.training-calendar .calendar-week-marker--upcoming {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.13);
+    color: rgba(255, 255, 255, 0.55);
+}
+
+/* Survol commun */
+.training-calendar .calendar-week-marker:hover {
+    transform: translateY(-50%) translateX(-0.15rem);
+
+    background-color: rgba(74, 222, 128, 0.25);
+    border-color: rgba(74, 222, 128, 0.75);
+    color: rgb(220, 252, 231);
+}
+
+/* Navigation clavier */
+.training-calendar .calendar-week-marker:focus-visible {
+    outline: 2px solid rgba(74, 222, 128, 0.9);
+    outline-offset: 2px;
+}
+
+/* Animation très légère de la semaine courante */
+@keyframes calendar-current-week-pulse {
+    0%,
+    100% {
+        opacity: 0.65;
+    }
+
+    50% {
+        opacity: 1;
     }
 }
