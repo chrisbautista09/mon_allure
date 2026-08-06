@@ -36,3 +36,4 @@ frontend/.pnpm-debug.log*
 
 # --- 🚀 INFRASTRUCTURE & DOCKER (Optionnel pour plus tard) ---
 .env.local
+/.env

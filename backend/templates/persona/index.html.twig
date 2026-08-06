@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Personas · Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="mx-auto min-h-screen w-full max-w-[430px] overflow-hidden bg-[radial-gradient(circle_at_80%_5%,rgba(37,99,235,0.65),transparent_32%),linear-gradient(180deg,#17368f_0%,#0e245f_36%,#07142d_68%,#020611_100%)] px-4 pb-8 text-white shadow-2xl">
+        <header class="flex items-center justify-between pt-4">
+            <a
+                href="{{ path('app_home') }}"
+                aria-label="Retour à l'accueil"
+                class="flex size-11 items-center justify-center rounded-full border border-cyan-300/70 bg-slate-950 text-xl font-black italic text-cyan-300 shadow-[0_0_14px_rgba(34,211,238,0.65)]"
+            >
+                M
+            </a>
+
+            <span class="rounded-full border border-cyan-300/30 bg-slate-950/50 px-3 py-1 text-[10px] font-bold tracking-[0.16em] text-cyan-300 uppercase">
+                4 profils
+            </span>
+        </header>
+
+        <section class="pt-8 pb-5">
+            <p class="mb-1 text-xs font-black tracking-[0.18em] text-cyan-300 uppercase">
+                Mon Allure Training
+            </p>
+            <h1 class="text-3xl leading-tight font-black">
+                Une allure pour
+                <span class="text-cyan-300">chaque objectif.</span>
+            </h1>
+            <p class="mt-3 max-w-sm text-sm leading-6 text-slate-300">
+                De la première sortie au marathon, quatre usages pour éprouver l'adaptabilité de l'application.
+            </p>
+        </section>
+
+        <section class="grid gap-3" aria-label="Personas Mon Allure">
+            {% for persona in personas %}
+                {% set accentClasses = {
+                    cyan: 'border-cyan-300/45 from-cyan-400/15 text-cyan-300',
+                    blue: 'border-blue-400/45 from-blue-500/20 text-blue-300',
+                    violet: 'border-violet-400/45 from-violet-500/20 text-violet-300',
+                    green: 'border-emerald-400/45 from-emerald-500/20 text-emerald-300'
+                } %}
+
+                <article class="rounded-2xl border bg-gradient-to-br {{ accentClasses[persona.accent] }} to-slate-950/85 p-4 shadow-[0_12px_35px_rgba(0,0,0,0.22)] backdrop-blur-md">
+                    <div class="flex items-start gap-3">
+                        <div class="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-current/40 bg-slate-950/70 text-sm font-black shadow-inner">
+                            {{ persona.icon }}
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <h2 class="text-base font-black text-white">
+                                        {{ persona.name }}, {{ persona.age }} ans
+                                    </h2>
+                                    <p class="mt-0.5 text-xs font-bold text-current">
+                                        {{ persona.title }}
+                                    </p>
+                                </div>
+
+                                <span class="shrink-0 rounded-full border border-white/15 bg-white/5 px-2 py-1 text-[9px] font-bold tracking-wide text-slate-200 uppercase">
+                                    {{ persona.level }}
+                                </span>
+                            </div>
+
+                            <p class="mt-3 text-sm font-bold text-white">
+                                {{ persona.objective }}
+                            </p>
+                            <p class="mt-1 text-[11px] text-slate-300">
+                                {{ persona.experience }}
+                            </p>
+                            <p class="text-[11px] text-slate-400">
+                                {{ persona.profile }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 flex items-start gap-2 border-t border-white/10 pt-3">
+                        <span class="mt-0.5 text-xs text-current">●</span>
+                        <p class="text-xs leading-5 text-slate-200">
+                            {{ persona.need }}
+                        </p>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+
+        <footer class="pt-6 text-center">
+            <a href="{{ path('app_home') }}" class="inline-flex items-center gap-2 rounded-full border border-cyan-300 bg-cyan-300 px-5 py-2.5 text-xs font-black text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:bg-transparent hover:text-cyan-300">
+                ← Retour à l'application
+            </a>
+        </footer>
+    </main>
+{% endblock %}

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2480" height="3508" viewBox="0 0 1240 1754">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#17399a"/><stop offset=".42" stop-color="#102769"/><stop offset=".75" stop-color="#07142e"/><stop offset="1" stop-color="#030812"/></linearGradient>
+    <radialGradient id="glow" cx="84%" cy="7%" r="55%"><stop stop-color="#275bff" stop-opacity=".58"/><stop offset="1" stop-color="#275bff" stop-opacity="0"/></radialGradient>
+    <filter id="cyanGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#f1f6ff}.brand{font-size:14px;font-weight:800;letter-spacing:4px;fill:#00d9ff}.title{font-size:39px;font-weight:800}.subtitle{font-size:17px;fill:#b9c8e2}
+      .group{fill:#07142e;fill-opacity:.86;stroke:#5579ad;stroke-width:1.5}.groupTitle{font-size:17px;font-weight:800;fill:#00d9ff;letter-spacing:1px}.head{fill:#0d1d42}.headText{font-size:13px;font-weight:800;fill:#b9c8e2;letter-spacing:.5px}.row{fill:#0d1d42;stroke:#294979;stroke-width:1}.method{font-size:12px;font-weight:800;text-anchor:middle}.path{font-size:15px;font-weight:700}.desc{font-size:13px;fill:#c4d1e5}.get{fill:#17399a}.post{fill:#087a68}.put{fill:#8c5a14}.patch{fill:#6748c7}.white{fill:#fff}.foot{font-size:12px;fill:#aebfda;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1240" height="1754" fill="url(#bg)"/><rect width="1240" height="1754" fill="url(#glow)"/>
+  <circle cx="80" cy="69" r="33" fill="#050b18" stroke="#00d9ff" stroke-width="2.5" filter="url(#cyanGlow)"/>
+  <text x="80" y="79" text-anchor="middle" font-size="31" font-weight="900" font-style="italic" fill="#00d9ff" transform="rotate(-6 80 69)">M</text><path d="M61 91Q80 80 99 91" fill="none" stroke="#275bff" stroke-width="5" stroke-linecap="round"/>
+  <text x="130" y="57" class="brand">MON ALLURE TRAINING</text><text x="130" y="103" class="title">Endpoints REST</text><text x="130" y="132" class="subtitle">V.5 — Architecture API</text>
+  <line x1="55" y1="164" x2="1185" y2="164" stroke="#00d9ff" stroke-opacity=".55"/>
+
+  <!-- Authentification -->
+  <rect class="group" x="55" y="195" width="1130" height="280" rx="18"/><text x="78" y="230" class="groupTitle">AUTHENTIFICATION</text>
+  <rect class="head" x="75" y="247" width="1090" height="38" rx="8"/><text x="97" y="272" class="headText">MÉTHODE</text><text x="225" y="272" class="headText">ENDPOINT</text><text x="750" y="272" class="headText">FONCTION</text>
+  <g><rect class="row" x="75" y="294" width="1090" height="50" rx="8"/><rect class="post" x="91" y="305" width="95" height="28" rx="14"/><text class="method white" x="138" y="324">POST</text><text class="path" x="225" y="325">/api/register</text><text class="desc" x="750" y="325">Créer un compte</text></g>
+  <g><rect class="row" x="75" y="352" width="1090" height="50" rx="8"/><rect class="post" x="91" y="363" width="95" height="28" rx="14"/><text class="method white" x="138" y="382">POST</text><text class="path" x="225" y="383">/api/login</text><text class="desc" x="750" y="383">Se connecter</text></g>
+  <g><rect class="row" x="75" y="410" width="1090" height="50" rx="8"/><rect class="post" x="91" y="421" width="95" height="28" rx="14"/><text class="method white" x="138" y="440">POST</text><text class="path" x="225" y="441">/api/logout</text><text class="desc" x="750" y="441">Fermer la session</text></g>
+
+  <!-- Profil -->
+  <rect class="group" x="55" y="500" width="1130" height="280" rx="18"/><text x="78" y="535" class="groupTitle">PROFIL DU COUREUR</text>
+  <rect class="head" x="75" y="552" width="1090" height="38" rx="8"/><text x="97" y="577" class="headText">MÉTHODE</text><text x="225" y="577" class="headText">ENDPOINT</text><text x="750" y="577" class="headText">FONCTION</text>
+  <g><rect class="row" x="75" y="599" width="1090" height="50" rx="8"/><rect class="get" x="91" y="610" width="95" height="28" rx="14"/><text class="method white" x="138" y="629">GET</text><text class="path" x="225" y="630">/api/profile</text><text class="desc" x="750" y="630">Consulter le profil</text></g>
+  <g><rect class="row" x="75" y="657" width="1090" height="50" rx="8"/><rect class="post" x="91" y="668" width="95" height="28" rx="14"/><text class="method white" x="138" y="687">POST</text><text class="path" x="225" y="688">/api/profile</text><text class="desc" x="750" y="688">Créer le profil</text></g>
+  <g><rect class="row" x="75" y="715" width="1090" height="50" rx="8"/><rect class="put" x="91" y="726" width="95" height="28" rx="14"/><text class="method white" x="138" y="745">PUT</text><text class="path" x="225" y="746">/api/profile</text><text class="desc" x="750" y="746">Modifier le profil</text></g>
+
+  <!-- Entrainement -->
+  <rect class="group" x="55" y="805" width="1130" height="395" rx="18"/><text x="78" y="840" class="groupTitle">ENTRAÎNEMENT ET SUIVI</text>
+  <rect class="head" x="75" y="857" width="1090" height="38" rx="8"/><text x="97" y="882" class="headText">MÉTHODE</text><text x="225" y="882" class="headText">ENDPOINT</text><text x="750" y="882" class="headText">FONCTION</text>
+  <g><rect class="row" x="75" y="904" width="1090" height="50" rx="8"/><rect class="post" x="91" y="915" width="95" height="28" rx="14"/><text class="method white" x="138" y="934">POST</text><text class="path" x="225" y="935">/api/training-plans</text><text class="desc" x="750" y="935">Générer un plan</text></g>
+  <g><rect class="row" x="75" y="962" width="1090" height="50" rx="8"/><rect class="get" x="91" y="973" width="95" height="28" rx="14"/><text class="method white" x="138" y="992">GET</text><text class="path" x="225" y="993">/api/training-plans/{id}</text><text class="desc" x="750" y="993">Consulter un plan</text></g>
+  <g><rect class="row" x="75" y="1020" width="1090" height="50" rx="8"/><rect class="get" x="91" y="1031" width="95" height="28" rx="14"/><text class="method white" x="138" y="1050">GET</text><text class="path" x="225" y="1051">/api/training-plans/{id}/export</text><text class="desc" x="750" y="1051">Exporter en PDF</text></g>
+  <g><rect class="row" x="75" y="1078" width="1090" height="50" rx="8"/><rect class="post" x="91" y="1089" width="95" height="28" rx="14"/><text class="method white" x="138" y="1108">POST</text><text class="path" x="225" y="1109">/api/performances</text><text class="desc" x="750" y="1109">Ajouter un résultat</text></g>
+  <g><rect class="row" x="75" y="1136" width="1090" height="50" rx="8"/><rect class="get" x="91" y="1147" width="95" height="28" rx="14"/><text class="method white" x="138" y="1166">GET</text><text class="path" x="225" y="1167">/api/dashboard/form-status</text><text class="desc" x="750" y="1167">Afficher l’état de forme</text></g>
+
+  <!-- Administration -->
+  <rect class="group" x="55" y="1225" width="1130" height="337" rx="18"/><text x="78" y="1260" class="groupTitle">ADMINISTRATION</text>
+  <rect class="head" x="75" y="1277" width="1090" height="38" rx="8"/><text x="97" y="1302" class="headText">MÉTHODE</text><text x="225" y="1302" class="headText">ENDPOINT</text><text x="750" y="1302" class="headText">FONCTION</text>
+  <g><rect class="row" x="75" y="1324" width="1090" height="50" rx="8"/><rect class="get" x="91" y="1335" width="95" height="28" rx="14"/><text class="method white" x="138" y="1354">GET</text><text class="path" x="225" y="1355">/api/admin/users</text><text class="desc" x="750" y="1355">Lister les utilisateurs</text></g>
+  <g><rect class="row" x="75" y="1382" width="1090" height="50" rx="8"/><rect class="patch" x="91" y="1393" width="95" height="28" rx="14"/><text class="method white" x="138" y="1412">PATCH</text><text class="path" x="225" y="1413">/api/admin/users/{id}</text><text class="desc" x="750" y="1413">Modifier un statut</text></g>
+  <g><rect class="row" x="75" y="1440" width="1090" height="50" rx="8"/><rect class="get" x="91" y="1451" width="95" height="28" rx="14"/><text class="method white" x="138" y="1470">GET</text><text class="path" x="225" y="1471">/api/admin/algorithm-parameters</text><text class="desc" x="750" y="1471">Voir les paramètres</text></g>
+  <g><rect class="row" x="75" y="1498" width="1090" height="50" rx="8"/><rect class="put" x="91" y="1509" width="95" height="28" rx="14"/><text class="method white" x="138" y="1528">PUT</text><text class="path" x="225" y="1529">/api/admin/algorithm-parameters</text><text class="desc" x="750" y="1529">Modifier les paramètres</text></g>
+
+  <rect x="55" y="1595" width="1130" height="95" rx="18" fill="#0d1d42" stroke="#00d9ff" stroke-opacity=".45"/>
+  <text x="620" y="1635" text-anchor="middle" font-size="14" font-weight="700" fill="#00d9ff">API REST — échanges JSON</text>
+  <text x="620" y="1663" class="foot">Les contrôleurs valident les requêtes puis délèguent la logique aux services Symfony.</text>
+  <text x="620" y="1721" class="foot">MON ALLURE • DOSSIER PROFESSIONNEL</text>
+</svg>

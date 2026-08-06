@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Test unitaire — UserTest</title>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { margin: 0; width: 1400px; height: 900px; }
+        body {
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at 85% 5%, #17399a, #07142e 54%, #030812);
+            color: #eaf2ff;
+            font-family: Arial, sans-serif;
+        }
+        .window {
+            width: 1240px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 217, 255, .62);
+            border-radius: 18px;
+            background: #07101f;
+            box-shadow: 0 24px 80px rgba(0,0,0,.5), 0 0 30px rgba(0,217,255,.12);
+        }
+        .bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 58px;
+            padding: 0 22px;
+            background: #0d1d42;
+            border-bottom: 1px solid #263b63;
+        }
+        .dot { width: 14px; height: 14px; border-radius: 50%; }
+        .red { background: #ff5f57; } .yellow { background: #febc2e; } .green { background: #28c840; }
+        .filename { margin-left: 14px; color: #a9bbd7; font-size: 17px; }
+        pre {
+            margin: 0;
+            padding: 30px 38px 34px;
+            font: 21px/1.52 "DejaVu Sans Mono", monospace;
+            white-space: pre-wrap;
+        }
+        .kw { color: #ff79c6; } .type { color: #50fae3; } .fn { color: #8be9fd; }
+        .str { color: #f1fa8c; } .var { color: #f8f8f2; } .muted { color: #62728f; }
+        .result {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 38px;
+            border-top: 1px solid #263b63;
+            background: #09182c;
+            font: 19px "DejaVu Sans Mono", monospace;
+        }
+        .badge { padding: 7px 13px; border-radius: 999px; background: #13ca8a; color: #03251b; font-weight: bold; }
+        .ok { color: #70e6b8; }
+    </style>
+</head>
+<body>
+<main class="window">
+    <div class="bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="filename">tests/Unit/Entity/UserTest.php</span>
+    </div>
+    <pre><span class="kw">&lt;?php</span>
+
+<span class="kw">namespace</span> App\Tests\Unit\Entity;
+
+<span class="kw">use</span> App\Entity\User;
+<span class="kw">use</span> PHPUnit\Framework\TestCase;
+
+<span class="kw">final class</span> <span class="type">UserTest</span> <span class="kw">extends</span> <span class="type">TestCase</span>
+{
+    <span class="kw">public function</span> <span class="fn">testEmailIsNormalized</span>(): <span class="type">void</span>
+    {
+        <span class="var">$user</span> = <span class="kw">new</span> <span class="type">User</span>();
+
+        <span class="var">$user</span>-&gt;<span class="fn">setEmail</span>(<span class="str">'  Coureur@Example.COM  '</span>);
+
+        self::<span class="fn">assertSame</span>(
+            <span class="str">'coureur@example.com'</span>,
+            <span class="var">$user</span>-&gt;<span class="fn">getEmail</span>()
+        );
+    }
+}</pre>
+    <div class="result"><span class="badge">PASS</span><span class="ok">OK (1 test, 1 assertion)</span></div>
+</main>
+</body>
+</html>

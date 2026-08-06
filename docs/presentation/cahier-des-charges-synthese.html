@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cahier des charges synthétique — Mon Allure</title>
+    <style>
+      :root {
+        --navy: #050b18;
+        --blue: #17399a;
+        --card: #0d1d42;
+        --cyan: #00b9df;
+        --cyan-light: #dff9ff;
+        --ink: #172033;
+        --muted: #5d687b;
+        --line: #d7e1ec;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      @page {
+        size: A4;
+        margin: 12mm 13mm 13mm;
+      }
+
+      body {
+        max-width: 184mm;
+        margin: 0 auto;
+        color: var(--ink);
+        background: #eef3f8;
+        font:
+          10.5pt/1.22 Arial,
+          Helvetica,
+          sans-serif;
+      }
+
+      .document {
+        min-height: 100vh;
+        padding: 12mm 13mm;
+        background: white;
+        box-shadow: 0 8px 35px rgba(5, 11, 24, 0.12);
+      }
+
+      header {
+        margin: -12mm -13mm 6mm;
+        padding: 10mm 13mm 7mm;
+        color: white;
+        background:
+          radial-gradient(
+            circle at 86% 5%,
+            rgba(0, 217, 255, 0.38),
+            transparent 34%
+          ),
+          linear-gradient(135deg, var(--blue), var(--navy));
+        border-bottom: 3px solid var(--cyan);
+      }
+
+      .brand {
+        margin: 0 0 2mm;
+        color: #71eaff;
+        font-size: 9pt;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24pt;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 2mm 0 0;
+        color: #dcecff;
+        font-size: 9.5pt;
+      }
+
+      h2 {
+        margin: 5mm 0 2mm;
+        padding-bottom: 1.2mm;
+        color: var(--blue);
+        border-bottom: 1px solid var(--line);
+        font-size: 13.5pt;
+        line-height: 1.1;
+      }
+
+      h3 {
+        margin: 3mm 0 1mm;
+        color: var(--card);
+        font-size: 10.5pt;
+      }
+
+      p {
+        margin: 0 0 2mm;
+      }
+      ul,
+      ol {
+        margin: 1mm 0 2mm;
+        padding-left: 5mm;
+      }
+      li {
+        margin: 0 0 0.7mm;
+      }
+      strong {
+        color: var(--card);
+      }
+
+      .intro {
+        margin-bottom: 3mm;
+        padding: 3mm 4mm;
+        background: var(--cyan-light);
+        border-left: 3px solid var(--cyan);
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3mm;
+      }
+
+      .card {
+        padding: 3mm;
+        border: 1px solid var(--line);
+        border-radius: 2mm;
+        break-inside: avoid;
+      }
+
+      .card h3 {
+        margin-top: 0;
+        color: var(--blue);
+      }
+
+      .tag {
+        display: inline-block;
+        margin: 0 1mm 1mm 0;
+        padding: 0.7mm 1.6mm;
+        color: var(--blue);
+        background: var(--cyan-light);
+        border-radius: 10mm;
+        font-size: 8pt;
+        font-weight: 700;
+      }
+
+      table {
+        width: 100%;
+        margin: 1.5mm 0 2.5mm;
+        border-collapse: collapse;
+        font-size: 9.2pt;
+        break-inside: avoid;
+      }
+
+      th,
+      td {
+        padding: 1.5mm 2mm;
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: white;
+        background: var(--card);
+        font-size: 8.7pt;
+      }
+
+      tr:nth-child(even) td {
+        background: #f6f9fc;
+      }
+
+      .note {
+        margin: 2mm 0;
+        padding: 2.5mm 3mm;
+        color: #38445a;
+        background: #f4f7fb;
+        border: 1px solid var(--line);
+        border-radius: 2mm;
+        font-size: 9pt;
+      }
+
+      .priority {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1mm;
+        margin: 1mm 0 2mm;
+        padding: 0;
+        list-style: none;
+        counter-reset: priority;
+      }
+
+      .priority li {
+        padding: 1mm 2mm;
+        color: white;
+        background: var(--blue);
+        border-radius: 1.5mm;
+        font-size: 8.5pt;
+        font-weight: 700;
+      }
+
+      footer {
+        margin-top: 6mm;
+        padding-top: 2mm;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        font-size: 8pt;
+        text-align: center;
+      }
+
+      @media print {
+        body {
+          max-width: none;
+          background: white;
+        }
+        .document {
+          padding: 0;
+          box-shadow: none;
+        }
+        header {
+          margin: 0 0 6mm;
+          padding: 8mm 10mm 6mm;
+        }
+        h2,
+        h3 {
+          break-after: avoid;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .document {
+          padding: 7mm;
+        }
+        header {
+          margin: -7mm -7mm 6mm;
+        }
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <article class="document">
+      <header>
+        <p class="brand">Mon Allure Training</p>
+        <h1>Cahier des charges</h1>
+        <p class="subtitle">
+          Version synthétique · Application web de planification d'entraînements
+          personnalisés
+        </p>
+      </header>
+
+      <section class="intro">
+        <strong>Mon Allure</strong> est une application web Mobile-First pour la
+        course à pied sur route et le trail. Elle génère un plan à partir du
+        profil physiologique, du niveau et de l'objectif du coureur, puis peut
+        adapter les séances futures selon les performances enregistrées.
+      </section>
+
+      <section>
+        <h2>1. Besoin et public cible</h2>
+        <p>
+          Les programmes génériques tiennent rarement compte du niveau réel, du
+          terrain, du dénivelé et des séances effectivement réalisées. Mon
+          Allure fournit des repères d'allure, de charge et de progression dans
+          une interface simple à consulter sur mobile.
+        </p>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Utilisateurs visés</h3>
+            <span class="tag">Débutant</span
+            ><span class="tag">Intermédiaire</span
+            ><span class="tag">Performance</span><span class="tag">Route</span
+            ><span class="tag">Trail</span>
+            <p>
+              Du coureur souhaitant retrouver la forme au marathonien visant un
+              chrono, jusqu'au pratiquant préparant un trail avec D+.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Usage principal</h3>
+            <p>
+              Créer son profil, définir un objectif, consulter ses séances,
+              enregistrer ses résultats et suivre sa progression jusqu'à la date
+              cible.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. Objectifs fonctionnels</h2>
+        <div class="grid-2">
+          <ul>
+            <li>Créer un compte et un profil sportif.</li>
+            <li>Renseigner VMA, FCM, FCR et VO2max.</li>
+            <li>Choisir un pôle de pratique.</li>
+            <li>Définir un objectif de durée, distance ou chrono.</li>
+            <li>Gérer la route, le trail et le D+.</li>
+          </ul>
+          <ul>
+            <li>Évaluer la faisabilité de l'objectif.</li>
+            <li>Générer un calendrier de séances.</li>
+            <li>Enregistrer les performances réelles.</li>
+            <li>Adapter les futures séances planifiées.</li>
+            <li>Suivre la progression et exporter le plan.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. MVP</h2>
+        <p>Le produit minimum viable couvre un parcours complet et fiable :</p>
+        <ol>
+          <li>inscription et connexion ;</li>
+          <li>création d'un profil sportif valide ;</li>
+          <li>choix du pôle et définition de l'objectif ;</li>
+          <li>génération du plan personnalisé ;</li>
+          <li>consultation du calendrier et des séances ;</li>
+          <li>enregistrement d'une réalisation ;</li>
+          <li>visualisation de l'avancement.</li>
+        </ol>
+        <p class="note">
+          <strong>Après le MVP :</strong> statistiques avancées, météo, partage,
+          export PDF complet, déplacement contrôlé des séances et administration
+          enrichie.
+        </p>
+      </section>
+
+      <section>
+        <h2>4. Règles métier essentielles</h2>
+        <h3>Profil et pôles</h3>
+        <p>
+          Une VMA et une FCM valides sont obligatoires pour générer. La FCR et
+          la VO2max enrichissent l'analyse sans être bloquantes.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Pôle</th>
+              <th>Semaine normale</th>
+              <th>Régénération</th>
+              <th>Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Découverte</td>
+              <td>2 séances</td>
+              <td>2 séances</td>
+              <td>Débuter et progresser doucement</td>
+            </tr>
+            <tr>
+              <td>Intermédiaire</td>
+              <td>3 séances</td>
+              <td>2 séances</td>
+              <td>Préparer une distance ou un trail</td>
+            </tr>
+            <tr>
+              <td>Performance</td>
+              <td>5 séances</td>
+              <td>4 séances</td>
+              <td>Préparer un objectif chronométré</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Types d'objectifs</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Exemple</th>
+              <th>Données attendues</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Durée</td>
+              <td>Courir 60 minutes</td>
+              <td>Valeur en minutes</td>
+            </tr>
+            <tr>
+              <td>Distance</td>
+              <td>Parcourir 21,1 km</td>
+              <td>Valeur en kilomètres</td>
+            </tr>
+            <tr>
+              <td>Course</td>
+              <td>10 km en 40 minutes</td>
+              <td>Distance et temps cible</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Le terrain est <strong>route</strong> ou <strong>trail</strong>. Le D+
+          est facultatif. Le départ du plan correspond au premier lundi suivant
+          sa validation.
+        </p>
+
+        <h3>Faisabilité et adaptation</h3>
+        <p>
+          Le résultat de faisabilité est explicable : niveau inférieur,
+          réaliste, ambitieux, optimiste, dangereux ou données insuffisantes. Il
+          ne constitue pas un diagnostic médical.
+        </p>
+        <p>
+          L'adaptation intervient à la fin de chaque bloc complet de trois
+          semaines :
+        </p>
+        <ul>
+          <li>
+            réalisation ≥ 80 % et au plus deux séances manquées : charge future
+            × 1,05 ;
+          </li>
+          <li>
+            réalisation &lt; 80 % ou plus de deux séances manquées : charge
+            future × 0,95.
+          </li>
+        </ul>
+        <p>
+          Seules les séances futures au statut « planifié » sont modifiées. La
+          date cible, l'épreuve finale et les séances terminées restent
+          inchangées.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Utilisateurs et droits</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Acteur</th>
+              <th>Droits principaux</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Visiteur</td>
+              <td>
+                Consulter les pages publiques, créer un compte et se connecter.
+              </td>
+            </tr>
+            <tr>
+              <td>Utilisateur</td>
+              <td>
+                Gérer son profil, ses plans, ses séances et ses performances.
+              </td>
+            </tr>
+            <tr>
+              <td>Administrateur</td>
+              <td>Gérer les comptes, paramètres, plans et commentaires.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Chaque utilisateur accède uniquement à ses propres données.</p>
+      </section>
+
+      <section>
+        <h2>6. Solution technique</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Couche</th>
+              <th>Technologie retenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Backend</td>
+              <td>PHP 8.4 · Symfony 8.1</td>
+            </tr>
+            <tr>
+              <td>Interface principale</td>
+              <td>Twig · Symfony UX · Turbo · Stimulus</td>
+            </tr>
+            <tr>
+              <td>Design</td>
+              <td>Tailwind CSS · Mobile-First</td>
+            </tr>
+            <tr>
+              <td>Données</td>
+              <td>MySQL 8 · Doctrine ORM et Migrations</td>
+            </tr>
+            <tr>
+              <td>Infrastructure</td>
+              <td>Docker Compose · Apache</td>
+            </tr>
+            <tr>
+              <td>Qualité</td>
+              <td>PHPUnit 13 · Monolog</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="note">
+          Le dossier <strong>frontend/</strong> contient un prototype React/Vite
+          séparé. L'interface de référence est actuellement Twig. Le projet ne
+          revendique pas le statut PWA tant que le fonctionnement hors ligne
+          n'est pas intégré et vérifié.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Contraintes et validation</h2>
+        <ul class="priority">
+          <li>1 · Sécurité</li>
+          <li>2 · Affûtage</li>
+          <li>3 · Régénération</li>
+          <li>4 · Adaptation</li>
+          <li>5 · Progression</li>
+        </ul>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Contraintes</h3>
+            <ul>
+              <li>Mobile-First, contrastes et clavier.</li>
+              <li>Mots de passe hachés et CSRF.</li>
+              <li>Validation serveur obligatoire.</li>
+              <li>Contrôle d'accès par propriétaire.</li>
+              <li>Minimisation et protection des données.</li>
+              <li>Aucun secret dans le dépôt ou les logs.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Critères d'acceptation</h3>
+            <ul>
+              <li>Parcours MVP réalisable de bout en bout.</li>
+              <li>Trois objectifs et trois pôles validés.</li>
+              <li>Plan cohérent et transactionnel.</li>
+              <li>Isolation des données utilisateurs.</li>
+              <li>Séances terminées immuables.</li>
+              <li>Tests critiques automatisés réussis.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>8. Hors périmètre actuel</h2>
+        <p>
+          Diagnostic médical, GPS en direct, montres connectées, application
+          native, PWA hors ligne complète, IA générative, réseau social,
+          classement, paiement et abonnement.
+        </p>
+      </section>
+
+      <footer>
+        Mon Allure · Cahier des charges synthétique · Version 2.0 · 4 août
+        2026<br />
+        Document détaillé : docs/cahier-des-charges.md
+      </footer>
+    </article>
+  </body>
+</html>

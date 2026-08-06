@@ -1,41 +1,50 @@
 # 🏃 Mon Allure
 
-**Mon Allure** est une application web qui génère et adapte automatiquement des plans d'entraînement de course à pied personnalisés, en fonction du profil physiologique du coureur, de son objectif de course et de ses performances réelles.
+**Mon Allure** est une application web en cours de développement, conçue pour générer des plans d'entraînement de course à pied personnalisés à partir du profil physiologique du coureur, de son objectif et des paramètres de l'algorithme. Le plan pourra ensuite adapter ses séances futures à la fin de chaque bloc complet de trois semaines, selon les performances réellement enregistrées.
 
-## 🎯 Objectif du projet
+## Objectif du projet
 
-Permettre à un coureur, débutant ou confirmé, de définir un objectif de course (distance et/ou temps) et de recevoir un plan d'entraînement sur mesure qui s'ajuste automatiquement semaine après semaine selon ses résultats réels — sans avoir besoin d'un coach humain.
+Permettre à un coureur, débutant ou confirmé, de définir un objectif de durée, de distance ou de course chronométrée et de recevoir un plan d'entraînement sur mesure. À la fin de chaque bloc complet de trois semaines, les résultats enregistrés pourront entraîner l'ajustement des séances futures encore planifiées, sans modifier les séances déjà terminées.
 
-## ✨ Fonctionnalités principales
+## Fonctionnalités prévues
 
 - **Authentification & compte** — création de compte, connexion sécurisée
 - **Profil physiologique** — VMA, FCM, FCR, âge, mis à jour au fil du temps
 - **Génération de plan d'entraînement** — plan dynamique et personnalisé selon l'objectif et le niveau
-- **Adaptation automatique** — recalcul du plan selon les séances réussies ou manquées
+- **Adaptation automatique** — ajustement des séances futures à la fin d'un bloc complet de trois semaines, selon les performances enregistrées
 - **Export PDF** — plan consultable hors ligne
 - **Dashboard** — avancement du plan, temps restant, état de forme, météo
 - **Suivi & statistiques** — historique des séances, performances passées, répartition par zones d'intensité
 - **Administration** — gestion des comptes, ajustement des paramètres de l'algorithme, supervision des plans générés
 
-## 🏗️ Stack technique
+## Stack technique
 
-- **Backend** : **Symfony (PHP)** : Choisi pour sa robustesse, sa sécurité native et sa puissance dans la gestion des bases de données relationnelles. Symfony servira exclusivement d'API pour piloter de maniére ultra-fiable la logique métier, les algorithmes de calcul (VMA/VO2 max) et la génération dynamique des plans d'entraînement.
+- **Backend** : **Symfony (PHP)** pour les contrôleurs, les services métier, la sécurité et la génération des pages côté serveur.
 - **Base de données** : **MySQL** (via Doctrine ORM)
-- **Frontend** : **React.js** Utilisé pour concevoir une interface utilisateur de type Single Page Application (SPA). Ce framework garantit une navigation instantanée, fluide et sans rechargement de page, ce qui est idéal pour l'interactivité. Ce choix technique "découplé" ouvre également la porte à une évolution future trés simple vers une application mobile native (via React Native).
-- **Design & UI (Tailwind CSS)** : Ce framework CSS utilitaire permettra de concevoir une interface épurée, moderne et respectant scrupuleusement les contraintes d'affichage Mobile-First, indispensables pour un coureur consultant ses séances sur le terrain.
+- **Frontend principal** : **Twig**, intégré à Symfony, pour générer les vues HTML de l'application.
+- **Frontend React** : un prototype séparé fondé sur **React** et **Vite** est également présent dans le dossier `frontend/` ; il n'est pas intégré au service Docker principal.
+- **Design & UI** : **Tailwind CSS** pour une interface moderne, responsive et pensée Mobile-First.
 
 ## 📐 Documentation & conception
 
 Toute la documentation de conception se trouve dans le dossier [`/docs`](./docs) :
 
-| Fichier | Contenu |
-|---|---|
-| `docs/user-stories.md` | Epics et user stories du projet |
-| `docs/mcd.png` / `docs/mld.png` | Modèle Conceptuel et Logique de Données |
-| `docs/diagrams/er-diagram.md` | Diagramme entité-relation (Mermaid) |
-| `docs/diagrams/flowchart-generation.md` | Flux de génération d'un plan d'entraînement |
-| `docs/diagrams/sequence-generation.md` | Diagramme de séquence — génération initiale |
-| `docs/diagrams/sequence-adaptation.md` | Diagramme de séquence — boucle d'adaptation |
+| Fichier                                                        | Contenu                                                                  |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `docs/cahier-des-charges.md`                                  | Cahier des charges fonctionnel et technique actualisé                    |
+| `docs/presentation/cahier-des-charges-synthese.html`          | Version synthétique et imprimable du cahier des charges                  |
+| `docs/user-stories.md`                                         | Epics et user stories du projet                                          |
+| `docs/personas.md`                                             | Personas représentatifs des différents niveaux et objectifs              |
+| `docs/presentation/personas-mon-allure-hd.png`                 | Planche graphique de présentation des quatre personas                    |
+| `docs/architecture-services-symfony.md`                        | Contrat fonctionnel et technique du moteur de génération et d'adaptation |
+| `docs/use-cases-roles-entites.md`                              | Cas d'utilisation, rôles et entités concernées                           |
+| `docs/mcd-mon-allure-en.png` / `docs/mld-mon-allure-en.png`    | Modèles conceptuel et logique de données                                 |
+| `docs/diagrams/dictionnaire-donnees-mon-allure-a4.svg`         | Dictionnaire de données                                                  |
+| `docs/diagrams/diagramme-services-mon-allure.svg`              | Architecture des services métier                                         |
+| `docs/diagrams/sequence-creation-plan-mon-allure.svg`          | Séquence de création d'un plan                                           |
+| `docs/diagrams/diagram de flux complet Mon Allure.png`         | Flux fonctionnel complet de l'application                                |
+| `docs/diagrams/diagramme  séquence  flux génération  plan.png` | Séquence du flux de génération d'un plan                                 |
+| `docs/diagrams/ diagramme boucle d'adaptation .png`            | Boucle d'adaptation du plan                                              |
 
 ## 🗺️ Roadmap (Epics)
 
@@ -48,34 +57,50 @@ Toute la documentation de conception se trouve dans le dossier [`/docs`](./docs)
 
 Le détail de chaque Epic, découpé en User Stories et tickets techniques, est disponible dans les [Issues GitHub](../../issues) du repository.
 
-## 🚀 Installation
-
-_À compléter une fois le squelette du projet initialisé._
+## 🚀 Installation avec Docker
 
 ```bash
 # Cloner le projet
 git clone <url-du-repo>
-cd mon-allure
+cd mon_allure
 
-# Installer les dépendances
-composer install
+# Facultatif : personnaliser les ports et identifiants de développement
+cp .env.docker.example .env
 
-# Configurer l'environnement
-cp .env .env.local
-# éditer .env.local avec vos identifiants de BDD
+# Construire et démarrer Symfony et MySQL
+docker compose up --build -d
 
-# Créer la base de données et lancer les migrations
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
-
-# Lancer le serveur
-symfony server:start
+# Créer les tables à partir des migrations Doctrine
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 ```
+
+L'application est ensuite accessible sur [http://localhost:8080](http://localhost:8080).
+
+Commandes utiles :
+
+```bash
+# Afficher les journaux
+docker compose logs -f app
+
+# Recompiler Tailwind après une modification des styles
+docker compose exec app php bin/console tailwind:build
+
+# Exécuter les tests
+docker compose exec app php bin/phpunit
+
+# Arrêter les conteneurs
+docker compose down
+
+# Supprimer également la base MySQL Docker pour repartir de zéro
+docker compose down --volumes
+```
+
+La dernière commande supprime les données locales stockées par Docker.
 
 ## 📌 Statut du projet
 
-🚧 En cours de développement — phase de mise en place du squelette technique.
+🚧 En cours de développement. Les éléments ci-dessus décrivent la cible fonctionnelle du projet et ne sont pas nécessairement tous disponibles dans l'application actuelle.
 
 ## 📄 Licence
 
-_À définir._
+\_

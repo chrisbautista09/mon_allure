@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+docs
+frontend
+backend/.env.local
+backend/.env.*.local
+backend/vendor
+backend/var
+backend/public/bundles
+backend/.phpunit.result.cache
