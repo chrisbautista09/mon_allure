@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Profile
 {
     #[ORM\Id]
@@ -171,6 +172,12 @@ class Profile
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function refreshUpdatedAt(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getUser(): ?User

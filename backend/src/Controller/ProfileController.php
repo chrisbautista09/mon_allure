@@ -118,6 +118,105 @@ class ProfileController extends AbstractController
         return $this->json($this->profileData($profile), 201);
     }
 
+    #[Route('', name: 'update', methods: ['PUT'])]
+    public function update(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): JsonResponse {
+        $profile = $this->authenticatedUser()->getProfile();
+
+        if ($profile === null) {
+            return $this->json(['message' => 'Profil physiologique introuvable.'], 404);
+        }
+
+        try {
+            $data = $request->toArray();
+        } catch (JsonException) {
+            return $this->json(['message' => 'Le corps de la requête doit contenir un JSON valide.'], 400);
+        }
+
+        $allowedFields = ['firstName', 'lastName', 'age', 'vma', 'vo2max', 'fcm', 'fcr'];
+        $submittedFields = array_intersect($allowedFields, array_keys($data));
+
+        if ($submittedFields === []) {
+            return $this->json(['message' => 'Aucune donnée de profil à modifier.'], 422);
+        }
+
+        $typeErrors = [];
+
+        foreach (['firstName', 'lastName'] as $field) {
+            if (array_key_exists($field, $data)
+                && (!is_string($data[$field]) || trim($data[$field]) === '')) {
+                $typeErrors[$field][] = 'Cette valeur doit être une chaîne non vide.';
+            }
+        }
+
+        if (array_key_exists('age', $data) && !is_int($data['age'])) {
+            $typeErrors['age'][] = 'Cette valeur doit être un nombre entier.';
+        }
+
+        foreach (['vma', 'vo2max'] as $field) {
+            if (isset($data[$field]) && !is_int($data[$field]) && !is_float($data[$field])) {
+                $typeErrors[$field][] = 'Cette valeur doit être un nombre.';
+            }
+        }
+
+        foreach (['fcm', 'fcr'] as $field) {
+            if (isset($data[$field]) && !is_int($data[$field])) {
+                $typeErrors[$field][] = 'Cette valeur doit être un nombre entier.';
+            }
+        }
+
+        if ($typeErrors !== []) {
+            return $this->json([
+                'message' => 'Les données du profil sont invalides.',
+                'errors' => $typeErrors,
+            ], 422);
+        }
+
+        if (array_key_exists('firstName', $data)) {
+            $profile->setFirstName($data['firstName']);
+        }
+        if (array_key_exists('lastName', $data)) {
+            $profile->setLastName($data['lastName']);
+        }
+        if (array_key_exists('age', $data)) {
+            $profile->setAge($data['age']);
+        }
+        if (array_key_exists('vma', $data)) {
+            $profile->setVma($this->nullableFloat($data, 'vma'));
+        }
+        if (array_key_exists('vo2max', $data)) {
+            $profile->setVo2max($this->nullableFloat($data, 'vo2max'));
+        }
+        if (array_key_exists('fcm', $data)) {
+            $profile->setFcm($this->nullableInt($data, 'fcm'));
+        }
+        if (array_key_exists('fcr', $data)) {
+            $profile->setFcr($this->nullableInt($data, 'fcr'));
+        }
+
+        $violations = $validator->validate($profile);
+
+        if (count($violations) > 0) {
+            $errors = [];
+
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()][] = $violation->getMessage();
+            }
+
+            return $this->json([
+                'message' => 'Les données du profil sont invalides.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $entityManager->flush();
+
+        return $this->json($this->profileData($profile));
+    }
+
     private function authenticatedUser(): User
     {
         $user = $this->getUser();
