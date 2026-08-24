@@ -164,6 +164,126 @@
 }
 
 /* =========================================================
+   OBJECTIF D'ENTRAÎNEMENT
+   ========================================================= */
+
+.training-goal {
+    display: grid;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    place-items: center;
+}
+
+.training-goal__card {
+    width: min(100%, 48rem);
+    padding: clamp(1.5rem, 5vw, 3rem);
+    border: 1px solid rgba(0, 217, 255, 0.4);
+    border-radius: 1.5rem;
+    background: rgba(5, 13, 31, 0.9);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+}
+
+.training-goal__eyebrow {
+    margin: 0 0 0.5rem;
+    color: var(--color-mon-allure-cyan);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.training-goal h1 {
+    margin: 0;
+    font-size: clamp(2rem, 7vw, 3.25rem);
+    line-height: 1;
+}
+
+.training-goal__intro {
+    margin: 1rem 0 2rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.6;
+}
+
+.training-goal__success,
+.training-goal__saved {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(19, 202, 138, 0.5);
+    border-radius: 0.75rem;
+    color: #a7f3d0;
+    background: rgba(19, 202, 138, 0.1);
+}
+
+.training-goal-form__grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.training-goal-form__field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.training-goal-form__field input,
+.training-goal-form__field select {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    outline: none;
+    color: white;
+    background: #0d1d42;
+}
+
+.training-goal-form__field input:focus,
+.training-goal-form__field select:focus {
+    border-color: var(--color-mon-allure-cyan);
+    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.16);
+}
+
+.training-goal-form__field--error input,
+.training-goal-form__field--error select {
+    border-color: #fb7185;
+}
+
+.training-goal-form__field ul {
+    margin: 0.4rem 0 0;
+    padding: 0;
+    color: #fda4af;
+    font-size: 0.82rem;
+    list-style: none;
+}
+
+.training-goal-form__field .help-text {
+    display: block;
+    margin-top: 0.4rem;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.78rem;
+}
+
+.training-goal-form__submit {
+    width: 100%;
+    margin-top: 2rem;
+    padding: 1rem 1.25rem;
+    border: 0;
+    border-radius: 0.85rem;
+    color: #04101f;
+    background: var(--color-mon-allure-cyan);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 640px) {
+    .training-goal-form__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
    CALENDRIER D'ENTRAÎNEMENT
    ========================================================= */
 
