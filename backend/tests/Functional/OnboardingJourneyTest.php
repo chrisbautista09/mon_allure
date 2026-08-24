@@ -104,6 +104,7 @@ final class OnboardingJourneyTest extends WebTestCase
         self::assertResponseIsSuccessful();
 
         $form = $crawler->selectButton('Valider mon objectif')->form([
+            'training_goal[poleType]' => 'performance',
             'training_goal[targetType]' => 'distance',
             'training_goal[targetValue]' => '42.2',
             'training_goal[targetUnit]' => 'km',

@@ -27,9 +27,10 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         - { path: ^/training-goal, roles: ROLE_USER }
-        - { path: ^/training, roles: PUBLIC_ACCESS }
+        - { path: ^/training, roles: ROLE_USER }
 
         - { path: ^/api/profile, roles: ROLE_USER }
+        - { path: ^/api/training-plans, roles: ROLE_USER }
         - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/dashboard, roles: ROLE_USER }
 

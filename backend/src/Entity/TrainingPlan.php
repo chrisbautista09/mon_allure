@@ -58,7 +58,7 @@ class TrainingPlan
 
     /**
      * Valeurs possibles :
-     * realistic, ambitious, dangerous
+     * FAIBLE, MOYEN, BON, OPTIMAL
      */
     #[ORM\Column(length: 30)]
     private ?string $feasibilityIndicator = null;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Repository\TrainingPlanRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,9 +17,31 @@ final class TrainingController extends AbstractController
         name: 'app_training_weekly',
         methods: ['GET']
     )]
-    public function weekly(): Response
+    public function weekly(TrainingPlanRepository $repository): Response
     {
-        return $this->render('training/weekly.html.twig');
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        $plan = $repository->findLatestActiveOwnedWithSessions($user);
+        $weeks = [];
+
+        if ($plan !== null) {
+            foreach ($plan->getSessions() as $session) {
+                $week = (int) $session->getWeekIndex();
+                $weeks[$week] ??= [];
+                $weeks[$week][] = $session;
+            }
+
+            ksort($weeks);
+        }
+
+        return $this->render('training/weekly.html.twig', [
+            'plan' => $plan,
+            'weeks' => $weeks,
+        ]);
     }
 
     #[Route(

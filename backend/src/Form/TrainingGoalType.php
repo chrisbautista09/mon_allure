@@ -15,6 +15,16 @@ class TrainingGoalType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('poleType', ChoiceType::class, [
+                'label' => 'Pôle de pratique',
+                'placeholder' => 'Choisir un pôle',
+                'choices' => [
+                    'Découverte - 2 séances maximum par semaine' => 'discovery',
+                    'Intermédiaire - 3 séances maximum par semaine' => 'intermediate',
+                    'Performance - 5 séances maximum par semaine' => 'performance',
+                ],
+                'help' => 'Le pôle détermine le nombre et la variété des séances hebdomadaires.',
+            ])
             ->add('targetType', ChoiceType::class, [
                 'label' => 'Type d’objectif',
                 'placeholder' => 'Choisir un objectif',

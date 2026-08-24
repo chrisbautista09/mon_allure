@@ -58,6 +58,7 @@ final class TrainingPlanDTOTest extends KernelTestCase
     private function goal(string $type, string $unit): TrainingPlanDTO
     {
         $goal = new TrainingPlanDTO();
+        $goal->poleType = 'intermediate';
         $goal->targetType = $type;
         $goal->targetValue = 10;
         $goal->targetUnit = $unit;
