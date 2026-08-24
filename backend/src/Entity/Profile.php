@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
 class Profile
@@ -14,24 +15,49 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[Assert\Length(max: 255, maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[Assert\Length(max: 255, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $lastName = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'L’âge est obligatoire.')]
+    #[Assert\Range(
+        min: 18,
+        max: 100,
+        notInRangeMessage: 'L’âge doit être compris entre {{ min }} et {{ max }} ans.'
+    )]
     private ?int $age = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 5,
+        max: 30,
+        notInRangeMessage: 'La VMA doit être comprise entre {{ min }} et {{ max }} km/h.'
+    )]
     private ?float $vma = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $vo2max = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 100,
+        max: 230,
+        notInRangeMessage: 'La FCM doit être comprise entre {{ min }} et {{ max }} bpm.'
+    )]
     private ?int $fcm = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 30,
+        max: 120,
+        notInRangeMessage: 'La FCR doit être comprise entre {{ min }} et {{ max }} bpm.'
+    )]
     private ?int $fcr = null;
 
     #[ORM\Column]

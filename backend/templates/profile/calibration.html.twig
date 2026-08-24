@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calibrer mon profil | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="profile-calibration">
+        <section class="profile-calibration__card" aria-labelledby="profile-title">
+            <p class="profile-calibration__eyebrow">Première étape</p>
+            <h1 id="profile-title">Calibrez votre profil</h1>
+            <p class="profile-calibration__intro">
+                Ces informations permettront à Mon Allure d'adapter vos prochaines séances à votre niveau.
+                Vous pourrez compléter les données facultatives plus tard.
+            </p>
+
+            {{ form_start(profileForm, {attr: {class: 'profile-form'}}) }}
+                {{ form_errors(profileForm) }}
+
+                <div class="profile-form__grid">
+                    {% for field in profileForm %}
+                        <div class="profile-form__field {{ field.vars.errors|length ? 'profile-form__field--error' }}">
+                            {{ form_label(field) }}
+                            {{ form_widget(field) }}
+                            {{ form_help(field) }}
+                            {{ form_errors(field) }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="profile-form__submit">
+                    Enregistrer mon profil
+                </button>
+            {{ form_end(profileForm) }}
+        </section>
+    </main>
+{% endblock %}
