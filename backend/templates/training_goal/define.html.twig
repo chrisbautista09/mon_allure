@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Définir mon objectif | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="training-goal">
+        <section class="training-goal__card" aria-labelledby="training-goal-title">
+            <p class="training-goal__eyebrow">Votre prochaine course</p>
+            <h1 id="training-goal-title">Définissez votre objectif</h1>
+            <p class="training-goal__intro">
+                Indiquez la distance ou la durée visée et le terrain prévu. Ces données serviront à construire votre plan personnalisé.
+            </p>
+
+            {% for message in app.flashes('success') %}
+                <div class="training-goal__success" role="status">{{ message }}</div>
+            {% endfor %}
+
+            {% if savedGoal %}
+                <p class="training-goal__saved">
+                    Objectif enregistré : {{ savedGoal.targetValue }} {{ savedGoal.targetUnit }} — {{ savedGoal.terrainType }}.
+                </p>
+            {% endif %}
+
+            {{ form_start(trainingGoalForm, {attr: {class: 'training-goal-form'}}) }}
+                {{ form_errors(trainingGoalForm) }}
+
+                <div class="training-goal-form__grid">
+                    {% for field in trainingGoalForm %}
+                        {% if field.vars.name != '_token' %}
+                            <div class="training-goal-form__field {{ field.vars.errors|length ? 'training-goal-form__field--error' }}">
+                                {{ form_label(field) }}
+                                {{ form_widget(field) }}
+                                {{ form_help(field) }}
+                                {{ form_errors(field) }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="training-goal-form__submit">Valider mon objectif</button>
+            {{ form_end(trainingGoalForm) }}
+        </section>
+    </main>
+{% endblock %}

@@ -26,6 +26,7 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/training-goal, roles: ROLE_USER }
         - { path: ^/training, roles: PUBLIC_ACCESS }
 
         - { path: ^/api/profile, roles: ROLE_USER }
