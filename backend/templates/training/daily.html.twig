@@ -1,64 +1,66 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ma journée d’entraînement{% endblock %}
+{% block title %}{{ session.title }} | Mon Allure{% endblock %}
 
 {% block body %}
-    <main class="min-h-screen px-5 py-10 text-cyan-300">
-
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
         <section class="mx-auto max-w-4xl">
-
-            <h1 class="mb-10 text-center text-3xl font-bold text-cyan-300">
-                Ma journée d’entraînement
-            </h1>
-
-            <div class="rounded-3xl border border-cyan-400/40 bg-slate-950/70 p-7 shadow-2xl">
-
-                <h2 class="mb-8 border border-cyan-400 px-5 py-4 text-2xl font-semibold">
-                    Plan d’entraînement journalier
-                </h2>
-
-                <p class="mb-8 text-xl">
-                    Date :
-                    <strong>{{ session.date }}</strong>
-                </p>
-
-                <div class="space-y-5 text-lg leading-relaxed">
-
-                    <p>
-                        <strong>{{ session.type }}</strong>
-                    </p>
-
-                    <p>
-                        <span class="font-semibold">Titre :</span>
-                        {{ session.title }}
-                    </p>
-
-                    <p>
-                        <span class="font-semibold">Description :</span>
-                        {{ session.description }}
-                    </p>
-
+            {% for message in app.flashes('success') %}
+                <div class="mb-6 rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-5 py-4 text-emerald-200" role="status">
+                    {{ message }}
                 </div>
-            </div>
+            {% endfor %}
 
-            <div class="mt-12 flex justify-center gap-5">
+            <article class="rounded-3xl border border-cyan-300/30 bg-slate-950/75 p-6 shadow-2xl sm:p-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-cyan-300">
+                    Semaine {{ session.weekIndex }} · {{ session.date|date('d/m/Y') }}
+                </p>
+                <h1 class="mt-2 text-3xl font-bold">{{ session.title }}</h1>
+                <p class="mt-2 text-white/60">{{ session.sessionType|replace({'_': ' '})|capitalize }}</p>
 
-                <a
-                    href="{{ path('app_training_weekly') }}"
-                    class="rounded-full border border-cyan-400 px-8 py-4 font-semibold text-cyan-300"
-                >
-                    Ma semaine
+                <dl class="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-xl bg-white/5 p-4">
+                        <dt class="text-xs uppercase text-white/50">Durée prévue</dt>
+                        <dd class="mt-1 font-bold">{{ session.plannedDurationMin }} min</dd>
+                    </div>
+                    <div class="rounded-xl bg-white/5 p-4">
+                        <dt class="text-xs uppercase text-white/50">Distance prévue</dt>
+                        <dd class="mt-1 font-bold">{{ session.plannedDistanceKm }} km</dd>
+                    </div>
+                    <div class="rounded-xl bg-white/5 p-4">
+                        <dt class="text-xs uppercase text-white/50">Zone cible</dt>
+                        <dd class="mt-1 font-bold">{{ session.plannedFcmZone }}</dd>
+                    </div>
+                </dl>
+
+                <div class="mt-6 border-t border-white/10 pt-6">
+                    <h2 class="font-bold text-cyan-200">Consignes</h2>
+                    <p class="mt-2 leading-7 text-white/75">{{ session.description }}</p>
+                </div>
+            </article>
+
+            <section class="mt-8 rounded-3xl border border-cyan-300/30 bg-slate-950/75 p-6 shadow-2xl sm:p-8" aria-labelledby="performance-title">
+                <h2 id="performance-title" class="text-2xl font-bold text-cyan-300">Ma performance</h2>
+
+                {% if performance %}
+                    <p class="mt-3 text-emerald-200">Cette séance est terminée et sa performance est enregistrée.</p>
+                    <dl class="mt-5 grid gap-4 sm:grid-cols-3">
+                        <div><dt class="text-white/50">Temps réalisé</dt><dd class="font-bold">{{ performance.durationSec }} s</dd></div>
+                        <div><dt class="text-white/50">Distance</dt><dd class="font-bold">{{ performance.distanceKm }} km</dd></div>
+                        <div><dt class="text-white/50">FC moyenne</dt><dd class="font-bold">{{ performance.avgHr ? performance.avgHr ~ ' bpm' : 'Non renseignée' }}</dd></div>
+                    </dl>
+                    {% if performance.comment %}<p class="mt-5 text-white/70">{{ performance.comment }}</p>{% endif %}
+                {% else %}
+                    <p class="mb-6 mt-3 text-white/65">Renseignez les données réellement obtenues après avoir terminé cette séance.</p>
+                    {% include 'performance/_form.html.twig' %}
+                {% endif %}
+            </section>
+
+            <div class="mt-8 text-center">
+                <a href="{{ path('app_training_weekly') }}" class="inline-block rounded-full border border-cyan-300 px-7 py-3 font-bold text-cyan-300">
+                    Retour au programme
                 </a>
-
-                <a
-                    href="{{ path('app_home') }}"
-                    class="rounded-full bg-cyan-400 px-10 py-4 font-bold text-slate-950 shadow-lg shadow-cyan-400/30"
-                >
-                    Accueil
-                </a>
-
             </div>
-
         </section>
     </main>
 {% endblock %}

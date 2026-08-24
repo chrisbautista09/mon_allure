@@ -78,6 +78,69 @@ class SessionGeneratorService
         return $sessions;
     }
 
+    /** @return list<Session> */
+    public function recalibrateFutureSessions(
+        TrainingPlan $plan,
+        Session $referenceSession,
+        float $loadFactor,
+    ): array {
+        if ($loadFactor < 0.90 || $loadFactor > 1.10) {
+            throw new \InvalidArgumentException('Le facteur de charge doit être compris entre 0,90 et 1,10.');
+        }
+
+        if ($referenceSession->getTrainingPlan() !== $plan || $referenceSession->getDate() === null) {
+            throw new \InvalidArgumentException('La séance de référence doit appartenir au plan et posséder une date.');
+        }
+
+        if (abs($loadFactor - 1.0) < 0.001) {
+            return [];
+        }
+
+        $adjustedSessions = [];
+
+        foreach ($plan->getSessions() as $session) {
+            if ($session->getDate() === null
+                || $session->getDate() <= $referenceSession->getDate()
+                || $session->getStatus() !== 'planned'
+                || $session->getSessionType() === 'goal_event') {
+                continue;
+            }
+
+            if ($session->getPlannedDurationMin() !== null) {
+                $session->setPlannedDurationMin(max(
+                    1,
+                    (int) round($session->getPlannedDurationMin() * $loadFactor),
+                ));
+            }
+
+            if ($session->getPlannedDistanceKm() !== null) {
+                $session->setPlannedDistanceKm(max(
+                    0.01,
+                    round($session->getPlannedDistanceKm() * $loadFactor, 2),
+                ));
+            }
+
+            if ($session->getPlannedElevationDPlus() !== null) {
+                $session->setPlannedElevationDPlus(max(
+                    0,
+                    (int) round($session->getPlannedElevationDPlus() * $loadFactor),
+                ));
+            }
+
+            if (in_array($session->getSessionType(), ['threshold', 'vma'], true)
+                && $session->getPlannedVmaCoef() !== null) {
+                $session->setPlannedVmaCoef(max(
+                    0.50,
+                    min(1.05, round($session->getPlannedVmaCoef() * $loadFactor, 4)),
+                ));
+            }
+
+            $adjustedSessions[] = $session;
+        }
+
+        return $adjustedSessions;
+    }
+
     /**
      * @return list<array{
      *     day: int,

@@ -1,0 +1,20 @@
+{{ form_start(performanceForm, {attr: {class: 'performance-form'}}) }}
+    {{ form_errors(performanceForm) }}
+
+    <div class="grid gap-5 sm:grid-cols-2">
+        {% for field in performanceForm %}
+            {% if field.vars.name != '_token' %}
+                <div class="{{ field.vars.name == 'comment' ? 'sm:col-span-2' : '' }}">
+                    {{ form_label(field, null, {label_attr: {class: 'mb-2 block text-sm font-bold text-white'}}) }}
+                    {{ form_widget(field, {attr: field.vars.attr|merge({class: 'w-full rounded-xl border border-white/20 bg-blue-950 px-4 py-3 text-white outline-none focus:border-cyan-300'})}) }}
+                    {{ form_help(field, {help_attr: {class: 'mt-2 block text-xs text-white/60'}}) }}
+                    {{ form_errors(field) }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="mt-7 w-full rounded-xl bg-cyan-300 px-5 py-3 font-extrabold text-slate-950">
+        Enregistrer ma performance
+    </button>
+{{ form_end(performanceForm) }}

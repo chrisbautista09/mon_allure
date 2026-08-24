@@ -129,6 +129,47 @@ final class SessionGeneratorServiceTest extends TestCase
         $service->generate($this->plan(1), $this->profile(), 3);
     }
 
+    public function testRecalibratesOnlyFuturePlannedSessionsWithoutMovingDates(): void
+    {
+        $plan = $this->plan(4);
+        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $future = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
+        $past = $this->adjustableSession('2026-08-31', 'planned', 'threshold');
+        $completed = $this->adjustableSession('2026-09-09', 'done', 'threshold');
+        $goalEvent = $this->adjustableSession('2026-09-10', 'planned', 'goal_event');
+
+        foreach ([$reference, $future, $past, $completed, $goalEvent] as $session) {
+            $plan->addSession($session);
+        }
+
+        $adjusted = $this->service()->recalibrateFutureSessions($plan, $reference, 1.05);
+
+        self::assertSame([$future], $adjusted);
+        self::assertSame('2026-09-08', $future->getDate()?->format('Y-m-d'));
+        self::assertSame(42, $future->getPlannedDurationMin());
+        self::assertSame(8.4, $future->getPlannedDistanceKm());
+        self::assertSame(105, $future->getPlannedElevationDPlus());
+        self::assertSame(0.945, $future->getPlannedVmaCoef());
+        self::assertSame(40, $past->getPlannedDurationMin());
+        self::assertSame(40, $completed->getPlannedDurationMin());
+        self::assertSame(40, $goalEvent->getPlannedDurationMin());
+    }
+
+    public function testLoadReductionRespectsSafePositiveValues(): void
+    {
+        $plan = $this->plan(4);
+        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $future = $this->adjustableSession('2026-09-08', 'planned', 'vma');
+        $plan->addSession($reference)->addSession($future);
+
+        $this->service()->recalibrateFutureSessions($plan, $reference, 0.95);
+
+        self::assertSame(38, $future->getPlannedDurationMin());
+        self::assertSame(7.6, $future->getPlannedDistanceKm());
+        self::assertSame(95, $future->getPlannedElevationDPlus());
+        self::assertSame(0.855, $future->getPlannedVmaCoef());
+    }
+
     private function service(): SessionGeneratorService
     {
         $zones = [
@@ -168,6 +209,21 @@ final class SessionGeneratorServiceTest extends TestCase
             ->setAge(32)
             ->setVma(16)
             ->setFcm(190);
+    }
+
+    private function adjustableSession(string $date, string $status, string $type): \App\Entity\Session
+    {
+        return (new \App\Entity\Session())
+            ->setWeekIndex(1)
+            ->setDayOfWeek(2)
+            ->setTitle('Séance adaptable')
+            ->setSessionType($type)
+            ->setPlannedDurationMin(40)
+            ->setPlannedDistanceKm(8)
+            ->setPlannedElevationDPlus(100)
+            ->setPlannedVmaCoef(0.9)
+            ->setDate(new \DateTimeImmutable($date))
+            ->setStatus($status);
     }
 
     private function plan(int $weeks, string $poleType = 'intermediate'): TrainingPlan

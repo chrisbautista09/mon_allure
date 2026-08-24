@@ -68,7 +68,10 @@
                                             {% endif %}
                                         </dl>
 
-                                        <p class="mt-4 border-t border-white/10 pt-4 text-sm leading-6 text-white/70">{{ session.description }}</p>
+                                        <p class="session-instructions mt-4 border-t border-white/10 pt-4 text-sm leading-6 text-white/70">{{ session.description }}</p>
+                                        <a href="{{ path('app_training_daily', {id: session.id}) }}" class="mt-4 inline-block font-bold text-cyan-300 hover:text-cyan-100">
+                                            Voir la séance et saisir ma performance
+                                        </a>
                                     </article>
                                 {% endfor %}
                             </div>

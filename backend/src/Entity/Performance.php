@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PerformanceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PerformanceRepository::class)]
 class Performance
@@ -18,30 +19,44 @@ class Performance
      * Distance réellement parcourue, en kilomètres.
      */
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La distance réalisée est obligatoire.')]
+    #[Assert\Positive(message: 'La distance réalisée doit être supérieure à zéro.')]
     private ?float $distanceKm = null;
 
     /**
      * Durée réellement effectuée, en secondes.
      */
     #[ORM\Column]
+    #[Assert\NotNull(message: 'Le temps réalisé est obligatoire.')]
+    #[Assert\Positive(message: 'Le temps réalisé doit être supérieur à zéro.')]
     private ?int $durationSec = null;
 
     /**
      * Dénivelé positif réellement parcouru.
      */
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le dénivelé ne peut pas être négatif.')]
     private ?int $elevationDPlus = null;
 
     /**
      * Fréquence cardiaque moyenne.
      */
     #[ORM\Column(nullable: true)]
+    #[Assert\Range(
+        min: 30,
+        max: 230,
+        notInRangeMessage: 'La fréquence cardiaque moyenne doit être comprise entre {{ min }} et {{ max }} bpm.',
+    )]
     private ?int $avgHr = null;
 
     /**
      * Commentaire libre de l'utilisateur.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'Le commentaire ne peut pas dépasser {{ limit }} caractères.',
+    )]
     private ?string $comment = null;
 
     #[ORM\Column]

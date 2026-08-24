@@ -111,7 +111,7 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextContains('#training-plan-title', 'Objectif 10 km');
         self::assertSelectorTextContains('#week-1', 'Semaine 1');
         self::assertSelectorTextContains('h3', 'Endurance fondamentale');
-        self::assertSelectorTextContains('article p:last-child', 'Cible');
+        self::assertSelectorTextContains('article .session-instructions', 'Cible');
         self::assertCount(24, $crawler->filter('article[data-session-date]'));
 
         $displayedDates = $crawler->filter('article[data-session-date]')->each(
