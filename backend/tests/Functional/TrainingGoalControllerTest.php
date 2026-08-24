@@ -37,6 +37,7 @@ final class TrainingGoalControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/training-goal');
 
         $form = $crawler->selectButton('Valider mon objectif')->form([
+            'training_goal[poleType]' => 'intermediate',
             'training_goal[targetType]' => 'distance',
             'training_goal[targetValue]' => '21.1',
             'training_goal[targetUnit]' => 'km',
@@ -57,6 +58,7 @@ final class TrainingGoalControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/training-goal');
 
         $form = $crawler->selectButton('Valider mon objectif')->form([
+            'training_goal[poleType]' => 'discovery',
             'training_goal[targetType]' => 'distance',
             'training_goal[targetValue]' => '10',
             'training_goal[targetUnit]' => 'min',

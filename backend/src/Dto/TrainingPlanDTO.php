@@ -7,6 +7,13 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class TrainingPlanDTO
 {
+    #[Assert\NotBlank(message: 'Choisissez un pôle de pratique.')]
+    #[Assert\Choice(
+        choices: ['discovery', 'intermediate', 'performance'],
+        message: 'Le pôle de pratique est invalide.',
+    )]
+    public ?string $poleType = null;
+
     #[Assert\NotBlank(message: 'Choisissez un type d’objectif.')]
     #[Assert\Choice(choices: ['distance', 'time'], message: 'Le type d’objectif est invalide.')]
     public ?string $targetType = null;
@@ -48,6 +55,7 @@ class TrainingPlanDTO
     public function toArray(): array
     {
         return [
+            'poleType' => $this->poleType,
             'targetType' => $this->targetType,
             'targetValue' => $this->targetValue,
             'targetUnit' => $this->targetUnit,
