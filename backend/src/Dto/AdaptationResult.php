@@ -13,6 +13,10 @@ final readonly class AdaptationResult
         public float $previousProgressScore,
         public float $progressScore,
         public int $adjustedSessionsCount,
+        public ?float $successRate = null,
+        public ?float $successValidationRate = null,
+        public ?string $reason = null,
+        public ?string $modification = null,
     ) {
     }
 
@@ -25,6 +29,10 @@ final readonly class AdaptationResult
             'previousProgressScore' => $this->previousProgressScore,
             'progressScore' => $this->progressScore,
             'adjustedSessionsCount' => $this->adjustedSessionsCount,
+            'successRate' => $this->successRate,
+            'successValidationRate' => $this->successValidationRate,
+            'reason' => $this->reason,
+            'modification' => $this->modification,
             'evaluation' => $this->evaluation->toArray(),
         ];
     }

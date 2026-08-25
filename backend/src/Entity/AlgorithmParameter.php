@@ -67,6 +67,45 @@ class AlgorithmParameter
         return $this->parameterValue;
     }
 
+    public function getSuccessValidationRate(): float
+    {
+        if ($this->parameterKey !== 'success_validation_rate' || $this->parameterValue === null) {
+            throw new \LogicException('Le paramètre attendu est "success_validation_rate".');
+        }
+
+        if ($this->parameterValue < 0 || $this->parameterValue > 100) {
+            throw new \LogicException('Le taux de validation doit être compris entre 0 et 100.');
+        }
+
+        return $this->parameterValue;
+    }
+
+    public function getProgressionMaxPercent(): float
+    {
+        if ($this->parameterKey !== 'progression_max_percent' || $this->parameterValue === null) {
+            throw new \LogicException('Le paramètre attendu est "progression_max_percent".');
+        }
+
+        if ($this->parameterValue < 0 || $this->parameterValue > 10) {
+            throw new \LogicException('La progression maximale doit être comprise entre 0 et 10 %.');
+        }
+
+        return $this->parameterValue;
+    }
+
+    public function getRecoveryWeekFrequency(): int
+    {
+        if ($this->parameterKey !== 'recovery_week_frequency' || $this->parameterValue === null) {
+            throw new \LogicException('Le paramètre attendu est "recovery_week_frequency".');
+        }
+
+        if ($this->parameterValue < 1 || floor($this->parameterValue) !== $this->parameterValue) {
+            throw new \LogicException('La fréquence des semaines de récupération doit être un entier positif.');
+        }
+
+        return (int) $this->parameterValue;
+    }
+
     public function setParameterValue(float $parameterValue): static
     {
         $this->parameterValue = $parameterValue;

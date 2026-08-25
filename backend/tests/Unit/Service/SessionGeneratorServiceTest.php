@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Service;
 
 use App\Entity\IntensityZone;
+use App\Entity\Performance;
 use App\Entity\Profile;
 use App\Entity\TrainingPlan;
 use App\Repository\IntensityZoneRepository;
@@ -168,6 +169,50 @@ final class SessionGeneratorServiceTest extends TestCase
         self::assertSame(7.6, $future->getPlannedDistanceKm());
         self::assertSame(95, $future->getPlannedElevationDPlus());
         self::assertSame(0.855, $future->getPlannedVmaCoef());
+    }
+
+    public function testRegeneratesUpcomingSessionsWithoutChangingHistoryOrGoalEvent(): void
+    {
+        $plan = $this->plan(4);
+        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $future = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
+        $past = $this->adjustableSession('2026-08-31', 'done', 'threshold');
+        $goalEvent = $this->adjustableSession('2026-09-10', 'planned', 'goal_event');
+        $plan->addSession($reference)->addSession($future)->addSession($past)->addSession($goalEvent);
+
+        $regenerated = $this->service()->regenerateUpcoming($plan, $reference, 1.10);
+
+        self::assertCount(1, $regenerated);
+        $replacement = $regenerated[0];
+        self::assertNotSame($future, $replacement);
+        self::assertFalse($plan->getSessions()->contains($future));
+        self::assertTrue($plan->getSessions()->contains($replacement));
+        self::assertSame('2026-09-08', $replacement->getDate()?->format('Y-m-d'));
+        self::assertSame(44, $replacement->getPlannedDurationMin());
+        self::assertSame(8.8, $replacement->getPlannedDistanceKm());
+        self::assertSame(0.99, $replacement->getPlannedVmaCoef());
+        self::assertTrue($plan->getSessions()->contains($past));
+        self::assertTrue($plan->getSessions()->contains($reference));
+        self::assertTrue($plan->getSessions()->contains($goalEvent));
+    }
+
+    public function testRegenerationNeverReplacesASessionWithPerformanceHistory(): void
+    {
+        $plan = $this->plan(4);
+        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $protectedSession = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
+        $performance = (new Performance())
+            ->setDistanceKm(8)
+            ->setDurationSec(2400);
+        $protectedSession->addPerformance($performance);
+        $plan->addSession($reference)->addSession($protectedSession);
+
+        $regenerated = $this->service()->regenerateUpcoming($plan, $reference, 1.10);
+
+        self::assertSame([], $regenerated);
+        self::assertTrue($plan->getSessions()->contains($protectedSession));
+        self::assertSame($protectedSession, $performance->getSession());
+        self::assertSame(40, $protectedSession->getPlannedDurationMin());
     }
 
     private function service(): SessionGeneratorService
