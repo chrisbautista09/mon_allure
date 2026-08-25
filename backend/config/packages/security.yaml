@@ -16,10 +16,20 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            user_checker: App\Security\ActiveUserChecker
             custom_authenticator: App\Security\LoginFormAuthenticator
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                secure: auto
+                httponly: true
+                samesite: lax
 
             logout:
                 path: app_logout
+                enable_csrf: true
 
     access_control:
         - { path: ^/$, roles: PUBLIC_ACCESS }
@@ -34,6 +44,8 @@ security:
         - { path: ^/api/performances, roles: ROLE_USER }
         - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/dashboard, roles: ROLE_USER }
+        # Toute nouvelle route applicative est privée par défaut.
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:
