@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\TrainingPlanDTO;
+use App\Entity\User;
 use App\Form\TrainingGoalType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,6 +15,18 @@ class TrainingGoalController extends AbstractController
     #[Route('/training-goal', name: 'app_training_goal', methods: ['GET', 'POST'])]
     public function define(Request $request): Response
     {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        if ($user->getProfile() === null) {
+            $this->addFlash('info', 'Complétez votre profil avant de définir votre objectif.');
+
+            return $this->redirectToRoute('app_profile_calibration');
+        }
+
         $goal = new TrainingPlanDTO();
         $form = $this->createForm(TrainingGoalType::class, $goal);
         $form->handleRequest($request);

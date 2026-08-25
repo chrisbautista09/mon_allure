@@ -1,0 +1,4 @@
+<header class="account-header">
+    <a href="{{ path('app_home') }}" aria-label="Accueil Mon Allure"><img src="{{ asset('images/logo Mon Allure.png') }}" alt="Mon Allure" width="75" height="75"></a>
+    <div class="account-runner-pill"><span>{{ app.user ? app.user.pseudo : 'Espace coureur' }}</span><span class="account-runner-avatar" aria-hidden="true">🏃</span></div>
+</header>

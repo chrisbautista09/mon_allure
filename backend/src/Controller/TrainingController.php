@@ -24,18 +24,27 @@ final class TrainingController extends AbstractController
     public function weekly(TrainingPlanRepository $repository): Response
     {
         $user = $this->authenticatedUser();
+
+        if ($user->getProfile() === null) {
+            return $this->redirectToRoute('app_profile_calibration');
+        }
+
         $plan = $repository->findLatestActiveOwnedWithSessions($user);
+
+        if ($plan === null) {
+            return $this->redirectToRoute('app_training_goal');
+        }
+
         $weeks = [];
 
-        if ($plan !== null) {
-            foreach ($plan->getSessions() as $session) {
-                $week = (int) $session->getWeekIndex();
-                $weeks[$week] ??= [];
-                $weeks[$week][] = $session;
-            }
+        foreach ($plan->getSessions() as $session) {
+            $week = (int) $session->getWeekIndex();
+            $weeks[$week] ??= [];
+            $weeks[$week][] = $session;
 
-            ksort($weeks);
         }
+
+        ksort($weeks);
 
         return $this->render('training/weekly.html.twig', [
             'plan' => $plan,

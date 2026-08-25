@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\Profile;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -80,6 +81,11 @@ final class TrainingGoalControllerTest extends WebTestCase
             ->setEmail('goal@example.com')
             ->setPseudo('goal-runner')
             ->setPassword('test-password');
+        $user->setProfile((new Profile())
+            ->setFirstName('Camille')
+            ->setLastName('Martin')
+            ->setAge(32)
+            ->setUser($user));
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

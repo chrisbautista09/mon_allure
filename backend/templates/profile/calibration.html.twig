@@ -1,35 +1,42 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Calibrer mon profil | Mon Allure{% endblock %}
+{% block title %}Créer mon profil sportif | Mon Allure{% endblock %}
 
 {% block body %}
-    <main class="profile-calibration">
-        <section class="profile-calibration__card" aria-labelledby="profile-title">
-            <p class="profile-calibration__eyebrow">Première étape</p>
-            <h1 id="profile-title">Calibrez votre profil</h1>
-            <p class="profile-calibration__intro">
-                Ces informations permettront à Mon Allure d'adapter vos prochaines séances à votre niveau.
-                Vous pourrez compléter les données facultatives plus tard.
-            </p>
-
-            {{ form_start(profileForm, {attr: {class: 'profile-form'}}) }}
-                {{ form_errors(profileForm) }}
-
-                <div class="profile-form__grid">
-                    {% for field in profileForm %}
-                        <div class="profile-form__field {{ field.vars.errors|length ? 'profile-form__field--error' }}">
-                            {{ form_label(field) }}
-                            {{ form_widget(field) }}
-                            {{ form_help(field) }}
-                            {{ form_errors(field) }}
-                        </div>
-                    {% endfor %}
+<main class="account-page">
+    <section class="account-card account-card--wide" aria-labelledby="profile-title">
+        {% include 'components/_account_header.html.twig' %}
+        <h1 id="profile-title" class="account-title">Créer mon profil sportif</h1>
+        {% include 'components/_account_hero.html.twig' %}
+        <p class="account-intro">Configurez vos paramètres physiologiques pour personnaliser vos plans d'entraînement.</p>
+        {{ form_start(profileForm, {attr: {class: 'account-form profile-account-form'}}) }}
+            {{ form_errors(profileForm) }}
+            <fieldset class="account-fieldset">
+                <legend>Identité</legend>
+                <div class="profile-account-grid">
+                    <div class="account-field">{{ form_label(profileForm.firstName) }}{{ form_widget(profileForm.firstName, {attr: {placeholder: 'Votre prénom'}}) }}{{ form_errors(profileForm.firstName) }}</div>
+                    <div class="account-field">{{ form_label(profileForm.lastName) }}{{ form_widget(profileForm.lastName, {attr: {placeholder: 'Votre nom'}}) }}{{ form_errors(profileForm.lastName) }}</div>
+                    <div class="account-field profile-account-grid__full">{{ form_label(profileForm.age) }}{{ form_widget(profileForm.age, {attr: {placeholder: 'Votre âge'}}) }}<small>Cette donnée permet d'appliquer les contraintes physiologiques adaptées.</small>{{ form_errors(profileForm.age) }}</div>
                 </div>
-
-                <button type="submit" class="profile-form__submit">
-                    Enregistrer mon profil
-                </button>
-            {{ form_end(profileForm) }}
-        </section>
-    </main>
+            </fieldset>
+            <fieldset class="account-fieldset account-fieldset--cardio">
+                <legend>♥ Cardio</legend>
+                <div class="profile-account-grid">
+                    <div class="account-field">{{ form_label(profileForm.fcm) }}{{ form_widget(profileForm.fcm, {attr: {placeholder: 'Ex : 190'}}) }}<small>Fréquence cardiaque maximale.</small>{{ form_errors(profileForm.fcm) }}</div>
+                    <div class="account-field">{{ form_label(profileForm.fcr) }}{{ form_widget(profileForm.fcr, {attr: {placeholder: 'Ex : 55'}}) }}<small>Fréquence cardiaque au repos.</small>{{ form_errors(profileForm.fcr) }}</div>
+                </div>
+            </fieldset>
+            <fieldset class="account-fieldset">
+                <legend>♙ Performance</legend>
+                <div class="profile-account-grid">
+                    <div class="account-field">{{ form_label(profileForm.vo2max) }}{{ form_widget(profileForm.vo2max, {attr: {placeholder: 'Ex : 54,5'}}) }}<small>Capacité maximale de transport et d'utilisation de l'oxygène.</small>{{ form_errors(profileForm.vo2max) }}</div>
+                    <div class="account-field">{{ form_label(profileForm.vma) }}{{ form_widget(profileForm.vma, {attr: {placeholder: 'Ex : 16,5'}}) }}{{ form_help(profileForm.vma) }}{{ form_errors(profileForm.vma) }}</div>
+                </div>
+                <div class="account-info account-info--stacked"><strong>Test VMA demi-Cooper</strong><span>Après un échauffement adapté de 15 minutes, parcourez la plus grande distance possible en 6 minutes.</span></div>
+            </fieldset>
+            <p class="account-required">* Champs d'identité obligatoires</p>
+            <button type="submit" class="account-submit">Valider mon profil <span aria-hidden="true">✓</span></button>
+        {{ form_end(profileForm) }}
+    </section>
+</main>
 {% endblock %}
