@@ -56,7 +56,8 @@ class RegistrationController extends AbstractController
             'registration/register.html.twig',
             [
                 'registrationForm' => $form,
-            ]
+            ],
+            $form->isSubmitted() ? new Response(status: 422) : null,
         );
     }
 }
