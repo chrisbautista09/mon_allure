@@ -7,6 +7,7 @@ use App\Entity\TrainingPlan;
 use App\Entity\User;
 use App\Repository\TrainingPlanRepository;
 use App\Service\PdfGeneratorService;
+use App\Service\ProgressService;
 use App\Service\TrainingPlanGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +21,38 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/training-plans', name: 'api_training_plans_')]
 final class TrainingPlanController extends AbstractController
 {
+    #[Route('/{id}/progress', name: 'progress', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function progress(
+        int $id,
+        TrainingPlanRepository $repository,
+        ProgressService $progressService,
+        EntityManagerInterface $entityManager,
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        $plan = $repository->findOneBy(['id' => $id, 'user' => $user]);
+
+        if (!$plan instanceof TrainingPlan) {
+            return $this->json(['message' => 'Plan d’entraînement introuvable.'], 404);
+        }
+
+        if ($progressService->synchronizeCurrentWeek($plan)) {
+            $entityManager->flush();
+        }
+
+        return $this->json([
+            'current_week' => $plan->getCurrentWeek(),
+            'total_weeks' => $plan->getDurationWeeks(),
+            'progress_percentage' => $progressService->calculatePlanProgress($plan),
+            'sports_progress_score' => $progressService->getSportsProgress($plan),
+            'is_completed' => $progressService->isPlanCompleted($plan),
+        ]);
+    }
+
     #[Route('/{id}/export', name: 'export', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function export(
         int $id,

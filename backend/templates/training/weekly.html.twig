@@ -47,6 +47,14 @@
                     </div>
                 </header>
 
+                {% include 'training_plan/_progress.html.twig' with {
+                    plan: plan,
+                    progressPercentage: progressPercentage,
+                    sportsProgress: sportsProgress,
+                    currentPhase: currentPhase,
+                    isPlanCompleted: isPlanCompleted
+                } only %}
+
                 <div class="space-y-8" data-testid="training-plan-weeks">
                     {% for weekNumber, sessions in weeks %}
                         <section class="rounded-3xl border border-white/10 bg-blue-950/70 p-5 shadow-xl sm:p-7" aria-labelledby="week-{{ weekNumber }}">

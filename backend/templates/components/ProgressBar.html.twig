@@ -1,0 +1,25 @@
+{% set value = progress|default(0) %}
+{% set label = label|default('Avancement du plan') %}
+{% set testId = testId|default('plan-progress') %}
+
+<div class="w-full" data-testid="{{ testId }}-bar">
+    <div class="mb-2 flex items-center justify-between gap-4 text-xs font-bold uppercase tracking-wider">
+        <span class="text-white/55">{{ label }}</span>
+        <span class="shrink-0 text-cyan-200" data-testid="{{ testId }}-percentage">{{ value }} %</span>
+    </div>
+
+    <div
+        class="h-3 w-full overflow-hidden rounded-full border border-cyan-200/15 bg-slate-900 shadow-inner sm:h-4"
+        role="progressbar"
+        aria-label="{{ label }}"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="{{ value }}"
+    >
+        <div
+            class="training-progress-fill h-full rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-cyan-200 shadow-[0_0_14px_rgba(34,211,238,0.65)] motion-reduce:animate-none"
+            style="--progress-width: {{ value }}%; width: {{ value }}%;"
+            data-testid="{{ testId }}-fill"
+        ></div>
+    </div>
+</div>

@@ -110,6 +110,15 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('#training-plan-title', 'Objectif 10 km');
         self::assertSelectorTextContains('#week-1', 'Semaine 1');
+        self::assertSelectorTextContains('[data-testid="current-week"]', 'Semaine 1 / 8');
+        self::assertSelectorTextContains('[data-testid="current-phase"]', 'Mise en condition');
+        self::assertSelectorExists('[data-testid="plan-progress-bar"]');
+        self::assertSelectorTextContains('[data-testid="plan-progress-percentage"]', '13 %');
+        self::assertSelectorExists('[role="progressbar"][aria-valuenow="13"]');
+        self::assertSelectorExists('[data-testid="plan-progress-fill"][style*="width: 13%"]');
+        self::assertSelectorTextContains('[data-testid="sports-progress-percentage"]', '0 %');
+        self::assertSelectorExists('[data-testid="sports-progress-bar"]');
+        self::assertSelectorExists('[aria-label="Progression sportive"][aria-valuenow="0"]');
         self::assertSelectorTextContains('h3', 'Endurance fondamentale');
         self::assertSelectorTextContains('article .session-instructions', 'Cible');
         self::assertSelectorTextContains(
@@ -178,6 +187,137 @@ final class TrainingPlanControllerTest extends WebTestCase
         $pdf = (string) $this->client->getResponse()->getContent();
         self::assertStringStartsWith('%PDF-', $pdf);
         self::assertGreaterThan(10_000, strlen($pdf));
+    }
+
+    public function testOwnerCanRetrievePlanProgress(): void
+    {
+        $owner = $this->userWithProfile();
+        $plan = $this->completePlanOwnedBy($owner)
+            ->setCurrentWeek(1)
+            ->setDurationWeeks(12)
+            ->setStartDate(new \DateTimeImmutable('today -21 days'))
+            ->setEndDate(new \DateTimeImmutable('today +63 days'));
+        $plan->setProgressScore(78.4);
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/progress', $plan->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+        self::assertSame([
+            'current_week' => 4,
+            'total_weeks' => 12,
+            'progress_percentage' => 33,
+            'sports_progress_score' => 78,
+            'is_completed' => false,
+        ], json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        ));
+        self::assertSame(4, $plan->getCurrentWeek());
+    }
+
+    #[DataProvider('displayProgressProvider')]
+    public function testWeeklyPageDisplaysProgressMatchingCurrentWeek(
+        string $startDate,
+        string $endDate,
+        int $expectedWeek,
+        int $expectedPercentage,
+        bool $expectedCompleted,
+    ): void {
+        $owner = $this->userWithProfile();
+        $plan = $this->completePlanOwnedBy($owner)
+            ->setStartDate(new \DateTimeImmutable($startDate))
+            ->setEndDate(new \DateTimeImmutable($endDate))
+            ->setDurationWeeks(12)
+            ->setCurrentWeek(1);
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', '/training/weekly');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(
+            '[data-testid="current-week"]',
+            sprintf('Semaine %d / 12', $expectedWeek),
+        );
+        self::assertSelectorTextContains(
+            '[data-testid="plan-progress-percentage"]',
+            sprintf('%d %%', $expectedPercentage),
+        );
+        self::assertSelectorExists(sprintf(
+            '[role="progressbar"][aria-label="Progression calendrier"][aria-valuenow="%d"]',
+            $expectedPercentage,
+        ));
+        self::assertSelectorExists(sprintf(
+            '[data-testid="plan-progress-fill"][style*="width: %d%%"]',
+            $expectedPercentage,
+        ));
+
+        if ($expectedCompleted) {
+            self::assertSelectorTextContains('[data-testid="plan-completed"]', 'Plan terminé');
+        } else {
+            self::assertSelectorNotExists('[data-testid="plan-completed"]');
+        }
+
+        self::assertSame($expectedWeek, $plan->getCurrentWeek());
+    }
+
+    /** @return iterable<string, array{string, string, int, int, bool}> */
+    public static function displayProgressProvider(): iterable
+    {
+        yield 'début semaine 1 sur 12' => [
+            'today',
+            'today +83 days',
+            1,
+            8,
+            false,
+        ];
+        yield 'milieu semaine 6 sur 12' => [
+            'today -35 days',
+            'today +48 days',
+            6,
+            50,
+            false,
+        ];
+        yield 'plan terminé semaine 12 sur 12' => [
+            'today -84 days',
+            'yesterday',
+            12,
+            100,
+            true,
+        ];
+    }
+
+    public function testUserCannotRetrieveAnotherUsersPlanProgress(): void
+    {
+        $owner = $this->userWithProfile();
+        $otherUser = (new User())
+            ->setEmail('progress-other@example.com')
+            ->setPseudo('progress-other-runner')
+            ->setPassword('test-password');
+        $plan = $this->completePlanOwnedBy($owner);
+        $this->entityManager->persist($owner);
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+        $this->client->loginUser($otherUser);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/progress', $plan->getId()));
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    public function testAnonymousUserCannotRetrievePlanProgress(): void
+    {
+        $this->client->request('GET', '/api/training-plans/1/progress');
+
+        self::assertResponseRedirects('http://localhost/login');
     }
 
     public function testCompleteTwelveWeekTenKilometrePlanIsExportedAsReadablePdf(): void
