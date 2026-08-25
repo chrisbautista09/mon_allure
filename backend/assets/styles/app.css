@@ -812,3 +812,22 @@
         opacity: 1;
     }
 }
+@keyframes training-progress-reveal {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: var(--progress-width);
+    }
+}
+
+.training-progress-fill {
+    animation: training-progress-reveal 700ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .training-progress-fill {
+        animation: none;
+    }
+}

@@ -11,6 +11,7 @@ use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Repository\TrainingPlanRepository;
 use App\Service\AdaptationService;
+use App\Service\ProgressService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -21,8 +22,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TrainingController extends AbstractController
 {
     #[Route('/training/weekly', name: 'app_training_weekly', methods: ['GET'])]
-    public function weekly(TrainingPlanRepository $repository): Response
-    {
+    public function weekly(
+        TrainingPlanRepository $repository,
+        ProgressService $progressService,
+        EntityManagerInterface $entityManager,
+    ): Response {
         $user = $this->authenticatedUser();
 
         if ($user->getProfile() === null) {
@@ -33,6 +37,10 @@ final class TrainingController extends AbstractController
 
         if ($plan === null) {
             return $this->redirectToRoute('app_training_goal');
+        }
+
+        if ($progressService->synchronizeCurrentWeek($plan)) {
+            $entityManager->flush();
         }
 
         $weeks = [];
@@ -49,6 +57,10 @@ final class TrainingController extends AbstractController
         return $this->render('training/weekly.html.twig', [
             'plan' => $plan,
             'weeks' => $weeks,
+            'progressPercentage' => $progressService->calculatePlanProgress($plan),
+            'sportsProgress' => $progressService->getSportsProgress($plan),
+            'currentPhase' => $progressService->getCurrentPhase($plan),
+            'isPlanCompleted' => $progressService->isPlanCompleted($plan),
         ]);
     }
 

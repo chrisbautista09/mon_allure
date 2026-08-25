@@ -294,6 +294,17 @@ class TrainingPlan
         return $this;
     }
 
+    public function getProgressPercentage(): int
+    {
+        if ($this->durationWeeks === null || $this->durationWeeks <= 0) {
+            return 0;
+        }
+
+        $percentage = ($this->currentWeek / $this->durationWeeks) * 100;
+
+        return (int) round(min(100, max(0, $percentage)));
+    }
+
     public function getProgressScore(): float
     {
         return $this->progressScore;
