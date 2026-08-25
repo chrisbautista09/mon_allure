@@ -7,6 +7,7 @@ use App\Entity\TrainingPlan;
 use App\Entity\User;
 use App\Repository\TrainingPlanRepository;
 use App\Service\PdfGeneratorService;
+use App\Service\ObjectiveCountdownService;
 use App\Service\ProgressService;
 use App\Service\TrainingPlanGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,31 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/training-plans', name: 'api_training_plans_')]
 final class TrainingPlanController extends AbstractController
 {
+    #[Route('/{id}/countdown', name: 'countdown', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function countdown(
+        int $id,
+        TrainingPlanRepository $repository,
+        ObjectiveCountdownService $countdownService,
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        $plan = $repository->findOneBy(['id' => $id, 'user' => $user]);
+
+        if (!$plan instanceof TrainingPlan) {
+            return $this->json(['message' => 'Plan d’entraînement introuvable.'], 404);
+        }
+
+        return $this->json([
+            'objective_date' => $plan->getEndDate()?->format('Y-m-d'),
+            ...$countdownService->calculateRemainingTime($plan),
+            'timeline' => $countdownService->calculateTimelineComparison($plan),
+        ]);
+    }
+
     #[Route('/{id}/progress', name: 'progress', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function progress(
         int $id,
