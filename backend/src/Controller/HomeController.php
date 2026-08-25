@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,6 +12,22 @@ final class HomeController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
+        $user = $this->getUser();
+
+        if ($user instanceof User) {
+            if ($user->getProfile() === null) {
+                return $this->redirectToRoute('app_profile_calibration');
+            }
+
+            foreach ($user->getTrainingPlans() as $plan) {
+                if ($plan->isActive()) {
+                    return $this->redirectToRoute('app_training_weekly');
+                }
+            }
+
+            return $this->redirectToRoute('app_training_goal');
+        }
+
         $demoPlan = [
 
             'title' => 'Plan Découverte 10 km',

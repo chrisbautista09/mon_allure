@@ -25,7 +25,9 @@ class PhysiologicalProfileController extends AbstractController
         if ($user->getProfile() !== null) {
             $this->addFlash('info', 'Votre profil physiologique est déjà renseigné.');
 
-            return $this->redirectToRoute('app_training_weekly');
+            return $this->redirectToRoute(
+                $this->hasActiveTrainingPlan($user) ? 'app_training_weekly' : 'app_training_goal',
+            );
         }
 
         $profile = (new Profile())
@@ -42,11 +44,22 @@ class PhysiologicalProfileController extends AbstractController
 
             $this->addFlash('success', 'Votre profil physiologique a bien été enregistré.');
 
-            return $this->redirectToRoute('app_training_weekly');
+            return $this->redirectToRoute('app_training_goal');
         }
 
         return $this->render('profile/calibration.html.twig', [
             'profileForm' => $form,
         ]);
+    }
+
+    private function hasActiveTrainingPlan(User $user): bool
+    {
+        foreach ($user->getTrainingPlans() as $plan) {
+            if ($plan->isActive()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,15 +45,36 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         TokenInterface $token,
         string $firewallName
     ): ?Response {
+        $user = $token->getUser();
+
+        if ($user instanceof User && $user->getProfile() === null) {
+            return new RedirectResponse($this->urlGenerator->generate('app_profile_calibration'));
+        }
+
+        if ($user instanceof User && !$this->hasActiveTrainingPlan($user)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_training_goal'));
+        }
+
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
-    
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
+
+        return new RedirectResponse($this->urlGenerator->generate('app_training_weekly'));
     }
 
     protected function getLoginUrl(Request $request): string
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+
+    private function hasActiveTrainingPlan(User $user): bool
+    {
+        foreach ($user->getTrainingPlans() as $plan) {
+            if ($plan->isActive()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

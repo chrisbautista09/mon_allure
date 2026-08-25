@@ -68,13 +68,13 @@ final class OnboardingJourneyTest extends WebTestCase
     private function loginUser(): void
     {
         $crawler = $this->client->followRedirect();
-        $form = $crawler->selectButton('Sign in')->form([
+        $form = $crawler->selectButton('Se connecter')->form([
             'email' => 'journey@example.com',
             'password' => 'SecurePass123!',
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/');
+        self::assertResponseRedirects('/profile/calibration');
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
     }
@@ -84,7 +84,7 @@ final class OnboardingJourneyTest extends WebTestCase
         $crawler = $this->client->request('GET', '/profile/calibration');
         self::assertResponseIsSuccessful();
 
-        $form = $crawler->selectButton('Enregistrer mon profil')->form([
+        $form = $crawler->selectButton('Valider mon profil')->form([
             'profile[firstName]' => 'Camille',
             'profile[lastName]' => 'Martin',
             'profile[age]' => '34',
@@ -95,7 +95,7 @@ final class OnboardingJourneyTest extends WebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/training/weekly');
+        self::assertResponseRedirects('/training-goal');
     }
 
     private function defineTrainingGoal(): void
