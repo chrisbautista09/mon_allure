@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ plan.name }} - Mon Allure</title>
+    <style>
+        @page { margin: 24mm 16mm 20mm; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            color: #18332f;
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.45;
+        }
+        .footer {
+            position: fixed;
+            right: 0;
+            bottom: -13mm;
+            left: 0;
+            color: #66827d;
+            font-size: 8pt;
+            text-align: center;
+        }
+        .page-number::after { content: counter(page); }
+        .brand { margin-bottom: 18px; color: #147d6d; font-size: 24pt; font-weight: 700; }
+        .brand-logo { width: 54px; height: 54px; margin-right: 10px; vertical-align: middle; }
+        .brand-name { vertical-align: middle; }
+        h1 { margin: 0 0 5px; color: #18332f; font-size: 20pt; }
+        .subtitle { margin: 0 0 20px; color: #66827d; }
+        .summary { width: 100%; margin-bottom: 20px; border-collapse: separate; border-spacing: 7px; }
+        .summary td {
+            width: 25%;
+            padding: 10px;
+            border: 1px solid #c9ddd8;
+            border-radius: 5px;
+            background: #f1f8f6;
+            vertical-align: top;
+        }
+        .label { display: block; margin-bottom: 3px; color: #66827d; font-size: 7.5pt; text-transform: uppercase; }
+        .value { color: #18332f; font-weight: 700; }
+        .runner {
+            margin-bottom: 22px;
+            padding: 10px 13px;
+            border-left: 4px solid #147d6d;
+            background: #f7faf9;
+        }
+        .week { page-break-before: always; }
+        .week-title {
+            margin: 0 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #147d6d;
+            color: #147d6d;
+            font-size: 15pt;
+        }
+        .session {
+            margin-bottom: 11px;
+            padding: 11px 13px;
+            border: 1px solid #d8e5e2;
+            border-radius: 5px;
+            page-break-inside: avoid;
+        }
+        .session.long { page-break-inside: auto; }
+        .session-title { margin: 0 0 7px; color: #18332f; font-size: 11pt; }
+        .session-meta { width: 100%; margin-bottom: 7px; border-collapse: collapse; }
+        .session-meta td { padding: 2px 12px 2px 0; vertical-align: top; }
+        .instructions { margin: 6px 0 0; color: #405b56; word-wrap: break-word; }
+        .empty { padding: 18px; border: 1px dashed #a9c2bc; color: #66827d; text-align: center; }
+    </style>
+</head>
+<body>
+{% set poleLabels = {discovery: 'Discovery - 2 séances max/semaine', intermediate: 'Intermediate - 3 séances max/semaine', performance: 'Performance - 5 séances max/semaine'} %}
+{% set typeLabels = {endurance: 'Endurance', active: 'Allure active', threshold: 'Seuil', vma: 'VMA', long_run: 'Sortie longue', recovery: 'Récupération', goal_event: 'Objectif final'} %}
+<div class="footer">Mon Allure - {{ plan.name }} - Page <span class="page-number"></span></div>
+
+<div class="brand">
+    {% if logoDataUri %}<img class="brand-logo" src="{{ logoDataUri }}" alt="Logo Mon Allure">{% endif %}
+    <span class="brand-name">Mon Allure</span>
+</div>
+<h1>{{ plan.name }}</h1>
+<p class="subtitle">Plan d'entraînement personnalisé</p>
+
+{% set profile = plan.user ? plan.user.profile : null %}
+<div class="runner">
+    <span class="label">Athlète</span>
+    <span class="value">
+        {% if profile %}{{ profile.firstName }} {{ profile.lastName }}{% elseif plan.user %}{{ plan.user.pseudo }}{% else %}Utilisateur Mon Allure{% endif %}
+    </span>
+    {% if profile %}
+        - {{ profile.age }} ans
+        {% if profile.vma is not null %} - VMA {{ profile.vma|number_format(1, ',', ' ') }} km/h{% endif %}
+        {% if profile.fcm is not null %} - FCM {{ profile.fcm }} bpm{% endif %}
+    {% endif %}
+</div>
+
+<table class="summary">
+    <tr>
+        <td><span class="label">Objectif</span><span class="value">{{ plan.targetValue|number_format(plan.targetValue % 1 == 0 ? 0 : 1, ',', ' ') }} {{ plan.targetUnit }}</span></td>
+        <td><span class="label">Pôle</span><span class="value">{{ poleLabels[plan.poleType]|default(plan.poleType|capitalize) }}</span></td>
+        <td><span class="label">Durée</span><span class="value">{{ plan.durationWeeks }} semaines</span></td>
+        <td><span class="label">Terrain</span><span class="value">{{ plan.terrainType|capitalize }}</span></td>
+    </tr>
+    <tr>
+        <td><span class="label">Début</span><span class="value">{{ plan.startDate|date('d/m/Y') }}</span></td>
+        <td><span class="label">Fin</span><span class="value">{{ plan.endDate|date('d/m/Y') }}</span></td>
+        <td><span class="label">Progression</span><span class="value">{{ plan.progressScore|number_format(0, ',', ' ') }} %</span></td>
+        <td><span class="label">Faisabilité</span><span class="value">{{ plan.feasibilityIndicator }}</span></td>
+    </tr>
+</table>
+
+{% if sessionsByWeek is empty %}
+    <div class="empty">Aucune séance n'est encore planifiée.</div>
+{% else %}
+    {% for weekNumber, sessions in sessionsByWeek %}
+        <div class="week">
+        <h2 class="week-title">Semaine {{ weekNumber }}</h2>
+        {% for session in sessions %}
+        <article class="session{{ session.description|default('')|length > 500 ? ' long' : '' }}">
+            <h3 class="session-title">{{ session.title }}</h3>
+            <table class="session-meta">
+                <tr>
+                    <td><span class="label">Date</span><span class="value">{{ session.date|date('d/m/Y') }}</span></td>
+                    <td><span class="label">Type</span><span class="value">{{ typeLabels[session.sessionType]|default(session.sessionType|replace({'_': ' '})|capitalize) }}</span></td>
+                    <td><span class="label">Durée</span><span class="value">{{ session.plannedDurationMin is not null ? session.plannedDurationMin ~ ' min' : 'Selon objectif' }}</span></td>
+                </tr>
+                <tr>
+                    <td><span class="label">Distance</span><span class="value">{{ session.plannedDistanceKm is not null ? session.plannedDistanceKm|number_format(2, ',', ' ') ~ ' km' : '-' }}</span></td>
+                    <td>
+                        <span class="label">Allure cible</span>
+                        <span class="value">
+                            {% if session.plannedVmaCoef is not null and profile and profile.vma is not null %}
+                                {% set targetSpeed = profile.vma * session.plannedVmaCoef %}
+                                {% set paceSeconds = (3600 / targetSpeed)|round %}
+                                {{ (paceSeconds / 60)|round(0, 'floor') }}:{{ '%02d'|format(paceSeconds % 60) }} min/km
+                                - {{ (session.plannedVmaCoef * 100)|round }} % VMA
+                            {% elseif session.plannedVmaCoef is not null %}
+                                {{ (session.plannedVmaCoef * 100)|round }} % VMA
+                            {% else %}-{% endif %}
+                        </span>
+                    </td>
+                    <td><span class="label">Fréquence cardiaque cible</span><span class="value">{{ session.plannedFcmZone|default('-') }}</span></td>
+                </tr>
+            </table>
+            {% if session.plannedElevationDPlus is not null %}<div><span class="label">Dénivelé cible</span><span class="value">{{ session.plannedElevationDPlus }} m D+</span></div>{% endif %}
+            <p class="instructions"><span class="label">Consignes</span>{{ session.description|default('Suivre les indications prévues pour cette séance.') }}</p>
+        </article>
+        {% endfor %}
+        </div>
+    {% endfor %}
+{% endif %}
+</body>
+</html>

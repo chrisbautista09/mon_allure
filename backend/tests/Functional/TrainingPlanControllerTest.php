@@ -112,6 +112,15 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextContains('#week-1', 'Semaine 1');
         self::assertSelectorTextContains('h3', 'Endurance fondamentale');
         self::assertSelectorTextContains('article .session-instructions', 'Cible');
+        self::assertSelectorTextContains(
+            '[data-testid="export-training-plan-pdf"]',
+            'Exporter mon plan PDF',
+        );
+        self::assertSelectorExists(sprintf(
+            'a[data-testid="export-training-plan-pdf"][href="/api/training-plans/%d/export"][download="plan-entrainement-%d.pdf"]',
+            $createdPlan['id'],
+            $createdPlan['id'],
+        ));
         self::assertCount(24, $crawler->filter('article[data-session-date]'));
 
         $displayedDates = $crawler->filter('article[data-session-date]')->each(
@@ -132,6 +141,107 @@ final class TrainingPlanControllerTest extends WebTestCase
         $this->client->request('GET', sprintf('/api/training-plans/%d', $createdPlan['id']));
 
         self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testOwnerCanExportPlanAsDownloadedPdf(): void
+    {
+        $owner = $this->userWithProfile();
+        $this->persistAlgorithmData();
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+        $this->client->jsonRequest('POST', '/api/training-plans', $this->validGoal());
+        self::assertResponseStatusCodeSame(201);
+        $created = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/export', $created['id']));
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        self::assertResponseHeaderSame(
+            'Content-Disposition',
+            sprintf('attachment; filename=plan-entrainement-%d.pdf', $created['id']),
+        );
+        self::assertTrue(
+            $this->client->getResponse()->headers->hasCacheControlDirective('no-store'),
+        );
+        self::assertTrue(
+            $this->client->getResponse()->headers->hasCacheControlDirective('private'),
+        );
+        self::assertResponseHeaderSame('X-Content-Type-Options', 'nosniff');
+        self::assertResponseHeaderSame('Content-Security-Policy', 'sandbox');
+        $pdf = (string) $this->client->getResponse()->getContent();
+        self::assertStringStartsWith('%PDF-', $pdf);
+        self::assertGreaterThan(10_000, strlen($pdf));
+    }
+
+    public function testCompleteTwelveWeekTenKilometrePlanIsExportedAsReadablePdf(): void
+    {
+        $owner = $this->userWithProfile();
+        $this->persistAlgorithmData(12);
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->jsonRequest('POST', '/api/training-plans', $this->validGoal());
+
+        self::assertResponseStatusCodeSame(201);
+        $created = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        self::assertSame(12, $created['durationWeeks']);
+        self::assertSame(36, $created['sessionsCount']);
+        $plan = $this->entityManager->getRepository(TrainingPlan::class)->find($created['id']);
+        self::assertInstanceOf(TrainingPlan::class, $plan);
+        self::assertSame(10.0, $plan->getTargetValue());
+        self::assertSame(36, $this->entityManager->getRepository(Session::class)->count([
+            'trainingPlan' => $plan,
+        ]));
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/export', $created['id']));
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/pdf');
+        $pdf = (string) $this->client->getResponse()->getContent();
+        self::assertStringStartsWith('%PDF-', $pdf);
+        self::assertMatchesRegularExpression('/%%EOF\s*$/', $pdf);
+        self::assertStringContainsString('xref', $pdf);
+        self::assertGreaterThan(25_000, strlen($pdf));
+        self::assertGreaterThanOrEqual(12, preg_match_all('/\/Type\s*\/Page\b/', $pdf));
+    }
+
+    public function testUserCannotExportAnotherUsersPlan(): void
+    {
+        $owner = $this->userWithProfile();
+        $otherUser = (new User())
+            ->setEmail('pdf-other@example.com')
+            ->setPseudo('pdf-other-runner')
+            ->setPassword('test-password');
+        $plan = $this->completePlanOwnedBy($owner);
+        $this->entityManager->persist($owner);
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+        $this->client->loginUser($otherUser);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/export', $plan->getId()));
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    public function testAnonymousUserCannotExportPlan(): void
+    {
+        $this->client->request('GET', '/api/training-plans/1/export');
+
+        self::assertResponseRedirects('http://localhost/login');
     }
 
     public function testInvalidPayloadDoesNotPersistPartialPlan(): void
@@ -247,10 +357,28 @@ final class TrainingPlanControllerTest extends WebTestCase
         return $user;
     }
 
-    private function persistAlgorithmData(): void
+    private function completePlanOwnedBy(User $user): TrainingPlan
+    {
+        $plan = (new TrainingPlan())
+            ->setName('Plan PDF privé')
+            ->setPoleType('discovery')
+            ->setTargetType('distance')
+            ->setTargetValue(5)
+            ->setTargetUnit('km')
+            ->setTerrainType('road')
+            ->setFeasibilityIndicator('BON')
+            ->setStartDate(new \DateTimeImmutable('2026-09-01'))
+            ->setEndDate(new \DateTimeImmutable('2026-10-26'))
+            ->setDurationWeeks(8);
+        $user->addTrainingPlan($plan);
+
+        return $plan;
+    }
+
+    private function persistAlgorithmData(int $minimumPlanWeeks = 8): void
     {
         foreach ([
-            'default_plan_min_weeks' => 8,
+            'default_plan_min_weeks' => $minimumPlanWeeks,
             'default_plan_max_weeks' => 18,
             'max_sessions_discovery' => 2,
             'max_sessions_intermediate' => 3,

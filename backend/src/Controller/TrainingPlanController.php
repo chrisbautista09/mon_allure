@@ -6,17 +6,56 @@ use App\Dto\TrainingPlanDTO;
 use App\Entity\TrainingPlan;
 use App\Entity\User;
 use App\Repository\TrainingPlanRepository;
+use App\Service\PdfGeneratorService;
 use App\Service\TrainingPlanGeneratorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/training-plans', name: 'api_training_plans_')]
 final class TrainingPlanController extends AbstractController
 {
+    #[Route('/{id}/export', name: 'export', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function export(
+        int $id,
+        TrainingPlanRepository $repository,
+        PdfGeneratorService $pdfGenerator,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        $plan = $repository->findOneOwnedWithSessions($id, $user);
+
+        if (!$plan instanceof TrainingPlan) {
+            return $this->json(['message' => 'Plan d’entraînement introuvable.'], 404);
+        }
+
+        if ($plan->getUser()?->getId() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez exporter que vos propres plans.');
+        }
+
+        $response = new Response($pdfGenerator->generateTrainingPlanPdf($plan));
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            sprintf('plan-entrainement-%d.pdf', $id),
+        ));
+        $response->headers->set('Cache-Control', 'private, no-store');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Content-Security-Policy', 'sandbox');
+
+        return $response;
+    }
+
     #[Route('/{id}', name: 'show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id, TrainingPlanRepository $repository): JsonResponse
     {
