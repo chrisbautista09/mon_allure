@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\Enum\SessionStatus;
 use App\Repository\SessionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
 class Session
@@ -74,7 +76,14 @@ class Session
      * planned, done, missed.
      */
     #[ORM\Column(length: 20, options: ['default' => 'planned'])]
+    #[Assert\Choice(
+        choices: ['planned', 'done', 'partially_done', 'missed'],
+        message: 'Le statut de la séance est invalide.',
+    )]
     private string $status = 'planned';
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $completedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -263,9 +272,52 @@ class Session
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(string|SessionStatus $status): static
     {
-        $this->status = $status;
+        $normalizedStatus = $status instanceof SessionStatus
+            ? $status
+            : SessionStatus::tryFrom(strtolower(trim($status)));
+
+        if ($normalizedStatus === null) {
+            throw new \InvalidArgumentException('Le statut de la séance est invalide.');
+        }
+
+        $this->status = $normalizedStatus->value;
+        $this->completedAt = $normalizedStatus->isTerminal()
+            ? ($this->completedAt ?? new \DateTimeImmutable())
+            : null;
+
+        return $this;
+    }
+
+    public function getStatusValue(): SessionStatus
+    {
+        return SessionStatus::from($this->status);
+    }
+
+    public function isSuccessful(): bool
+    {
+        return $this->getStatusValue()->isSuccessful();
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->getStatusValue()->isFailed();
+    }
+
+    public function isTerminal(): bool
+    {
+        return $this->getStatusValue()->isTerminal();
+    }
+
+    public function getCompletedAt(): ?\DateTimeImmutable
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }

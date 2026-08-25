@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\AlgorithmParameter;
 use App\Entity\Performance;
 use App\Entity\Session;
 use App\Entity\TrainingPlan;
@@ -181,10 +182,10 @@ final class PerformanceJourneyTest extends WebTestCase
             expectedEvaluation: 'PERFORMANCE_SUPERIEURE',
             expectedDecision: 'INCREASE_LOAD',
             expectedScore: 100,
-            expectedDuration: 42,
-            expectedDistance: 8.4,
-            expectedElevation: 105,
-            expectedVmaCoefficient: 0.945,
+            expectedDuration: 44,
+            expectedDistance: 8.8,
+            expectedElevation: 110,
+            expectedVmaCoefficient: 0.99,
         );
     }
 
@@ -195,11 +196,11 @@ final class PerformanceJourneyTest extends WebTestCase
             actualDistance: 8.5,
             expectedEvaluation: 'PERFORMANCE_INSUFFISANTE',
             expectedDecision: 'REDUCE_LOAD',
-            expectedScore: 91,
-            expectedDuration: 38,
-            expectedDistance: 7.6,
-            expectedElevation: 95,
-            expectedVmaCoefficient: 0.855,
+            expectedScore: 84.33,
+            expectedDuration: 36,
+            expectedDistance: 7.2,
+            expectedElevation: 90,
+            expectedVmaCoefficient: 0.81,
         );
     }
 
@@ -246,16 +247,24 @@ final class PerformanceJourneyTest extends WebTestCase
         float $actualDistance,
         string $expectedEvaluation,
         string $expectedDecision,
-        int $expectedScore,
+        float $expectedScore,
         int $expectedDuration,
         float $expectedDistance,
         int $expectedElevation,
         float $expectedVmaCoefficient,
     ): void {
         [$user, $plan, $currentSession, $pastSession, $futureSession, $goalEvent] =
-            $this->persistCompleteBlock($initialScore);
+            $this->persistCompleteBlock(
+                $initialScore,
+                $expectedDecision === 'INCREASE_LOAD',
+            );
         $futureDate = $futureSession->getDate()?->format('Y-m-d');
         $goalDuration = $goalEvent->getPlannedDurationMin();
+        $planId = $plan->getId();
+        $currentSessionId = $currentSession->getId();
+        $pastSessionId = $pastSession->getId();
+        $futureSessionId = $futureSession->getId();
+        $goalEventId = $goalEvent->getId();
         $this->client->loginUser($user);
 
         $this->client->jsonRequest('POST', '/api/performances', [
@@ -275,24 +284,34 @@ final class PerformanceJourneyTest extends WebTestCase
         );
         self::assertSame($expectedEvaluation, $response['evaluation']['result']);
         self::assertSame($expectedDecision, $response['adaptation']['decision']);
-        self::assertSame($expectedScore, $response['adaptation']['progressScore']);
+        self::assertSame(
+            $expectedDecision === 'INCREASE_LOAD' ? 1.1 : 0.9,
+            $response['adaptation']['loadFactor'],
+        );
+        self::assertSame($expectedScore, (float) $response['adaptation']['progressScore']);
         self::assertSame(1, $response['adaptation']['adjustedSessionsCount']);
+        self::assertSame(
+            $expectedDecision === 'INCREASE_LOAD' ? 100 : 66.67,
+            $response['adaptation']['successRate'],
+        );
+        self::assertSame(80, $response['adaptation']['successValidationRate']);
+        self::assertStringContainsString('%', $response['adaptation']['reason']);
+        self::assertNotSame('', $response['adaptation']['modification']);
 
-        $planId = $plan->getId();
-        $currentSessionId = $currentSession->getId();
-        $pastSessionId = $pastSession->getId();
-        $futureSessionId = $futureSession->getId();
-        $goalEventId = $goalEvent->getId();
         $this->entityManager->clear();
         $storedPlan = $this->entityManager->find(TrainingPlan::class, $planId);
         $storedCurrent = $this->entityManager->find(Session::class, $currentSessionId);
         $storedPast = $this->entityManager->find(Session::class, $pastSessionId);
-        $storedFuture = $this->entityManager->find(Session::class, $futureSessionId);
+        $storedFuture = $this->entityManager->getRepository(Session::class)->findOneBy([
+            'trainingPlan' => $storedPlan,
+            'date' => new \DateTimeImmutable((string) $futureDate),
+        ]);
         $storedGoal = $this->entityManager->find(Session::class, $goalEventId);
 
         self::assertSame((float) $expectedScore, $storedPlan?->getProgressScore());
         self::assertSame('done', $storedCurrent?->getStatus());
         self::assertSame(40, $storedPast?->getPlannedDurationMin());
+        self::assertNull($this->entityManager->find(Session::class, $futureSessionId));
         self::assertSame($futureDate, $storedFuture?->getDate()?->format('Y-m-d'));
         self::assertSame($expectedDuration, $storedFuture?->getPlannedDurationMin());
         self::assertSame($expectedDistance, $storedFuture?->getPlannedDistanceKm());
@@ -300,10 +319,15 @@ final class PerformanceJourneyTest extends WebTestCase
         self::assertSame($expectedVmaCoefficient, $storedFuture?->getPlannedVmaCoef());
         self::assertSame($goalDuration, $storedGoal?->getPlannedDurationMin());
         self::assertSame(1, $this->entityManager->getRepository(Performance::class)->count([]));
+        $history = $storedPlan?->getAdaptationHistory()[0] ?? null;
+        self::assertNotNull($history);
+        self::assertSame($expectedDecision, $history['decision']);
+        self::assertStringContainsString('%', $history['reason']);
+        self::assertNotSame('', $history['modification']);
     }
 
     /** @return array{User, TrainingPlan, Session, Session, Session, Session} */
-    private function persistCompleteBlock(float $initialScore): array
+    private function persistCompleteBlock(float $initialScore, bool $successfulBlock): array
     {
         $user = (new User())
             ->setEmail(sprintf('block-%s@example.com', (string) $initialScore))
@@ -322,7 +346,12 @@ final class PerformanceJourneyTest extends WebTestCase
             ->setDurationWeeks(8)
             ->setProgressScore($initialScore);
         $pastSession = $this->adaptationSession(1, '2026-08-18', 'done', 'endurance');
-        $secondPastSession = $this->adaptationSession(2, '2026-08-25', 'done', 'endurance');
+        $secondPastSession = $this->adaptationSession(
+            2,
+            '2026-08-25',
+            $successfulBlock ? 'done' : 'missed',
+            'endurance',
+        );
         $currentSession = $this->adaptationSession(3, '2026-09-01', 'planned', 'threshold')
             ->setPlannedDistanceKm(10)
             ->setPlannedDurationMin(60);
@@ -334,6 +363,18 @@ final class PerformanceJourneyTest extends WebTestCase
         }
 
         $user->addTrainingPlan($plan);
+        $successParameter = (new AlgorithmParameter())
+            ->setParameterKey('success_validation_rate')
+            ->setParameterValue(80);
+        $progressionParameter = (new AlgorithmParameter())
+            ->setParameterKey('progression_max_percent')
+            ->setParameterValue(10);
+        $recoveryParameter = (new AlgorithmParameter())
+            ->setParameterKey('recovery_week_frequency')
+            ->setParameterValue(4);
+        $this->entityManager->persist($successParameter);
+        $this->entityManager->persist($progressionParameter);
+        $this->entityManager->persist($recoveryParameter);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 

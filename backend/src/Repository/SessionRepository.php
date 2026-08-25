@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Session;
+use App\Entity\TrainingPlan;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -28,6 +30,30 @@ class SessionRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /** @return list<Session> */
+    public function findRecentForPlan(
+        TrainingPlan $plan,
+        \DateTimeImmutable $until,
+        int $weeks = 3,
+    ): array {
+        if ($weeks <= 0) {
+            throw new \InvalidArgumentException('Le nombre de semaines doit être supérieur à zéro.');
+        }
+
+        $from = $until->modify(sprintf('-%d weeks +1 day', $weeks));
+
+        return $this->createQueryBuilder('session')
+            ->andWhere('session.trainingPlan = :plan')
+            ->andWhere('session.date BETWEEN :from AND :until')
+            ->setParameter('plan', $plan)
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('until', $until, Types::DATE_IMMUTABLE)
+            ->orderBy('session.date', 'ASC')
+            ->addOrderBy('session.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**

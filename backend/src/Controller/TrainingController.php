@@ -80,8 +80,8 @@ final class TrainingController extends AbstractController
                     'Le terrain doit correspondre à celui du plan d’entraînement.',
                 ));
             } else {
-                $adaptation = $adaptationService->adapt($performance);
                 $session->setStatus('done');
+                $adaptation = $adaptationService->adapt($performance);
                 $entityManager->persist($performance);
                 $entityManager->flush();
                 $this->addFlash('success', sprintf(

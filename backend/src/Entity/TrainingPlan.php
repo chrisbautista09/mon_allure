@@ -109,6 +109,20 @@ class TrainingPlan
     ])]
     private Collection $sessions;
 
+    /**
+     * @var list<array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * }>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $adaptationHistory = [];
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -360,6 +374,40 @@ class TrainingPlan
         ) {
             $session->setTrainingPlan(null);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * }>
+     */
+    public function getAdaptationHistory(): array
+    {
+        return $this->adaptationHistory;
+    }
+
+    /**
+     * @param array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * } $history
+     */
+    public function addAdaptationHistory(array $history): static
+    {
+        array_unshift($this->adaptationHistory, $history);
 
         return $this;
     }
