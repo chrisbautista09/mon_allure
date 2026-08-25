@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: TrainingPlanRepository::class)]
 class TrainingPlan
@@ -67,9 +69,14 @@ class TrainingPlan
     private ?\DateTimeImmutable $startDate = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'startDate',
+        message: 'La date de fin doit être postérieure ou égale à la date de début.',
+    )]
     private ?\DateTimeImmutable $endDate = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: 'La durée du plan doit être strictement positive.')]
     private ?int $durationWeeks = null;
 
     #[ORM\Column(options: ['default' => true])]
@@ -127,6 +134,16 @@ class TrainingPlan
     {
         $this->comments = new ArrayCollection();
         $this->sessions = new ArrayCollection();
+    }
+
+    #[Assert\Callback]
+    public function validateActivePlanDates(ExecutionContextInterface $context): void
+    {
+        if ($this->isActive && $this->endDate === null) {
+            $context->buildViolation('La date de fin est obligatoire pour un plan actif.')
+                ->atPath('endDate')
+                ->addViolation();
+        }
     }
 
     public function getId(): ?int

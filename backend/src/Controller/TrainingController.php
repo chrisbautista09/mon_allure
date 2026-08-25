@@ -11,6 +11,7 @@ use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Repository\TrainingPlanRepository;
 use App\Service\AdaptationService;
+use App\Service\ObjectiveCountdownService;
 use App\Service\ProgressService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +26,7 @@ final class TrainingController extends AbstractController
     public function weekly(
         TrainingPlanRepository $repository,
         ProgressService $progressService,
+        ObjectiveCountdownService $countdownService,
         EntityManagerInterface $entityManager,
     ): Response {
         $user = $this->authenticatedUser();
@@ -61,6 +63,8 @@ final class TrainingController extends AbstractController
             'sportsProgress' => $progressService->getSportsProgress($plan),
             'currentPhase' => $progressService->getCurrentPhase($plan),
             'isPlanCompleted' => $progressService->isPlanCompleted($plan),
+            'countdown' => $countdownService->calculateRemainingTime($plan),
+            'timelineComparison' => $countdownService->calculateTimelineComparison($plan),
         ]);
     }
 

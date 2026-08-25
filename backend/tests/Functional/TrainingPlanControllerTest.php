@@ -8,6 +8,7 @@ use App\Entity\Profile;
 use App\Entity\Session;
 use App\Entity\TrainingPlan;
 use App\Entity\User;
+use App\Service\ObjectiveCountdownService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -119,6 +120,22 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextContains('[data-testid="sports-progress-percentage"]', '0 %');
         self::assertSelectorExists('[data-testid="sports-progress-bar"]');
         self::assertSelectorExists('[aria-label="Progression sportive"][aria-valuenow="0"]');
+        self::assertSelectorExists('[data-testid="objective-countdown"][data-countdown-status="upcoming"]');
+        self::assertSelectorExists(sprintf(
+            '[data-testid="objective-date"][datetime="%s"]',
+            $createdPlan['endDate'],
+        ));
+        $remainingDays = (int) (new \DateTimeImmutable('today'))->diff(
+            new \DateTimeImmutable($createdPlan['endDate']),
+        )->days;
+        self::assertSelectorTextContains(
+            '[data-testid="days-remaining"]',
+            sprintf('%d jours', $remainingDays),
+        );
+        self::assertSelectorTextContains(
+            '[data-testid="weeks-remaining"]',
+            sprintf('%d semaines', intdiv($remainingDays, 7)),
+        );
         self::assertSelectorTextContains('h3', 'Endurance fondamentale');
         self::assertSelectorTextContains('article .session-instructions', 'Cible');
         self::assertSelectorTextContains(
@@ -219,6 +236,161 @@ final class TrainingPlanControllerTest extends WebTestCase
             JSON_THROW_ON_ERROR,
         ));
         self::assertSame(4, $plan->getCurrentWeek());
+    }
+
+    public function testOwnerCanRetrievePlanCountdown(): void
+    {
+        $owner = $this->userWithProfile();
+        $objectiveDate = new \DateTimeImmutable('today +45 days');
+        $plan = $this->completePlanOwnedBy($owner)
+            ->setStartDate(new \DateTimeImmutable('today'))
+            ->setEndDate($objectiveDate);
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/countdown', $plan->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+        self::assertSame([
+            'objective_date' => $objectiveDate->format('Y-m-d'),
+            'days_remaining' => 45,
+            'weeks_remaining' => 6,
+            'status' => ObjectiveCountdownService::STATUS_UPCOMING,
+            'timeline' => [
+                'days_elapsed' => 0,
+                'days_remaining' => 45,
+                'total_days' => 45,
+                'elapsed_percentage' => 0,
+            ],
+        ], json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        ));
+    }
+
+    public function testCountdownEndpointReturnsZeroForPastObjective(): void
+    {
+        $owner = $this->userWithProfile();
+        $plan = $this->completePlanOwnedBy($owner)
+            ->setStartDate(new \DateTimeImmutable('today -84 days'))
+            ->setEndDate(new \DateTimeImmutable('yesterday'));
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/countdown', $plan->getId()));
+
+        self::assertResponseIsSuccessful();
+        $response = json_decode(
+            (string) $this->client->getResponse()->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        self::assertSame(0, $response['days_remaining']);
+        self::assertSame(0, $response['weeks_remaining']);
+        self::assertSame(ObjectiveCountdownService::STATUS_COMPLETED, $response['status']);
+    }
+
+    #[DataProvider('countdownDisplayStateProvider')]
+    public function testWeeklyPageDisplaysCountdownState(
+        string $endDate,
+        string $expectedStatus,
+        string $expectedMessage,
+    ): void {
+        $owner = $this->userWithProfile();
+        $this->completePlanOwnedBy($owner)
+            ->setStartDate(new \DateTimeImmutable('today -7 days'))
+            ->setEndDate(new \DateTimeImmutable($endDate));
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', '/training/weekly');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists(sprintf(
+            '[data-testid="objective-countdown"][data-countdown-status="%s"]',
+            $expectedStatus,
+        ));
+        self::assertSelectorTextContains('[data-testid="countdown-message"]', $expectedMessage);
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function countdownDisplayStateProvider(): iterable
+    {
+        yield 'objectif futur' => [
+            'today +45 days',
+            ObjectiveCountdownService::STATUS_UPCOMING,
+            'Encore 45 jours avant votre course',
+        ];
+        yield 'objectif atteint aujourd’hui' => [
+            'today',
+            ObjectiveCountdownService::STATUS_REACHED,
+            'Objectif atteint 🎉',
+        ];
+        yield 'objectif dépassé' => [
+            'yesterday',
+            ObjectiveCountdownService::STATUS_COMPLETED,
+            'Préparation terminée',
+        ];
+    }
+
+    public function testUserCannotRetrieveAnotherUsersPlanCountdown(): void
+    {
+        $owner = $this->userWithProfile();
+        $otherUser = (new User())
+            ->setEmail('countdown-other@example.com')
+            ->setPseudo('countdown-other-runner')
+            ->setPassword('test-password');
+        $plan = $this->completePlanOwnedBy($owner);
+        $this->entityManager->persist($owner);
+        $this->entityManager->persist($otherUser);
+        $this->entityManager->flush();
+        $this->client->loginUser($otherUser);
+
+        $this->client->request('GET', sprintf('/api/training-plans/%d/countdown', $plan->getId()));
+
+        self::assertResponseStatusCodeSame(404);
+        self::assertResponseHeaderSame('Content-Type', 'application/json');
+    }
+
+    public function testWeeklyPageComparesPlanProgressWithAvailableTime(): void
+    {
+        $owner = $this->userWithProfile();
+        $this->completePlanOwnedBy($owner)
+            ->setStartDate(new \DateTimeImmutable('today -21 days'))
+            ->setEndDate(new \DateTimeImmutable('today +28 days'))
+            ->setDurationWeeks(12)
+            ->setCurrentWeek(1);
+        $this->entityManager->persist($owner);
+        $this->entityManager->flush();
+        $this->client->loginUser($owner);
+
+        $this->client->request('GET', '/training/weekly');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains(
+            '[data-testid="countdown-plan-progress"]',
+            'Semaine 4 / 12 · 33 %',
+        );
+        self::assertSelectorTextContains('[data-testid="days-elapsed"]', '21 jours');
+        self::assertSelectorTextContains('[data-testid="timeline-days-remaining"]', '28 jours');
+        self::assertSelectorExists(
+            '[aria-label="Temps écoulé dans la préparation"][aria-valuenow="43"]',
+        );
+        self::assertSelectorExists('[data-testid="timeline-progress-fill"][style*="width: 43%"]');
+    }
+
+    public function testAnonymousUserCannotRetrievePlanCountdown(): void
+    {
+        $this->client->request('GET', '/api/training-plans/1/countdown');
+
+        self::assertResponseRedirects('http://localhost/login');
     }
 
     #[DataProvider('displayProgressProvider')]
