@@ -51,6 +51,10 @@
                     formStatus: formStatus
                 } only %}
 
+                {% include 'dashboard/_weather.html.twig' with {
+                    location: app.user.profile ? app.user.profile.trainingLocation : null
+                } only %}
+
                 {% include 'training_plan/_progress.html.twig' with {
                     plan: plan,
                     progressPercentage: progressPercentage,

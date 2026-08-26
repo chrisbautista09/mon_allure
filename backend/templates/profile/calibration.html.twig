@@ -19,6 +19,14 @@
                     <div class="account-field profile-account-grid__full">{{ form_label(profileForm.age) }}{{ form_widget(profileForm.age, {attr: {placeholder: 'Votre âge'}}) }}<small>Cette donnée permet d'appliquer les contraintes physiologiques adaptées.</small>{{ form_errors(profileForm.age) }}</div>
                 </div>
             </fieldset>
+            <fieldset class="account-fieldset">
+                <legend>⌖ Lieu d’entraînement</legend>
+                <div class="profile-account-grid">
+                    <div class="account-field">{{ form_label(profileForm.city) }}{{ form_widget(profileForm.city, {attr: {placeholder: 'Ex : Toulouse'}}) }}{{ form_errors(profileForm.city) }}</div>
+                    <div class="account-field">{{ form_label(profileForm.postalCode) }}{{ form_widget(profileForm.postalCode, {attr: {placeholder: 'Ex : 31000'}}) }}{{ form_errors(profileForm.postalCode) }}</div>
+                    <div class="account-field profile-account-grid__full">{{ form_label(profileForm.country) }}{{ form_widget(profileForm.country, {attr: {placeholder: 'Ex : France'}}) }}<small>Utilisé pour afficher la météo correspondant à votre lieu habituel d’entraînement.</small>{{ form_errors(profileForm.country) }}</div>
+                </div>
+            </fieldset>
             <fieldset class="account-fieldset account-fieldset--cardio">
                 <legend>♥ Cardio</legend>
                 <div class="profile-account-grid">

@@ -27,6 +27,21 @@ class ProfileType extends AbstractType
                 'label' => 'Âge',
                 'attr' => ['inputmode' => 'numeric'],
             ])
+            ->add('city', TextType::class, [
+                'label' => 'Ville d’entraînement',
+                'required' => false,
+                'attr' => ['autocomplete' => 'address-level2'],
+            ])
+            ->add('postalCode', TextType::class, [
+                'label' => 'Code postal',
+                'required' => false,
+                'attr' => ['autocomplete' => 'postal-code'],
+            ])
+            ->add('country', TextType::class, [
+                'label' => 'Pays',
+                'required' => false,
+                'attr' => ['autocomplete' => 'country-name'],
+            ])
             ->add('vma', NumberType::class, [
                 'label' => 'VMA (km/h)',
                 'required' => false,

@@ -57,6 +57,10 @@ final class ProfileControllerTest extends WebTestCase
             'vma' => 15.5,
             'fcm' => 190,
             'fcr' => 55,
+            'city' => 'Toulouse',
+            'postalCode' => '31000',
+            'country' => 'France',
+            'trainingLocation' => 'Toulouse, France',
         ]);
 
         $this->client->request('GET', '/api/profile');
@@ -215,6 +219,31 @@ final class ProfileControllerTest extends WebTestCase
         self::assertSame(16.2, $profile->getVma());
     }
 
+    public function testAuthenticatedUserCanConfigureTrainingLocation(): void
+    {
+        $user = $this->authenticateUser();
+        $this->createProfile($user);
+
+        $this->client->jsonRequest('PUT', '/api/profile', [
+            'city' => '  Lyon ',
+            'postalCode' => '69001',
+            'country' => ' France ',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $this->assertResponseJsonContains([
+            'city' => 'Lyon',
+            'postalCode' => '69001',
+            'country' => 'France',
+            'trainingLocation' => 'Lyon, France',
+        ]);
+
+        $this->entityManager->clear();
+        $profile = $this->entityManager->getRepository(Profile::class)->findOneBy([]);
+        self::assertInstanceOf(Profile::class, $profile);
+        self::assertSame('Lyon, France', $profile->getTrainingLocation());
+    }
+
     public function testInvalidProfileUpdateIsRejectedAndNotPersisted(): void
     {
         $user = $this->authenticateUser();
@@ -329,6 +358,9 @@ final class ProfileControllerTest extends WebTestCase
             'vo2max' => 48.2,
             'fcm' => 190,
             'fcr' => 55,
+            'city' => 'Toulouse',
+            'postalCode' => '31000',
+            'country' => 'France',
         ];
     }
 }
