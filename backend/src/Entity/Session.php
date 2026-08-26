@@ -89,14 +89,8 @@ class Session
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?TrainingPlan $trainingPlan = null;
 
-    /**
-     * @var Collection<int, Performance>
-     */
-    #[ORM\OneToMany(
-        targetEntity: Performance::class,
-        mappedBy: 'session'
-    )]
-    private Collection $performances;
+    #[ORM\OneToOne(mappedBy: 'session', targetEntity: Performance::class)]
+    private ?Performance $performance = null;
 
     /**
      * @var Collection<int, SessionIntensityZone>
@@ -120,7 +114,6 @@ class Session
 
     public function __construct()
     {
-        $this->performances = new ArrayCollection();
         $this->sessionIntensityZones = new ArrayCollection();
         $this->comments = new ArrayCollection();
     }
@@ -335,38 +328,44 @@ class Session
         return $this;
     }
 
-    /**
-     * @return Collection<int, Performance>
-     */
-    public function getPerformances(): Collection
+    public function getPerformance(): ?Performance
     {
-        return $this->performances;
+        return $this->performance;
     }
 
-    public function addPerformance(
-        Performance $performance
-    ): static {
-        if (!$this->performances->contains($performance)) {
-            $this->performances->add($performance);
+    public function setPerformance(?Performance $performance): static
+    {
+        if ($this->performance === $performance) {
+            return $this;
+        }
+
+        $previousPerformance = $this->performance;
+        $this->performance = $performance;
+
+        if ($previousPerformance?->getSession() === $this) {
+            $previousPerformance->setSession(null);
+        }
+
+        if ($performance !== null && $performance->getSession() !== $this) {
             $performance->setSession($this);
         }
 
         return $this;
     }
 
-    public function removePerformance(
-        Performance $performance
-    ): static {
-        if (
-            $this->performances->removeElement($performance)
-            && $performance->getSession() === $this
-        ) {
-            $performance->setSession(null);
+    public function clearPerformance(): static
+    {
+        if ($this->performance !== null) {
+            $performance = $this->performance;
+            $this->performance = null;
+
+            if ($performance->getSession() === $this) {
+                $performance->setSession(null);
+            }
         }
 
         return $this;
     }
-
     /**
      * @return Collection<int, SessionIntensityZone>
      */

@@ -62,7 +62,7 @@ class Performance
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'performances')]
+    #[ORM\OneToOne(inversedBy: 'performance')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?Session $session = null;
 
@@ -159,7 +159,20 @@ class Performance
 
     public function setSession(?Session $session): static
     {
+        if ($this->session === $session) {
+            return $this;
+        }
+
+        $previousSession = $this->session;
         $this->session = $session;
+
+        if ($previousSession?->getPerformance() === $this) {
+            $previousSession->clearPerformance();
+        }
+
+        if ($session !== null && $session->getPerformance() !== $this) {
+            $session->setPerformance($this);
+        }
 
         return $this;
     }

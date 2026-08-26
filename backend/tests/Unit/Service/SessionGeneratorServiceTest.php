@@ -204,7 +204,7 @@ final class SessionGeneratorServiceTest extends TestCase
         $performance = (new Performance())
             ->setDistanceKm(8)
             ->setDurationSec(2400);
-        $protectedSession->addPerformance($performance);
+        $protectedSession->setPerformance($performance);
         $plan->addSession($reference)->addSession($protectedSession);
 
         $regenerated = $this->service()->regenerateUpcoming($plan, $reference, 1.10);

@@ -131,7 +131,7 @@ class SessionGeneratorService
         $upcomingSessions = array_values(array_filter(
             $plan->getSessions()->toArray(),
             fn (Session $session): bool => $this->isRegenerable($session, $referenceSession)
-                && $session->getPerformances()->isEmpty()
+                && $session->getPerformance() === null
                 && $session->getComments()->isEmpty(),
         ));
         $regeneratedSessions = [];
