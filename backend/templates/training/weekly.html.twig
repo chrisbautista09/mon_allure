@@ -59,6 +59,8 @@
                     statistics: performanceStatistics
                 } only %}
 
+                {% include 'dashboard/_intensity_distribution.html.twig' %}
+
                 {% include 'training_plan/_progress.html.twig' with {
                     plan: plan,
                     progressPercentage: progressPercentage,
