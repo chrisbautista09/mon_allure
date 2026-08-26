@@ -1,0 +1,107 @@
+<section
+    class="mb-8 rounded-3xl border border-cyan-300/25 bg-slate-950/75 p-5 shadow-2xl shadow-cyan-950/30 sm:p-7"
+    aria-labelledby="performance-graphs-title"
+    data-performance-charts
+    data-performance-url="{{ path('api_performances_history') }}"
+    data-testid="performance-graphs"
+>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Mon évolution</p>
+            <h2 id="performance-graphs-title" class="mt-2 text-2xl font-black text-white sm:text-3xl">
+                Historique de mes performances
+            </h2>
+        </div>
+        <a href="{{ path('app_history_sessions') }}" class="font-bold text-cyan-200 transition hover:text-cyan-100">
+            Consulter mes séances
+        </a>
+    </div>
+
+    <div class="mt-6 flex flex-col gap-2 sm:max-w-xs">
+        <label for="performance-period" class="text-sm font-extrabold text-cyan-200">Période affichée</label>
+        <select id="performance-period" class="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-4 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-performance-period>
+            <option value="7d">7 derniers jours</option>
+            <option value="30d">30 derniers jours</option>
+            <option value="3m">3 derniers mois</option>
+            <option value="6m">6 derniers mois</option>
+            <option value="1y">1 an</option>
+            <option value="all" selected>Toutes</option>
+        </select>
+    </div>
+
+    {% set totalHours = (statistics.totalTimeSec / 3600)|round(0, 'floor') %}
+    {% set totalMinutes = ((statistics.totalTimeSec % 3600) / 60)|round(0, 'floor') %}
+    {% set averageMinutes = (statistics.averageTimeSec / 60)|round(0, 'floor') %}
+    {% set averageSeconds = statistics.averageTimeSec % 60 %}
+    <dl class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="performance-summary">
+        <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Distance totale</dt>
+            <dd class="mt-2 text-xl font-black text-cyan-200" data-performance-summary="totalDistance">{{ statistics.totalDistance }} km</dd>
+        </div>
+        <div class="rounded-2xl border border-violet-300/15 bg-violet-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Temps total</dt>
+            <dd class="mt-2 text-xl font-black text-violet-200" data-performance-summary="totalTime">{% if totalHours > 0 %}{{ totalHours }} h {{ '%02d'|format(totalMinutes) }} min{% else %}{{ totalMinutes }} min{% endif %}</dd>
+        </div>
+        <div class="rounded-2xl border border-emerald-300/15 bg-emerald-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Dénivelé cumulé</dt>
+            <dd class="mt-2 text-xl font-black text-emerald-200" data-performance-summary="totalElevation">{{ statistics.totalElevation }} m</dd>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Séances</dt>
+            <dd class="mt-2 text-xl font-black text-white" data-performance-summary="sessionCount">{{ statistics.sessionCount }}</dd>
+        </div>
+        <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Distance moyenne</dt>
+            <dd class="mt-2 text-xl font-black text-cyan-200" data-performance-summary="averageDistance">{{ statistics.averageDistance }} km</dd>
+        </div>
+        <div class="rounded-2xl border border-violet-300/15 bg-violet-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Temps moyen</dt>
+            <dd class="mt-2 text-xl font-black text-violet-200" data-performance-summary="averageTime">{{ averageMinutes }} min {{ '%02d'|format(averageSeconds) }} s</dd>
+        </div>
+    </dl>
+
+    <div class="mt-5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65" aria-live="polite" data-performance-chart-status>
+        Chargement de vos performances…
+    </div>
+
+    <div class="mt-5 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-6 text-center" data-performance-empty-state data-testid="performance-empty-state" hidden>
+        <p class="text-lg font-extrabold text-cyan-200">Commencez vos premiers entraînements pour suivre votre progression.</p>
+        <p class="mt-2 text-sm text-white/55">Vos graphiques apparaîtront ici après l’enregistrement de votre première performance.</p>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-3 text-xs font-bold" aria-label="Légende de comparaison aux objectifs" data-testid="performance-comparison-legend">
+        <span class="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1.5 text-emerald-200"><span aria-hidden="true">●</span> Objectif atteint</span>
+        <span class="rounded-full border border-orange-300/30 bg-orange-300/10 px-3 py-1.5 text-orange-200"><span aria-hidden="true">●</span> Proche de l’objectif</span>
+        <span class="rounded-full border border-rose-300/30 bg-rose-300/10 px-3 py-1.5 text-rose-200"><span aria-hidden="true">●</span> Objectif non atteint</span>
+        <span class="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-white/60"><span aria-hidden="true">┄</span> Valeur prévue</span>
+    </div>
+
+    <div class="mt-6 grid gap-5 lg:grid-cols-3" data-performance-chart-grid hidden>
+        <article class="rounded-2xl border border-cyan-300/15 bg-blue-950/55 p-4">
+            <h3 class="font-extrabold text-cyan-200">Distance</h3>
+            <p class="mt-1 text-xs text-white/45">Kilomètres réalisés par séance</p>
+            <div class="relative mt-4 h-64">
+                <canvas data-performance-chart="distance" role="img" aria-label="Graphique d’évolution des distances réalisées"></canvas>
+            </div>
+        </article>
+
+        <article class="rounded-2xl border border-violet-300/15 bg-blue-950/55 p-4">
+            <h3 class="font-extrabold text-violet-200">Temps</h3>
+            <p class="mt-1 text-xs text-white/45">Durée réalisée par séance</p>
+            <div class="relative mt-4 h-64">
+                <canvas data-performance-chart="time" role="img" aria-label="Graphique d’évolution des temps réalisés"></canvas>
+            </div>
+        </article>
+
+        <article class="rounded-2xl border border-emerald-300/15 bg-blue-950/55 p-4">
+            <h3 class="font-extrabold text-emerald-200">Dénivelé</h3>
+            <p class="mt-1 text-xs text-white/45">Dénivelé positif réalisé</p>
+            <div class="relative mt-4 h-64" data-elevation-chart-container>
+                <canvas data-performance-chart="elevation" role="img" aria-label="Graphique d’évolution du dénivelé réalisé"></canvas>
+            </div>
+            <p class="mt-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/55" data-elevation-empty-state hidden>
+                Aucun dénivelé renseigné sur cette période.
+            </p>
+        </article>
+    </div>
+</section>

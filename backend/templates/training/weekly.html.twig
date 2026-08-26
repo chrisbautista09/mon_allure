@@ -55,6 +55,10 @@
                     location: app.user.profile ? app.user.profile.trainingLocation : null
                 } only %}
 
+                {% include 'dashboard/_performance_graphs.html.twig' with {
+                    statistics: performanceStatistics
+                } only %}
+
                 {% include 'training_plan/_progress.html.twig' with {
                     plan: plan,
                     progressPercentage: progressPercentage,

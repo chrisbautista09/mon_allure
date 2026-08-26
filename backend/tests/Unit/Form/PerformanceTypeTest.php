@@ -3,6 +3,9 @@
 namespace App\Tests\Unit\Form;
 
 use App\Entity\Performance;
+use App\Entity\Session;
+use App\Entity\TrainingPlan;
+use App\Entity\User;
 use App\Form\PerformanceType;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
@@ -25,7 +28,7 @@ final class PerformanceTypeTest extends TypeTestCase
 
     public function testValidPerformanceIsMappedAndNormalized(): void
     {
-        $performance = new Performance();
+        $performance = $this->performanceWithOwnerGraph('trail');
         $form = $this->factory->create(PerformanceType::class, $performance);
 
         $form->submit([
@@ -49,7 +52,7 @@ final class PerformanceTypeTest extends TypeTestCase
 
     public function testTerrainIsRequiredAndRestrictedToKnownValues(): void
     {
-        $form = $this->factory->create(PerformanceType::class, new Performance());
+        $form = $this->factory->create(PerformanceType::class, $this->performanceWithOwnerGraph('road'));
         $form->submit([
             'durationSec' => '3600',
             'distanceKm' => '10',
@@ -65,7 +68,7 @@ final class PerformanceTypeTest extends TypeTestCase
 
     public function testInvalidValuesAreRejectedByServerValidation(): void
     {
-        $performance = (new Performance())
+        $performance = $this->performanceWithOwnerGraph('road')
             ->setDurationSec(0)
             ->setDistanceKm(-1)
             ->setElevationDPlus(-20)
@@ -77,5 +80,18 @@ final class PerformanceTypeTest extends TypeTestCase
         $violations = $validator->validate($performance);
 
         self::assertCount(4, $violations);
+    }
+
+    private function performanceWithOwnerGraph(string $terrainType): Performance
+    {
+        $user = new User();
+        $plan = (new TrainingPlan())
+            ->setTerrainType($terrainType)
+            ->setUser($user);
+        $session = (new Session())->setTrainingPlan($plan);
+
+        return (new Performance())
+            ->setSession($session)
+            ->setUser($user);
     }
 }

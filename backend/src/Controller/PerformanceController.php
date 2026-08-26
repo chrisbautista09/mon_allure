@@ -8,18 +8,58 @@ use App\Entity\User;
 use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Service\AdaptationService;
+use App\Service\PerformanceStatisticsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/performances', name: 'api_performances_')]
+#[IsGranted('ROLE_USER')]
 final class PerformanceController extends AbstractController
 {
+    #[Route('/history', name: 'history', methods: ['GET'])]
+    public function history(
+        Request $request,
+        PerformanceStatisticsService $statisticsService,
+        ClockInterface $clock,
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Authentification requise.');
+        }
+
+        $period = strtolower(trim($request->query->getString('period', 'all')));
+        $today = \DateTimeImmutable::createFromInterface($clock->now())->setTime(0, 0);
+        $start = match ($period) {
+            'all' => null,
+            '7d' => $today->modify('-6 days'),
+            '30d' => $today->modify('-29 days'),
+            '3m' => $today->modify('-3 months +1 day'),
+            '6m' => $today->modify('-6 months +1 day'),
+            '1y' => $today->modify('-1 year +1 day'),
+            default => false,
+        };
+
+        if ($start === false) {
+            return $this->json([
+                'message' => 'La période demandée est invalide.',
+                'allowedPeriods' => ['7d', '30d', '3m', '6m', '1y', 'all'],
+            ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return $this->json($start === null
+            ? $statisticsService->getHistory($user)
+            : $statisticsService->getHistory($user, $start, $today));
+    }
+
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(
         Request $request,
