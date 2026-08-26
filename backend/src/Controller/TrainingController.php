@@ -108,7 +108,7 @@ final class TrainingController extends AbstractController
                     'Le terrain doit correspondre à celui du plan d’entraînement.',
                 ));
             } else {
-                $session->setStatus('done');
+                $session->setStatus('completed');
                 $adaptation = $adaptationService->adapt($performance);
                 $entityManager->persist($performance);
                 $entityManager->flush();

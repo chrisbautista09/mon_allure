@@ -5,9 +5,9 @@ namespace App\Enum;
 enum SessionStatus: string
 {
     case PLANNED = 'planned';
-    case DONE = 'done';
-    case PARTIALLY_DONE = 'partially_done';
+    case COMPLETED = 'completed';
     case MISSED = 'missed';
+    case CANCELLED = 'cancelled';
 
     public function isTerminal(): bool
     {
@@ -16,11 +16,11 @@ enum SessionStatus: string
 
     public function isSuccessful(): bool
     {
-        return $this === self::DONE;
+        return $this === self::COMPLETED;
     }
 
     public function isFailed(): bool
     {
-        return in_array($this, [self::PARTIALLY_DONE, self::MISSED], true);
+        return in_array($this, [self::MISSED, self::CANCELLED], true);
     }
 }

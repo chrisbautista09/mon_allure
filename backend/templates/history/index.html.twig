@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique de mes séances | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-20 text-white sm:px-6 sm:py-24">
+        <section class="mx-auto max-w-5xl" aria-labelledby="history-title" data-testid="session-history">
+            <header class="mb-8 rounded-3xl border border-cyan-300/30 bg-slate-950/75 p-6 shadow-2xl shadow-cyan-950/30 backdrop-blur sm:p-8">
+                <p class="text-sm font-extrabold uppercase tracking-[0.2em] text-cyan-300">Mon suivi</p>
+                <div class="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <h1 id="history-title" class="text-3xl font-black sm:text-4xl">Historique de mes séances</h1>
+                        <p class="mt-3 max-w-2xl text-white/65">
+                            Retrouvez vos entraînements passés et les principales données prévues par votre programme.
+                        </p>
+                    </div>
+                    <a
+                        href="{{ path('app_training_weekly') }}"
+                        class="inline-flex items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 px-5 py-3 font-bold text-cyan-200 transition hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-cyan-300 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+                    >
+                        Voir mon programme
+                    </a>
+                </div>
+            </header>
+
+            <form method="get" action="{{ path('app_history_sessions') }}" class="mb-6 grid gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto] lg:items-end" data-testid="history-filters">
+                <label class="grid gap-2 text-sm font-bold text-cyan-200">
+                    Statut
+                    <select name="status" class="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20">
+                        <option value="all" {{ filters.status == 'all' ? 'selected' }}>Toutes</option>
+                        <option value="completed" {{ filters.status == 'completed' ? 'selected' }}>Complétées</option>
+                        <option value="missed" {{ filters.status == 'missed' ? 'selected' }}>Manquées</option>
+                        <option value="cancelled" {{ filters.status == 'cancelled' ? 'selected' }}>Annulées</option>
+                    </select>
+                </label>
+
+                <label class="grid gap-2 text-sm font-bold text-cyan-200">
+                    Période
+                    <select name="period" class="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20">
+                        <option value="all" {{ filters.period == 'all' ? 'selected' }}>Toutes les périodes</option>
+                        <option value="30_days" {{ filters.period == '30_days' ? 'selected' }}>30 derniers jours</option>
+                        <option value="3_months" {{ filters.period == '3_months' ? 'selected' }}>3 derniers mois</option>
+                        <option value="year" {{ filters.period == 'year' ? 'selected' }}>Année</option>
+                    </select>
+                </label>
+
+                <label class="grid gap-2 text-sm font-bold text-cyan-200">
+                    Rechercher une séance
+                    <input type="search" name="search" value="{{ filters.search }}" maxlength="100" placeholder="Titre de séance" class="min-h-11 rounded-xl border border-white/15 bg-slate-900 px-4 text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20">
+                </label>
+
+                <div class="flex gap-2">
+                    <button type="submit" class="min-h-11 flex-1 rounded-xl bg-cyan-300 px-5 font-extrabold text-slate-950 transition hover:-translate-y-0.5 hover:bg-cyan-200">Filtrer</button>
+                    <a href="{{ path('app_history_sessions') }}" aria-label="Réinitialiser les filtres" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 px-4 font-bold text-white/70 transition hover:border-cyan-300 hover:text-cyan-200">×</a>
+                </div>
+            </form>
+
+            {% if sessions is empty %}
+                <div class="rounded-3xl border border-white/10 bg-blue-950/70 p-8 text-center shadow-xl" data-testid="history-empty-state">
+                    <p class="text-xl font-bold text-cyan-200">Aucune séance dans votre historique</p>
+                    <p class="mt-2 text-white/60">Vos séances apparaîtront ici au fil de votre programme.</p>
+                </div>
+            {% else %}
+                <div class="grid gap-4" data-testid="history-session-list">
+                    {% for session in sessions %}
+                        <article class="group rounded-2xl border border-white/10 bg-slate-950/75 p-5 shadow-lg transition duration-200 hover:-translate-y-0.5 hover:border-cyan-300/40 hover:shadow-cyan-950/30 sm:p-6" data-session-id="{{ session.id }}">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="min-w-0">
+                                    <time datetime="{{ session.date }}" class="text-sm font-bold uppercase tracking-wider text-cyan-300">
+                                        {{ session.date|date('d/m/Y') }}
+                                    </time>
+                                    <h2 class="mt-1 truncate text-xl font-bold text-white sm:text-2xl">{{ session.title }}</h2>
+                                    <p class="mt-1 truncate text-sm text-white/50">{{ session.plan.name }}</p>
+                                </div>
+                                {% include 'components/_session_status_badge.html.twig' with {status: session.status} only %}
+                            </div>
+
+                            <dl class="mt-5 grid grid-cols-2 gap-3 border-t border-white/10 pt-5 sm:flex sm:flex-wrap sm:gap-4">
+                                <div class="rounded-xl bg-white/5 p-3 sm:min-w-40">
+                                    <dt class="text-xs uppercase tracking-wide text-white/45">Durée prévue</dt>
+                                    <dd class="mt-1 font-bold text-white">{{ session.plannedDurationMin is not null ? session.plannedDurationMin ~ ' min' : 'Non renseignée' }}</dd>
+                                </div>
+                                <div class="rounded-xl bg-white/5 p-3 sm:min-w-40">
+                                    <dt class="text-xs uppercase tracking-wide text-white/45">Distance prévue</dt>
+                                    <dd class="mt-1 font-bold text-white">{{ session.plannedDistanceKm is not null ? session.plannedDistanceKm ~ ' km' : 'Non renseignée' }}</dd>
+                                </div>
+                            </dl>
+
+                            {% if session.performance %}
+                                {% set durationHours = (session.performance.durationSec / 3600)|round(0, 'floor') %}
+                                {% set durationMinutes = ((session.performance.durationSec % 3600) / 60)|round(0, 'floor') %}
+                                {% set durationSeconds = session.performance.durationSec % 60 %}
+                                <section class="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-4" aria-label="Performance réalisée" data-testid="session-performance">
+                                    <p class="text-xs font-extrabold uppercase tracking-[0.15em] text-emerald-200">Performance réalisée</p>
+                                    <dl class="mt-3 grid grid-cols-2 gap-x-5 gap-y-3 text-sm sm:grid-cols-4">
+                                        <div>
+                                            <dt class="text-white/45">Distance</dt>
+                                            <dd class="mt-0.5 font-bold text-white">{{ session.performance.distanceKm }} km</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-white/45">Temps</dt>
+                                            <dd class="mt-0.5 font-bold text-white">
+                                                {% if durationHours > 0 %}{{ durationHours }} h {% endif %}{{ durationMinutes }} min{% if durationSeconds > 0 %} {{ durationSeconds }} s{% endif %}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-white/45">Dénivelé</dt>
+                                            <dd class="mt-0.5 font-bold text-white">{{ session.performance.elevationDPlus is not null ? session.performance.elevationDPlus ~ ' m D+' : 'Non renseigné' }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="text-white/45">Terrain</dt>
+                                            <dd class="mt-0.5 font-bold text-white">{{ session.performance.terrainType == 'trail' ? 'Trail' : (session.performance.terrainType == 'road' ? 'Route' : 'Non renseigné') }}</dd>
+                                        </div>
+                                    </dl>
+                                </section>
+                            {% else %}
+                                <p class="mt-4 border-t border-white/10 pt-4 text-sm text-white/45" data-testid="session-without-performance">
+                                    Aucune performance enregistrée
+                                </p>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+
+                {% if pagination.totalPages > 1 %}
+                    <nav class="mt-8 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-4" aria-label="Pagination de l’historique" data-testid="history-pagination">
+                        {% if pagination.page > 1 %}
+                            <a href="{{ path('app_history_sessions', filters|merge({page: pagination.page - 1})) }}" class="rounded-full border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950">Précédente</a>
+                        {% else %}
+                            <span class="rounded-full border border-white/10 px-4 py-2 text-white/30" aria-disabled="true">Précédente</span>
+                        {% endif %}
+
+                        <span class="text-center text-sm text-white/65">
+                            Page <strong class="text-white">{{ pagination.page }}</strong> sur {{ pagination.totalPages }}
+                        </span>
+
+                        {% if pagination.page < pagination.totalPages %}
+                            <a href="{{ path('app_history_sessions', filters|merge({page: pagination.page + 1})) }}" class="rounded-full border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950">Suivante</a>
+                        {% else %}
+                            <span class="rounded-full border border-white/10 px-4 py-2 text-white/30" aria-disabled="true">Suivante</span>
+                        {% endif %}
+                    </nav>
+                {% endif %}
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

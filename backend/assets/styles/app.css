@@ -50,6 +50,47 @@
         );
 }
 
+@layer components {
+    .session-status-badge {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.4rem 0.8rem;
+        border: 1px solid;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+    }
+
+    .badge-success {
+        border-color: rgba(110, 231, 183, 0.45);
+        color: #a7f3d0;
+        background: rgba(16, 185, 129, 0.16);
+    }
+
+    .badge-warning {
+        border-color: rgba(253, 186, 116, 0.48);
+        color: #fed7aa;
+        background: rgba(249, 115, 22, 0.16);
+    }
+
+    .badge-danger {
+        border-color: rgba(253, 164, 175, 0.48);
+        color: #fecdd3;
+        background: rgba(244, 63, 94, 0.16);
+    }
+
+    .badge-neutral {
+        border-color: rgba(226, 232, 240, 0.35);
+        color: #e2e8f0;
+        background: rgba(148, 163, 184, 0.14);
+    }
+}
+
 /* =========================================================
    CONNEXION, INSCRIPTION ET PROFIL SPORTIF
    ========================================================= */

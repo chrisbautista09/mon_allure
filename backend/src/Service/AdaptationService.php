@@ -221,7 +221,7 @@ final class AdaptationService
                 continue;
             }
 
-            if (!in_array($session->getStatus(), ['done', 'missed', 'partially_done'], true)) {
+            if (!in_array($session->getStatus(), ['completed', 'missed', 'cancelled'], true)) {
                 return false;
             }
         }

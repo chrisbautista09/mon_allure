@@ -246,7 +246,27 @@
 > En tant qu'utilisateur, je veux consulter l'historique de mes séances afin de suivre ma progression.
 
 **Critères d'acceptation :**
-- [ ] Liste des séances passées avec statut (générée, validée, manquée)
+- [x] Liste des séances passées avec statut (générée, validée, manquée)
+
+**Tâches techniques :**
+- [x] Modèle `Session` validé : plan et date obligatoires, consignes dédiées et
+  statuts `planned`, `completed`, `missed`, `cancelled`
+- [x] Requêtes paginées de récupération de l’historique, isolées par
+  utilisateur et triées de la plus récente à la plus ancienne
+- [x] `HistoryService` formate les séances, leur plan et leur performance
+  éventuelle avec les métadonnées de pagination
+- [x] Endpoint sécurisé `GET /api/history/sessions` avec pagination validée,
+  isolation des données de l’utilisateur connecté et tri antéchronologique
+- [x] Page responsive `/history/sessions` affichant les informations principales
+  des séances passées avec navigation paginée
+- [x] Badges de statut homogènes et réutilisables : complétée en vert,
+  planifiée en orange, manquée en rouge et annulée en gris
+- [x] Résultats réalisés affichés de façon compacte lorsqu’ils existent :
+  distance, temps, dénivelé et terrain validé du plan
+- [x] Filtres combinables par statut et période, avec recherche par titre et
+  conservation des critères lors de la pagination
+- [x] Tests fonctionnels de l’historique vide et complet, des associations de
+  performances, du filtre « Complétées » et des paginations à 50 et 100 séances
 
 **Labels :** `feature`, `backend`, `frontend`, `priority:medium`
 

@@ -27,7 +27,7 @@ final class ProgressScoreCalculatorServiceTest extends TestCase
     public function testScoreCombinesHistoryRegularityPaceVolumeAndEvolution(): void
     {
         [$current, $plan, $user] = $this->performanceContext(9, 3600);
-        $previousSession = $this->session($plan, '2026-08-25', 'done');
+        $previousSession = $this->session($plan, '2026-08-25', 'completed');
         $missedSession = $this->session($plan, '2026-08-28', 'missed');
         $previous = (new Performance())
             ->setUser($user)

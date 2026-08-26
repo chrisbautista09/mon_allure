@@ -59,7 +59,7 @@ final class PerformanceJourneyTest extends WebTestCase
         self::assertSame($user->getId(), $performance->getUser()?->getId());
         self::assertSame(3540, $performance->getDurationSec());
         self::assertSame(10.2, $performance->getDistanceKm());
-        self::assertSame('done', $performance->getSession()?->getStatus());
+        self::assertSame('completed', $performance->getSession()?->getStatus());
     }
 
     public function testInvalidPerformanceIsRejectedAndNotPersisted(): void
@@ -309,7 +309,7 @@ final class PerformanceJourneyTest extends WebTestCase
         $storedGoal = $this->entityManager->find(Session::class, $goalEventId);
 
         self::assertSame((float) $expectedScore, $storedPlan?->getProgressScore());
-        self::assertSame('done', $storedCurrent?->getStatus());
+        self::assertSame('completed', $storedCurrent?->getStatus());
         self::assertSame(40, $storedPast?->getPlannedDurationMin());
         self::assertNull($this->entityManager->find(Session::class, $futureSessionId));
         self::assertSame($futureDate, $storedFuture?->getDate()?->format('Y-m-d'));
@@ -345,11 +345,11 @@ final class PerformanceJourneyTest extends WebTestCase
             ->setEndDate(new \DateTimeImmutable('2026-10-11'))
             ->setDurationWeeks(8)
             ->setProgressScore($initialScore);
-        $pastSession = $this->adaptationSession(1, '2026-08-18', 'done', 'endurance');
+        $pastSession = $this->adaptationSession(1, '2026-08-18', 'completed', 'endurance');
         $secondPastSession = $this->adaptationSession(
             2,
             '2026-08-25',
-            $successfulBlock ? 'done' : 'missed',
+            $successfulBlock ? 'completed' : 'missed',
             'endurance',
         );
         $currentSession = $this->adaptationSession(3, '2026-09-01', 'planned', 'threshold')

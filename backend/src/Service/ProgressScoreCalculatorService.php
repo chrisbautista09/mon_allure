@@ -98,7 +98,7 @@ final class ProgressScoreCalculatorService
 
         $completed = count(array_filter(
             $dueSessions,
-            static fn (Session $session): bool => $session === $currentSession || $session->getStatus() === 'done',
+            static fn (Session $session): bool => $session === $currentSession || $session->getStatus() === 'completed',
         ));
 
         return $completed / count($dueSessions) * 100;

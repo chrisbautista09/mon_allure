@@ -133,10 +133,10 @@ final class SessionGeneratorServiceTest extends TestCase
     public function testRecalibratesOnlyFuturePlannedSessionsWithoutMovingDates(): void
     {
         $plan = $this->plan(4);
-        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $reference = $this->adjustableSession('2026-09-01', 'completed', 'endurance');
         $future = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
         $past = $this->adjustableSession('2026-08-31', 'planned', 'threshold');
-        $completed = $this->adjustableSession('2026-09-09', 'done', 'threshold');
+        $completed = $this->adjustableSession('2026-09-09', 'completed', 'threshold');
         $goalEvent = $this->adjustableSession('2026-09-10', 'planned', 'goal_event');
 
         foreach ([$reference, $future, $past, $completed, $goalEvent] as $session) {
@@ -159,7 +159,7 @@ final class SessionGeneratorServiceTest extends TestCase
     public function testLoadReductionRespectsSafePositiveValues(): void
     {
         $plan = $this->plan(4);
-        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $reference = $this->adjustableSession('2026-09-01', 'completed', 'endurance');
         $future = $this->adjustableSession('2026-09-08', 'planned', 'vma');
         $plan->addSession($reference)->addSession($future);
 
@@ -174,9 +174,9 @@ final class SessionGeneratorServiceTest extends TestCase
     public function testRegeneratesUpcomingSessionsWithoutChangingHistoryOrGoalEvent(): void
     {
         $plan = $this->plan(4);
-        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $reference = $this->adjustableSession('2026-09-01', 'completed', 'endurance');
         $future = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
-        $past = $this->adjustableSession('2026-08-31', 'done', 'threshold');
+        $past = $this->adjustableSession('2026-08-31', 'completed', 'threshold');
         $goalEvent = $this->adjustableSession('2026-09-10', 'planned', 'goal_event');
         $plan->addSession($reference)->addSession($future)->addSession($past)->addSession($goalEvent);
 
@@ -199,7 +199,7 @@ final class SessionGeneratorServiceTest extends TestCase
     public function testRegenerationNeverReplacesASessionWithPerformanceHistory(): void
     {
         $plan = $this->plan(4);
-        $reference = $this->adjustableSession('2026-09-01', 'done', 'endurance');
+        $reference = $this->adjustableSession('2026-09-01', 'completed', 'endurance');
         $protectedSession = $this->adjustableSession('2026-09-08', 'planned', 'threshold');
         $performance = (new Performance())
             ->setDistanceKm(8)
