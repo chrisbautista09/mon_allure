@@ -11,6 +11,7 @@ use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Repository\TrainingPlanRepository;
 use App\Service\AdaptationService;
+use App\Service\FormStatusService;
 use App\Service\ObjectiveCountdownService;
 use App\Service\ProgressService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +28,7 @@ final class TrainingController extends AbstractController
         TrainingPlanRepository $repository,
         ProgressService $progressService,
         ObjectiveCountdownService $countdownService,
+        FormStatusService $formStatusService,
         EntityManagerInterface $entityManager,
     ): Response {
         $user = $this->authenticatedUser();
@@ -65,6 +67,7 @@ final class TrainingController extends AbstractController
             'isPlanCompleted' => $progressService->isPlanCompleted($plan),
             'countdown' => $countdownService->calculateRemainingTime($plan),
             'timelineComparison' => $countdownService->calculateTimelineComparison($plan),
+            'formStatus' => $formStatusService->calculate($user),
         ]);
     }
 

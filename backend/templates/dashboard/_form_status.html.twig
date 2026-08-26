@@ -1,0 +1,95 @@
+{% set statusThemes = {
+    LOW: {
+        badge: 'border-rose-300/35 bg-rose-400/10 text-rose-200',
+        bar: 'bg-gradient-to-r from-rose-500 to-orange-400',
+        dot: 'bg-rose-400',
+        icon: '↘'
+    },
+    FAIR: {
+        badge: 'border-amber-300/35 bg-amber-400/10 text-amber-200',
+        bar: 'bg-gradient-to-r from-amber-500 to-yellow-300',
+        dot: 'bg-amber-300',
+        icon: '●'
+    },
+    GOOD: {
+        badge: 'border-emerald-300/35 bg-emerald-400/10 text-emerald-200',
+        bar: 'bg-gradient-to-r from-emerald-500 to-cyan-300',
+        dot: 'bg-emerald-300',
+        icon: '✓'
+    },
+    EXCELLENT: {
+        badge: 'border-cyan-300/45 bg-cyan-300/10 text-cyan-100',
+        bar: 'bg-gradient-to-r from-cyan-400 to-blue-400',
+        dot: 'bg-cyan-300',
+        icon: '★'
+    },
+    UNAVAILABLE: {
+        badge: 'border-white/20 bg-white/5 text-white/70',
+        bar: 'bg-white/20',
+        dot: 'bg-white/40',
+        icon: '·'
+    }
+} %}
+{% set trendIcons = {IMPROVING: '↗', STABLE: '→', DECLINING: '↘', UNKNOWN: '·'} %}
+{% set statusCode = formStatus.status ? formStatus.status.value : 'UNAVAILABLE' %}
+{% set theme = statusThemes[statusCode] %}
+{% set score = formStatus.score %}
+
+<section
+    class="mb-8 overflow-hidden rounded-3xl border border-white/10 bg-slate-950/70 p-6 shadow-xl sm:p-7"
+    aria-labelledby="form-status-title"
+    data-testid="form-status-card"
+    data-form-status="{{ statusCode }}"
+>
+    <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+        <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-300">Suivi sportif</p>
+            <h2 id="form-status-title" class="mt-2 text-2xl font-bold">Votre état de forme</h2>
+            <div class="mt-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 font-bold {{ theme.badge }}">
+                <span class="h-2.5 w-2.5 rounded-full {{ theme.dot }}" aria-hidden="true"></span>
+                <span aria-hidden="true">{{ theme.icon }}</span>
+                <span data-testid="form-status-label">
+                    {{ formStatus.status ? formStatus.status.label : formStatus.dataState.label }}
+                </span>
+            </div>
+        </div>
+
+        <div class="sm:text-right">
+            <p class="text-sm text-white/55">Score actuel</p>
+            <p class="mt-1 text-4xl font-black text-white" data-testid="form-status-score">
+                {{ score is not null ? score : '—' }} <span class="text-lg font-semibold text-white/50">/ 100</span>
+            </p>
+        </div>
+    </div>
+
+    {% if score is not null %}
+        <div
+            class="mt-6 h-3 overflow-hidden rounded-full bg-white/10"
+            role="progressbar"
+            aria-label="Score de forme"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="{{ score }}"
+        >
+            <div
+                class="h-full rounded-full transition-[width] duration-700 ease-out {{ theme.bar }}"
+                style="width: {{ score }}%"
+                data-testid="form-status-fill"
+            ></div>
+        </div>
+    {% endif %}
+
+    <p class="mt-5 text-sm text-white/70" data-testid="form-status-data-state">
+        {{ formStatus.dataState.message }}
+    </p>
+
+    <div class="mt-4 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+        <span class="text-2xl text-cyan-300" aria-hidden="true">{{ trendIcons[formStatus.trend.value] }}</span>
+        <div>
+            <p class="text-sm font-bold text-white" data-testid="form-status-trend">
+                Tendance : {{ formStatus.trend.label|capitalize }}
+            </p>
+            <p class="mt-1 text-sm text-white/60">{{ formStatus.trend.message }}</p>
+        </div>
+    </div>
+</section>

@@ -47,6 +47,10 @@
                     </div>
                 </header>
 
+                {% include 'dashboard/_form_status.html.twig' with {
+                    formStatus: formStatus
+                } only %}
+
                 {% include 'training_plan/_progress.html.twig' with {
                     plan: plan,
                     progressPercentage: progressPercentage,
