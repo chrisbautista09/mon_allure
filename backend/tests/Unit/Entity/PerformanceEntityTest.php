@@ -4,10 +4,12 @@ namespace App\Tests\Unit\Entity;
 
 use App\Entity\Performance;
 use App\Entity\Session;
+use App\Entity\TrainingPlan;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class PerformanceEntityTest extends KernelTestCase
 {
@@ -60,7 +62,57 @@ final class PerformanceEntityTest extends KernelTestCase
         self::assertSame(Session::class, $association->targetEntity);
         self::assertSame('performance', $association->inversedBy);
         self::assertTrue($association->joinColumns[0]->unique);
-        self::assertTrue($association->joinColumns[0]->nullable);
-        self::assertSame('SET NULL', $association->joinColumns[0]->onDelete);
+        self::assertFalse($association->joinColumns[0]->nullable);
+        self::assertSame('CASCADE', $association->joinColumns[0]->onDelete);
+    }
+
+    public function testTerrainIsDerivedFromTheSessionsTrainingPlan(): void
+    {
+        $plan = (new TrainingPlan())->setTerrainType('trail');
+        $session = new Session();
+        $plan->addSession($session);
+        $performance = (new Performance())->setSession($session);
+
+        self::assertSame('trail', $performance->getTerrainType());
+    }
+
+    public function testValidationRequiresCompleteAndConsistentGraphData(): void
+    {
+        self::bootKernel();
+        $validator = self::getContainer()->get(ValidatorInterface::class);
+        $owner = new User();
+        $otherUser = new User();
+        $plan = (new TrainingPlan())->setUser($owner);
+        $session = (new Session())->setTrainingPlan($plan);
+        $performance = (new Performance())
+            ->setDistanceKm(10)
+            ->setDurationSec(3600)
+            ->setSession($session)
+            ->setUser($otherUser);
+
+        $violations = $validator->validate($performance);
+
+        self::assertGreaterThanOrEqual(1, $violations->count());
+        self::assertSame('user', $violations[0]->getPropertyPath());
+        self::assertSame(
+            'La performance doit appartenir au propriétaire du plan d’entraînement.',
+            $violations[0]->getMessage(),
+        );
+    }
+
+    public function testValidationRejectsPerformanceWithoutSessionOrUser(): void
+    {
+        self::bootKernel();
+        $violations = self::getContainer()->get(ValidatorInterface::class)->validate(
+            (new Performance())->setDistanceKm(10)->setDurationSec(3600),
+        );
+        $paths = [];
+
+        foreach ($violations as $violation) {
+            $paths[] = $violation->getPropertyPath();
+        }
+
+        self::assertContains('session', $paths);
+        self::assertContains('user', $paths);
     }
 }

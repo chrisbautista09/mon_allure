@@ -6,6 +6,7 @@ use App\Repository\PerformanceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: PerformanceRepository::class)]
 class Performance
@@ -60,14 +61,17 @@ class Performance
     private ?string $comment = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La date d’enregistrement est obligatoire.')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\OneToOne(inversedBy: 'performance')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La performance doit être rattachée à une séance.')]
     private ?Session $session = null;
 
     #[ORM\ManyToOne(inversedBy: 'performances')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La performance doit appartenir à un utilisateur.')]
     private ?User $user = null;
 
     public function __construct()
@@ -187,5 +191,27 @@ class Performance
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * Le terrain est celui du plan associé à la séance. La saisie d’une
+     * performance impose déjà cette concordance, ce qui évite une donnée
+     * dupliquée susceptible de diverger.
+     */
+    public function getTerrainType(): ?string
+    {
+        return $this->session?->getTrainingPlan()?->getTerrainType();
+    }
+
+    #[Assert\Callback]
+    public function validateOwnershipConsistency(ExecutionContextInterface $context): void
+    {
+        $planOwner = $this->session?->getTrainingPlan()?->getUser();
+
+        if ($this->user !== null && $planOwner !== null && $this->user !== $planOwner) {
+            $context->buildViolation('La performance doit appartenir au propriétaire du plan d’entraînement.')
+                ->atPath('user')
+                ->addViolation();
+        }
     }
 }

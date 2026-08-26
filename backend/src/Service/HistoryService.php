@@ -83,15 +83,12 @@ final class HistoryService
                 'id' => $plan?->getId(),
                 'name' => $plan?->getName(),
             ],
-            'performance' => $this->formatPerformance(
-                $session->getPerformance(),
-                $plan?->getTerrainType(),
-            ),
+            'performance' => $this->formatPerformance($session->getPerformance()),
         ];
     }
 
     /** @return array<string, mixed>|null */
-    private function formatPerformance(?Performance $performance, ?string $terrainType): ?array
+    private function formatPerformance(?Performance $performance): ?array
     {
         if ($performance === null) {
             return null;
@@ -102,7 +99,7 @@ final class HistoryService
             'distanceKm' => $performance->getDistanceKm(),
             'durationSec' => $performance->getDurationSec(),
             'elevationDPlus' => $performance->getElevationDPlus(),
-            'terrainType' => $terrainType,
+            'terrainType' => $performance->getTerrainType(),
             'avgHr' => $performance->getAvgHr(),
             'comment' => $performance->getComment(),
             'recordedAt' => $performance->getCreatedAt()?->format(\DateTimeInterface::ATOM),

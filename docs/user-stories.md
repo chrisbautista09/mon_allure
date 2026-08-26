@@ -276,7 +276,29 @@
 > En tant qu'utilisateur, je veux visualiser mes performances passées afin d'analyser mon évolution (distance, temps, dénivelé).
 
 **Critères d'acceptation :**
-- [ ] Graphiques d'évolution (distance, temps, dénivelé) dans le temps
+- [x] Graphiques d'évolution (distance, temps, dénivelé) dans le temps
+
+**Tâches techniques :**
+- [x] Modèle `Performance` validé : métriques cohérentes, séance et utilisateur
+  obligatoires, propriétaire conforme au plan et terrain dérivé sans duplication
+- [x] Requêtes chronologiques du `PerformanceRepository` isolées par utilisateur,
+  avec séries distance, temps, dénivelé et filtrage inclusif par période
+- [x] `PerformanceStatisticsService` prépare les séries graphiques et calcule
+  moyenne, meilleur résultat, pire résultat et progression par métrique
+- [x] Endpoint sécurisé `GET /api/performances/history` renvoyant les métriques
+  chronologiques du seul utilisateur connecté au format JSON
+- [x] Composant responsive de graphiques Chart.js affichant les évolutions de
+  distance, temps et dénivelé dans le dashboard utilisateur
+- [x] Cartes de synthèse automatiques : distance, temps et dénivelé cumulés,
+  nombre de séances, distance moyenne et temps moyen
+- [x] Filtrage dynamique des graphiques et statistiques sur 7 jours, 30 jours,
+  3 mois, 6 mois, 1 an ou tout l’historique
+- [x] Comparaison prévu/réalisé pour distance, temps et dénivelé, avec objectifs
+  en pointillés et indicateurs vert, orange ou rouge selon l’écart
+- [x] États robustes pour nouvel utilisateur, historique vide, erreur de
+  chargement et dénivelé non renseigné, sans afficher de graphique vide
+- [x] Tests de clôture sur historique vide, filtres, exactitude des statistiques
+  et stabilité avec 300 performances chronologiques
 
 **Labels :** `feature`, `frontend`, `priority:medium`
 

@@ -126,6 +126,33 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorNotExists('[aria-label="Score de forme"]');
         self::assertSelectorTextContains('[data-testid="form-status-data-state"]', 'Réalisez vos premières séances');
         self::assertSelectorTextContains('[data-testid="form-status-trend"]', 'Données insuffisantes');
+        self::assertSelectorExists('[data-testid="performance-graphs"][data-performance-url="/api/performances/history"]');
+        self::assertSelectorCount(3, '[data-testid="performance-graphs"] canvas[data-performance-chart]');
+        self::assertSelectorExists('canvas[data-performance-chart="distance"][aria-label*="distances"]');
+        self::assertSelectorExists('canvas[data-performance-chart="time"][aria-label*="temps"]');
+        self::assertSelectorExists('canvas[data-performance-chart="elevation"][aria-label*="dénivelé"]');
+        self::assertSelectorCount(6, '[data-testid="performance-summary"] > div');
+        self::assertSelectorExists('[data-performance-period] option[value="7d"]');
+        self::assertSelectorExists('[data-performance-period] option[value="30d"]');
+        self::assertSelectorExists('[data-performance-period] option[value="3m"]');
+        self::assertSelectorExists('[data-performance-period] option[value="6m"]');
+        self::assertSelectorExists('[data-performance-period] option[value="1y"]');
+        self::assertSelectorExists('[data-performance-period] option[value="all"][selected]');
+        self::assertSelectorTextContains('[data-testid="performance-comparison-legend"]', 'Objectif atteint');
+        self::assertSelectorTextContains('[data-testid="performance-comparison-legend"]', 'Proche de l’objectif');
+        self::assertSelectorTextContains('[data-testid="performance-comparison-legend"]', 'Objectif non atteint');
+        self::assertSelectorExists('[data-testid="performance-empty-state"][hidden]');
+        self::assertSelectorTextContains(
+            '[data-testid="performance-empty-state"]',
+            'Commencez vos premiers entraînements pour suivre votre progression.',
+        );
+        self::assertSelectorExists('[data-elevation-empty-state][hidden]');
+        self::assertSelectorTextSame('[data-performance-summary="totalDistance"]', '0 km');
+        self::assertSelectorTextSame('[data-performance-summary="totalTime"]', '0 min');
+        self::assertSelectorTextSame('[data-performance-summary="totalElevation"]', '0 m');
+        self::assertSelectorTextSame('[data-performance-summary="sessionCount"]', '0');
+        self::assertSelectorTextSame('[data-performance-summary="averageDistance"]', '0 km');
+        self::assertSelectorTextSame('[data-performance-summary="averageTime"]', '0 min 00 s');
         self::assertSelectorExists('[data-testid="objective-countdown"][data-countdown-status="upcoming"]');
         self::assertSelectorExists(sprintf(
             '[data-testid="objective-date"][datetime="%s"]',
@@ -142,7 +169,7 @@ final class TrainingPlanControllerTest extends WebTestCase
             '[data-testid="weeks-remaining"]',
             sprintf('%d semaines', intdiv($remainingDays, 7)),
         );
-        self::assertSelectorTextContains('h3', 'Endurance fondamentale');
+        self::assertSelectorTextContains('[data-testid="training-plan-weeks"] h3', 'Endurance fondamentale');
         self::assertSelectorTextContains('article .session-instructions', 'Cible');
         self::assertSelectorTextContains(
             '[data-testid="export-training-plan-pdf"]',

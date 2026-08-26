@@ -36,4 +36,6 @@ return [
     'preact' => ['version' => '10.12.1'],
     'preact/compat' => ['version' => '10.12.1'],
     'preact/hooks' => ['version' => '10.12.1'],
+    'chart.js' => ['version' => '4.5.1'],
+    '@kurkle/color' => ['version' => '0.3.4'],
 ];
