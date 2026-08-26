@@ -32,10 +32,11 @@ class Session
     private ?int $dayOfWeek = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: 'Le titre de la séance est obligatoire.')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    private ?string $instructions = null;
 
     /**
      * Exemples :
@@ -69,15 +70,16 @@ class Session
     private ?string $plannedFcmZone = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\NotNull(message: 'La date de la séance est obligatoire.')]
     private ?\DateTimeImmutable $date = null;
 
     /**
      * Valeurs prévues :
-     * planned, done, missed.
+     * planned, completed, missed, cancelled.
      */
     #[ORM\Column(length: 20, options: ['default' => 'planned'])]
     #[Assert\Choice(
-        choices: ['planned', 'done', 'partially_done', 'missed'],
+        choices: ['planned', 'completed', 'missed', 'cancelled'],
         message: 'Le statut de la séance est invalide.',
     )]
     private string $status = 'planned';
@@ -87,6 +89,7 @@ class Session
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La séance doit être rattachée à un plan d’entraînement.')]
     private ?TrainingPlan $trainingPlan = null;
 
     #[ORM\OneToOne(mappedBy: 'session', targetEntity: Performance::class)]
@@ -161,12 +164,24 @@ class Session
 
     public function getDescription(): ?string
     {
-        return $this->description;
+        return $this->instructions;
     }
 
     public function setDescription(?string $description): static
     {
-        $this->description = $description;
+        $this->instructions = $description;
+
+        return $this;
+    }
+
+    public function getInstructions(): ?string
+    {
+        return $this->instructions;
+    }
+
+    public function setInstructions(?string $instructions): static
+    {
+        $this->instructions = $instructions !== null ? trim($instructions) : null;
 
         return $this;
     }

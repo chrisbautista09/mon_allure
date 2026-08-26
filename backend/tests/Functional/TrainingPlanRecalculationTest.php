@@ -120,7 +120,7 @@ final class TrainingPlanRecalculationTest extends KernelTestCase
             $session = $this->session(
                 $firstWeek + min(2, intdiv($index, 3)),
                 (new \DateTimeImmutable('2026-08-17'))->modify(sprintf('+%d days', $index)),
-                $isCurrent ? 'done' : ($successful ? 'done' : 'missed'),
+                $isCurrent ? 'completed' : ($successful ? 'completed' : 'missed'),
             );
             $plan->addSession($session);
             $pastSession ??= $session;

@@ -1,0 +1,17 @@
+{% set normalizedStatus = status|upper %}
+{% set statusThemes = {
+    COMPLETED: {label: 'Complétée', icon: '●', class: 'badge-success'},
+    PLANNED: {label: 'Planifiée', icon: '●', class: 'badge-warning'},
+    MISSED: {label: 'Manquée', icon: '●', class: 'badge-danger'},
+    CANCELLED: {label: 'Annulée', icon: '●', class: 'badge-neutral'}
+} %}
+{% set theme = statusThemes[normalizedStatus]|default(statusThemes.PLANNED) %}
+
+<span
+    class="session-status-badge {{ theme.class }}"
+    data-testid="session-status-badge"
+    data-status="{{ normalizedStatus }}"
+>
+    <span aria-hidden="true">{{ theme.icon }}</span>
+    {{ theme.label }}
+</span>

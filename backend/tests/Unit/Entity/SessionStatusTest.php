@@ -8,6 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 final class SessionStatusTest extends TestCase
 {
+    public function testEnumDefinesHistoryStatuses(): void
+    {
+        self::assertSame(
+            ['planned', 'completed', 'missed', 'cancelled'],
+            array_map(static fn (SessionStatus $status): string => $status->value, SessionStatus::cases()),
+        );
+    }
+
     public function testPlannedSessionIsNeitherSuccessfulNorFailed(): void
     {
         $session = new Session();
@@ -21,7 +29,7 @@ final class SessionStatusTest extends TestCase
 
     public function testDoneSessionIsSuccessfulAndTracksCompletionDate(): void
     {
-        $session = (new Session())->setStatus(SessionStatus::DONE);
+        $session = (new Session())->setStatus(SessionStatus::COMPLETED);
 
         self::assertTrue($session->isSuccessful());
         self::assertFalse($session->isFailed());
@@ -29,21 +37,21 @@ final class SessionStatusTest extends TestCase
         self::assertNotNull($session->getCompletedAt());
     }
 
-    public function testPartialAndMissedSessionsAreFailures(): void
+    public function testMissedAndCancelledSessionsAreFailures(): void
     {
-        $partial = (new Session())->setStatus('partially_done');
         $missed = (new Session())->setStatus('missed');
+        $cancelled = (new Session())->setStatus('cancelled');
 
-        self::assertTrue($partial->isFailed());
         self::assertTrue($missed->isFailed());
-        self::assertFalse($partial->isSuccessful());
+        self::assertTrue($cancelled->isFailed());
         self::assertFalse($missed->isSuccessful());
+        self::assertFalse($cancelled->isSuccessful());
     }
 
     public function testReturningToPlannedClearsCompletionDate(): void
     {
         $session = (new Session())
-            ->setStatus('done')
+            ->setStatus('completed')
             ->setStatus('planned');
 
         self::assertNull($session->getCompletedAt());
@@ -53,6 +61,6 @@ final class SessionStatusTest extends TestCase
     public function testUnknownStatusIsRejected(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        (new Session())->setStatus('completed');
+        (new Session())->setStatus('done');
     }
 }

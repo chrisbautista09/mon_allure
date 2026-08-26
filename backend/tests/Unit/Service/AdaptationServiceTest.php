@@ -80,10 +80,10 @@ final class AdaptationServiceTest extends TestCase
         $plan = $currentSession?->getTrainingPlan();
         self::assertNotNull($currentSession);
         self::assertNotNull($plan);
-        $currentSession->setWeekIndex(3)->setStatus('done');
+        $currentSession->setWeekIndex(3)->setStatus('completed');
         $firstSession = (new Session())
             ->setWeekIndex(1)
-            ->setStatus('done')
+            ->setStatus('completed')
             ->setDate(new \DateTimeImmutable('2026-08-18'));
         $plan->addSession($firstSession);
         $secondSession = (new Session())
@@ -123,11 +123,11 @@ final class AdaptationServiceTest extends TestCase
     public function testSuccessRateUsesOnlyPastSessionsWithinPeriod(): void
     {
         $sessions = [
-            $this->session('2026-08-02', 'done'),
-            $this->session('2026-08-04', 'done'),
+            $this->session('2026-08-02', 'completed'),
+            $this->session('2026-08-04', 'completed'),
             $this->session('2026-08-06', 'missed'),
-            $this->session('2026-07-30', 'done'),
-            $this->session('2026-08-11', 'done'),
+            $this->session('2026-07-30', 'completed'),
+            $this->session('2026-08-11', 'completed'),
             $this->session('2026-08-12', 'planned'),
         ];
 
@@ -144,7 +144,7 @@ final class AdaptationServiceTest extends TestCase
     public function testSuccessRateIsZeroWhenPeriodHasNoPastSession(): void
     {
         $rate = $this->service()->calculateSuccessRate(
-            [$this->session('2026-08-12', 'done')],
+            [$this->session('2026-08-12', 'completed')],
             new \DateTimeImmutable('2026-08-01'),
             new \DateTimeImmutable('2026-08-31'),
             new \DateTimeImmutable('2026-08-11'),
@@ -218,8 +218,8 @@ final class AdaptationServiceTest extends TestCase
         $currentSession
             ->setWeekIndex(6)
             ->setDate(new \DateTimeImmutable('2026-09-22'))
-            ->setStatus('done');
-        $firstSession = $this->session('2026-09-08', 'done')->setWeekIndex(4);
+            ->setStatus('completed');
+        $firstSession = $this->session('2026-09-08', 'completed')->setWeekIndex(4);
         $secondSession = $this->session('2026-09-15', 'missed')->setWeekIndex(5);
         $plan->addSession($firstSession)->addSession($secondSession);
         $sessionGenerator = $this->createMock(SessionGeneratorService::class);

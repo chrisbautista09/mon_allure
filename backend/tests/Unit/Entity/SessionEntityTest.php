@@ -7,6 +7,7 @@ use App\Entity\TrainingPlan;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class SessionEntityTest extends KernelTestCase
 {
@@ -17,7 +18,7 @@ final class SessionEntityTest extends KernelTestCase
             ->setWeekIndex(2)
             ->setDayOfWeek(1)
             ->setTitle('  Endurance fondamentale  ')
-            ->setDescription('Course en aisance respiratoire.')
+            ->setInstructions('  Course en aisance respiratoire.  ')
             ->setSessionType('endurance')
             ->setPlannedDistanceKm(8.5)
             ->setPlannedDurationMin(50)
@@ -30,6 +31,7 @@ final class SessionEntityTest extends KernelTestCase
         self::assertSame(1, $session->getDayOfWeek());
         self::assertSame('Endurance fondamentale', $session->getTitle());
         self::assertSame('Course en aisance respiratoire.', $session->getDescription());
+        self::assertSame('Course en aisance respiratoire.', $session->getInstructions());
         self::assertSame('endurance', $session->getSessionType());
         self::assertSame(8.5, $session->getPlannedDistanceKm());
         self::assertSame(50, $session->getPlannedDurationMin());
@@ -68,5 +70,23 @@ final class SessionEntityTest extends KernelTestCase
         self::assertSame('sessions', $association->inversedBy);
         self::assertFalse($association->joinColumns[0]->nullable);
         self::assertSame('CASCADE', $association->joinColumns[0]->onDelete);
+        self::assertSame('instructions', $metadata->getFieldMapping('instructions')->columnName);
+        self::assertFalse($metadata->getFieldMapping('date')->nullable);
+    }
+
+    public function testValidationRequiresTitleDateAndTrainingPlan(): void
+    {
+        self::bootKernel();
+        $validator = self::getContainer()->get(ValidatorInterface::class);
+        $violations = $validator->validate(new Session());
+        $paths = [];
+
+        foreach ($violations as $violation) {
+            $paths[] = $violation->getPropertyPath();
+        }
+
+        self::assertContains('title', $paths);
+        self::assertContains('date', $paths);
+        self::assertContains('trainingPlan', $paths);
     }
 }

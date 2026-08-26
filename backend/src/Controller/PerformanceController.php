@@ -87,7 +87,7 @@ final class PerformanceController extends AbstractController
             ->setElevationDPlus($performanceData->elevationDPlus)
             ->setAvgHr($performanceData->avgHr)
             ->setComment($performanceData->comment);
-        $session->setStatus('done');
+        $session->setStatus('completed');
         $adaptation = $adaptationService->adapt($performance);
 
         $entityManager->wrapInTransaction(function () use (
