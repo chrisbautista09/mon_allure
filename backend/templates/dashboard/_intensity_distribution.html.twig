@@ -1,0 +1,76 @@
+<section
+    class="mb-8 overflow-hidden rounded-3xl border border-cyan-300/25 bg-slate-950/75 p-5 shadow-2xl shadow-cyan-950/30 sm:p-7"
+    aria-labelledby="intensity-distribution-title"
+    data-intensity-distribution
+    data-intensity-url="{{ path('api_dashboard_intensity_zones') }}"
+    data-testid="intensity-distribution"
+>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Équilibre du programme</p>
+            <h2 id="intensity-distribution-title" class="mt-2 text-2xl font-black text-white sm:text-3xl">
+                Répartition par zones d’intensité
+            </h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-white/60">
+                Visualisez la place occupée par chaque zone dans vos séances d’entraînement.
+            </p>
+        </div>
+    </div>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <div>
+            <label for="intensity-period" class="mb-2 block text-sm font-extrabold text-cyan-200">Période analysée</label>
+            <select id="intensity-period" class="min-h-11 w-full rounded-xl border border-white/15 bg-slate-900 px-4 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-intensity-period>
+                <option value="30d">30 derniers jours</option>
+                <option value="3m">3 derniers mois</option>
+                <option value="6m">6 derniers mois</option>
+                <option value="1y">1 an</option>
+                <option value="all" selected>Tout l’historique</option>
+            </select>
+        </div>
+        <div>
+            <label for="intensity-scope" class="mb-2 block text-sm font-extrabold text-cyan-200">Plans analysés</label>
+            <select id="intensity-scope" class="min-h-11 w-full rounded-xl border border-white/15 bg-slate-900 px-4 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-intensity-scope>
+                <option value="active" selected>Plan actif uniquement</option>
+                <option value="all">Tous les plans</option>
+            </select>
+        </div>
+    </div>
+
+    <p class="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65" aria-live="polite" data-intensity-status>
+        Analyse de vos zones d’intensité…
+    </p>
+
+    <div class="mt-6 grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]" data-intensity-content hidden>
+        <div class="relative mx-auto h-72 w-full max-w-md sm:h-80">
+            <canvas
+                data-intensity-chart
+                role="img"
+                aria-label="Diagramme circulaire de la répartition des séances par zone d’intensité"
+            ></canvas>
+        </div>
+        <div class="space-y-3" data-intensity-legend aria-label="Détail des zones d’intensité"></div>
+    </div>
+
+    <dl class="mt-6 grid gap-3 sm:grid-cols-2" data-intensity-statistics hidden>
+        <div class="rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Séances analysées</dt>
+            <dd class="mt-2 text-2xl font-black text-cyan-200" data-intensity-total>0</dd>
+        </div>
+        <div class="rounded-2xl border border-violet-300/20 bg-violet-300/5 p-4">
+            <dt class="text-xs font-bold uppercase tracking-wide text-white/45">Zone dominante</dt>
+            <dd class="mt-2 text-2xl font-black text-violet-200" data-intensity-dominant>—</dd>
+        </div>
+    </dl>
+
+    <div class="mt-4 rounded-2xl border px-5 py-4" data-training-balance hidden>
+        <p class="text-xs font-extrabold uppercase tracking-[0.18em]" data-training-balance-label>Analyse du plan</p>
+        <p class="mt-2 font-bold text-white" data-training-balance-message></p>
+        <p class="mt-1 text-sm text-white/55" data-training-balance-detail></p>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-6 text-center" data-intensity-empty hidden>
+        <p class="text-lg font-extrabold text-cyan-200">Aucune donnée disponible.</p>
+        <p class="mt-2 text-sm text-white/55">La répartition apparaîtra dès que votre plan contiendra des séances.</p>
+    </div>
+</section>

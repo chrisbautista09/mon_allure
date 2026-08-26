@@ -142,6 +142,20 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextContains('[data-testid="performance-comparison-legend"]', 'Proche de l’objectif');
         self::assertSelectorTextContains('[data-testid="performance-comparison-legend"]', 'Objectif non atteint');
         self::assertSelectorExists('[data-testid="performance-empty-state"][hidden]');
+        self::assertSelectorExists('[data-testid="intensity-distribution"][data-intensity-url="/api/dashboard/intensity-zones"]');
+        self::assertSelectorCount(5, '[data-intensity-period] option');
+        self::assertSelectorExists('[data-intensity-period] option[value="all"][selected]');
+        self::assertSelectorCount(2, '[data-intensity-scope] option');
+        self::assertSelectorExists('[data-intensity-scope] option[value="active"][selected]');
+        self::assertSelectorExists('canvas[data-intensity-chart][role="img"]');
+        self::assertSelectorExists('[data-intensity-content][hidden]');
+        self::assertSelectorExists('[data-intensity-statistics][hidden]');
+        self::assertSelectorExists('[data-intensity-total]');
+        self::assertSelectorExists('[data-intensity-dominant]');
+        self::assertSelectorExists('[data-training-balance][hidden]');
+        self::assertSelectorExists('[data-training-balance-message]');
+        self::assertSelectorExists('[data-intensity-empty][hidden]');
+        self::assertSelectorTextContains('[data-intensity-empty]', 'Aucune donnée disponible.');
         self::assertSelectorTextContains(
             '[data-testid="performance-empty-state"]',
             'Commencez vos premiers entraînements pour suivre votre progression.',

@@ -6,6 +6,8 @@ use App\Repository\IntensityZoneRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: IntensityZoneRepository::class)]
 class IntensityZone
@@ -19,6 +21,8 @@ class IntensityZone
      * Exemples : Z1, Z2, Z3, Z4, Z5.
      */
     #[ORM\Column(length: 10, unique: true)]
+    #[Assert\NotBlank(message: 'Le nom de la zone d’intensité est obligatoire.')]
+    #[Assert\Regex(pattern: '/^Z[1-5]$/', message: 'Le nom de la zone doit être compris entre Z1 et Z5.')]
     private ?string $name = null;
 
     /**
@@ -26,6 +30,7 @@ class IntensityZone
      * Exemple : 0.60 pour 60 % de la VMA.
      */
     #[ORM\Column]
+    #[Assert\Range(min: 0.0, max: 1.5, notInRangeMessage: 'Le coefficient VMA minimal doit être compris entre {{ min }} et {{ max }}.')]
     private ?float $vmaCoefMin = null;
 
     /**
@@ -33,6 +38,7 @@ class IntensityZone
      * Exemple : 0.70 pour 70 % de la VMA.
      */
     #[ORM\Column]
+    #[Assert\Range(min: 0.0, max: 1.5, notInRangeMessage: 'Le coefficient VMA maximal doit être compris entre {{ min }} et {{ max }}.')]
     private ?float $vmaCoefMax = null;
 
     /**
@@ -40,6 +46,7 @@ class IntensityZone
      * Exemple : 60.0 pour 60 %.
      */
     #[ORM\Column]
+    #[Assert\Range(min: 0.0, max: 100.0, notInRangeMessage: 'Le pourcentage FCM minimal doit être compris entre {{ min }} et {{ max }}.')]
     private ?float $fcmPercentMin = null;
 
     /**
@@ -47,6 +54,7 @@ class IntensityZone
      * Exemple : 70.0 pour 70 %.
      */
     #[ORM\Column]
+    #[Assert\Range(min: 0.0, max: 100.0, notInRangeMessage: 'Le pourcentage FCM maximal doit être compris entre {{ min }} et {{ max }}.')]
     private ?float $fcmPercentMax = null;
 
     /**
@@ -158,5 +166,21 @@ class IntensityZone
         }
 
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateBounds(ExecutionContextInterface $context): void
+    {
+        if ($this->vmaCoefMin !== null && $this->vmaCoefMax !== null && $this->vmaCoefMin >= $this->vmaCoefMax) {
+            $context->buildViolation('La borne VMA minimale doit être inférieure à la borne maximale.')
+                ->atPath('vmaCoefMin')
+                ->addViolation();
+        }
+
+        if ($this->fcmPercentMin !== null && $this->fcmPercentMax !== null && $this->fcmPercentMin >= $this->fcmPercentMax) {
+            $context->buildViolation('La borne FCM minimale doit être inférieure à la borne maximale.')
+                ->atPath('fcmPercentMin')
+                ->addViolation();
+        }
     }
 }

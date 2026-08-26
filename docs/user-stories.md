@@ -308,7 +308,11 @@
 > En tant qu'utilisateur, je veux connaître la répartition de mes entraînements par zones d'intensité afin d'évaluer la qualité de mon plan.
 
 **Critères d'acceptation :**
-- [ ] Graphique de répartition basé sur `SESSION_INTENSITY_ZONE`
+- [x] Graphique interactif de répartition basé sur `SESSION_INTENSITY_ZONE`
+- [x] Statistiques détaillées, zone dominante et diagnostic d’équilibre par pôle
+- [x] Filtres par période et par périmètre de plans
+- [x] États vide, zone unique et données incomplètes sécurisés
+- [x] Tests du calcul à 100 %, de la sécurité, des filtres et de l’affichage
 
 **Labels :** `feature`, `backend`, `frontend`, `priority:low`
 
