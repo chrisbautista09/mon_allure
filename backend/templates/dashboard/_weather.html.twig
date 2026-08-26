@@ -1,0 +1,55 @@
+<section
+    class="mb-8 overflow-hidden rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-blue-950/90 via-slate-950/85 to-cyan-950/70 p-6 shadow-xl sm:p-7"
+    aria-labelledby="weather-title"
+    data-weather-card
+    data-weather-url="{{ path('api_dashboard_weather') }}"
+    data-weather-location="{{ location|default('') }}"
+    data-testid="weather-card"
+>
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-xs font-extrabold uppercase tracking-[0.18em] text-cyan-300">Conditions actuelles</p>
+            <h2 id="weather-title" class="mt-2 text-2xl font-bold">Météo de votre entraînement</h2>
+            <p class="mt-2 text-sm text-cyan-100/65" data-weather-role="location">
+                {{ location|default('Position à déterminer') }}
+            </p>
+        </div>
+
+        <div class="flex items-center gap-4" data-weather-role="result" hidden>
+            <span class="text-5xl" role="img" aria-label="Conditions météo" data-weather-role="icon">☀️</span>
+            <div>
+                <p class="text-4xl font-black text-white"><span data-weather-role="temperature">—</span> °C</p>
+                <p class="mt-1 font-bold text-cyan-200" data-weather-role="condition">—</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4" aria-live="polite" data-weather-role="status">
+        <p class="text-sm text-white/70">Localisation et météo en cours de chargement…</p>
+    </div>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2" data-weather-role="details" hidden>
+        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-white/50">Vent</p>
+            <p class="mt-1 text-lg font-bold"><span data-weather-role="wind">—</span> km/h</p>
+        </div>
+        <div class="rounded-2xl border border-cyan-300/15 bg-cyan-300/5 px-4 py-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-cyan-300/70">Conseil running</p>
+            <p class="mt-1 text-sm font-semibold text-cyan-50" data-weather-role="advice">—</p>
+        </div>
+    </div>
+
+    <button
+        type="button"
+        class="mt-5 rounded-full border border-cyan-300/40 px-4 py-2 text-sm font-bold text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+        data-weather-role="retry"
+        hidden
+    >
+        Réessayer la localisation
+    </button>
+
+    <p class="mt-5 text-xs text-white/40">
+        Données météo :
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" class="underline transition hover:text-cyan-200">Open-Meteo</a>
+    </p>
+</section>

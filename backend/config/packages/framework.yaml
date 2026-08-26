@@ -2,6 +2,21 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    http_client:
+        scoped_clients:
+            open_meteo.client:
+                base_uri: 'https://api.open-meteo.com'
+                headers:
+                    Accept: 'application/json'
+                    User-Agent: 'Mon-Allure/1.0 (+https://github.com/chrisbautista09/mon_allure)'
+                timeout: 5
+                max_duration: 10
+                retry_failed:
+                    max_retries: 2
+                    delay: 200
+                    multiplier: 2
+                    max_delay: 1000
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 

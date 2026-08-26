@@ -211,12 +211,29 @@
 > En tant qu'utilisateur, je veux consulter la météo afin d'adapter ma tenue et mes conditions d'entraînement.
 
 **Critères d'acceptation :**
-- [ ] Intégration d'une API météo externe
-- [ ] Affichage sur le dashboard
+- [x] Intégration backend d’Open-Meteo via un endpoint authentifié
+- [x] Carte météo responsive affichée sur le dashboard avec icônes et conseils
+- [x] Données utiles, fréquence, format et états particuliers définis dans
+  [`weather-functional-requirements.md`](weather-functional-requirements.md)
 
 **Tâches techniques :**
-- [ ] Choix d'une API météo (ex: OpenWeatherMap)
-- [ ] Service d'appel API + cache
+- [x] Choix d’Open-Meteo Forecast API documenté dans
+  [`weather-provider-decision.md`](weather-provider-decision.md)
+- [x] Client HTTP Symfony configuré pour Open-Meteo avec délais d’attente,
+  nouvelles tentatives et tests JSON/réseau
+- [x] `WeatherService` centralise l’appel API, normalise les données et contrôle
+  les erreurs du fournisseur
+- [x] Cache météo dédié par position arrondie avec un TTL d’une heure
+- [x] Endpoint JSON `GET /api/dashboard/weather` avec gestion des états de
+  localisation et d’indisponibilité
+- [x] Lieu d’entraînement configurable dans le profil (ville, code postal,
+  pays) et réutilisé par l’endpoint météo
+- [x] Composant Twig météo avec géolocalisation progressive, états accessibles
+  et attribution Open-Meteo
+- [x] `WeatherAdviceService` fournit des recommandations simples selon la
+  chaleur, la pluie, le vent, le froid et l’orage
+- [x] Tests d’intégration météo : appel réel, cache actif, renouvellement,
+  indisponibilité et dernière donnée connue pendant trois heures
 
 **Labels :** `feature`, `frontend`, `integration`, `priority:low`
 
@@ -310,5 +327,3 @@
 **Labels :** `enhancement`, `priority:low`
 
 ---
-
-

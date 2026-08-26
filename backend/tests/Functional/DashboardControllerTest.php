@@ -6,10 +6,15 @@ use App\Entity\Performance;
 use App\Entity\Session;
 use App\Entity\TrainingPlan;
 use App\Entity\User;
+use App\Service\WeatherService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Clock\MockClock;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 
 final class DashboardControllerTest extends WebTestCase
 {
@@ -32,6 +37,126 @@ final class DashboardControllerTest extends WebTestCase
         $this->client->request('GET', '/api/dashboard/form-status');
 
         self::assertResponseRedirects('http://localhost/login');
+    }
+
+    public function testAnonymousUserCannotRetrieveWeather(): void
+    {
+        $this->client->request('GET', '/api/dashboard/weather?latitude=43.60&longitude=1.44');
+
+        self::assertResponseRedirects('http://localhost/login');
+    }
+
+    public function testAuthenticatedUserCanRetrieveWeatherAsJson(): void
+    {
+        $user = $this->persistUser('weather@example.com');
+        $this->replaceWeatherService(new MockResponse(json_encode([
+            'current' => [
+                'temperature_2m' => 18,
+                'relative_humidity_2m' => 65,
+                'wind_speed_10m' => 12,
+                'weather_code' => 2,
+            ],
+        ], JSON_THROW_ON_ERROR), [
+            'response_headers' => ['content-type: application/json'],
+        ]));
+        $this->client->loginUser($user);
+
+        $this->client->request('GET', '/api/dashboard/weather', [
+            'latitude' => '43.60',
+            'longitude' => '1.44',
+            'location' => 'Toulouse',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('content-type', 'application/json');
+        self::assertSame([
+            'location' => 'Toulouse',
+            'temperature' => 18,
+            'condition' => 'Partiellement nuageux',
+            'wind' => 12,
+            'advice' => 'Les conditions sont adaptées à votre séance prévue.',
+            'freshness' => 'FRESH',
+        ], $this->responseData());
+    }
+
+    public function testWeatherEndpointRequiresCoordinates(): void
+    {
+        $this->client->loginUser($this->persistUser('weather-location@example.com'));
+
+        $this->client->request('GET', '/api/dashboard/weather');
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame('LOCATION_REQUIRED', $this->responseData()['dataState']);
+    }
+
+    public function testWeatherEndpointRejectsInvalidCoordinates(): void
+    {
+        $this->client->loginUser($this->persistUser('weather-invalid@example.com'));
+
+        $this->client->request('GET', '/api/dashboard/weather', [
+            'latitude' => '91',
+            'longitude' => '1.44',
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame('INVALID_LOCATION', $this->responseData()['dataState']);
+    }
+
+    public function testWeatherEndpointHandlesProviderErrors(): void
+    {
+        $user = $this->persistUser('weather-unavailable@example.com');
+        $this->replaceWeatherService(new MockResponse('Service unavailable', ['http_code' => 503]));
+        $this->client->loginUser($user);
+
+        $this->client->request('GET', '/api/dashboard/weather', [
+            'latitude' => '43.60',
+            'longitude' => '1.44',
+        ]);
+
+        self::assertResponseStatusCodeSame(503);
+        $response = $this->responseData();
+        self::assertSame('UNAVAILABLE', $response['dataState']);
+        self::assertStringContainsString('dashboard reste accessible', $response['message']);
+    }
+
+    public function testWeatherEndpointDisplaysLastKnownDataWhenRefreshFails(): void
+    {
+        $this->client->disableReboot();
+        $user = $this->persistUser('weather-stale@example.com');
+        $clock = new MockClock('2026-08-26 10:00:00');
+        $cache = new ArrayAdapter(clock: $clock);
+        $success = new MockResponse(json_encode([
+            'current' => [
+                'temperature_2m' => 18,
+                'relative_humidity_2m' => 65,
+                'wind_speed_10m' => 12,
+                'weather_code' => 2,
+            ],
+        ], JSON_THROW_ON_ERROR), [
+            'response_headers' => ['content-type: application/json'],
+        ]);
+        self::getContainer()->set(WeatherService::class, new WeatherService(
+            new MockHttpClient([
+                $success,
+                new MockResponse('Service unavailable', ['http_code' => 503]),
+            ]),
+            $cache,
+            $clock,
+        ));
+        $this->client->loginUser($user);
+        $parameters = ['latitude' => '43.60', 'longitude' => '1.44'];
+
+        $this->client->request('GET', '/api/dashboard/weather', $parameters);
+        self::assertResponseIsSuccessful();
+        self::assertSame('FRESH', $this->responseData()['freshness']);
+
+        $clock->sleep(3601);
+        $this->client->request('GET', '/api/dashboard/weather', $parameters);
+
+        self::assertResponseIsSuccessful();
+        $response = $this->responseData();
+        self::assertSame(18, $response['temperature']);
+        self::assertSame('STALE', $response['freshness']);
     }
 
     public function testAuthenticatedUserWithoutPlanReceivesExplicitEmptyState(): void
@@ -124,6 +249,16 @@ final class DashboardControllerTest extends WebTestCase
         $session->setPerformance($performance);
         $user->addPerformance($performance);
         $this->entityManager->flush();
+    }
+
+    private function replaceWeatherService(MockResponse $response): void
+    {
+        $clock = new MockClock('2026-08-26 10:00:00');
+        self::getContainer()->set(WeatherService::class, new WeatherService(
+            new MockHttpClient($response),
+            new ArrayAdapter(clock: $clock),
+            $clock,
+        ));
     }
 
     /** @return array<string, mixed> */

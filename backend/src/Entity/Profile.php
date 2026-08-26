@@ -61,6 +61,18 @@ class Profile
     )]
     private ?int $fcr = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: 'La ville ne peut pas dépasser {{ limit }} caractères.')]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Length(max: 20, maxMessage: 'Le code postal ne peut pas dépasser {{ limit }} caractères.')]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100, maxMessage: 'Le pays ne peut pas dépasser {{ limit }} caractères.')]
+    private ?string $country = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
@@ -162,6 +174,51 @@ class Profile
         return $this;
     }
 
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $this->normalizeOptionalText($city);
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $this->normalizeOptionalText($postalCode);
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $this->normalizeOptionalText($country);
+
+        return $this;
+    }
+
+    public function getTrainingLocation(): ?string
+    {
+        if ($this->city === null && $this->country === null) {
+            return null;
+        }
+
+        return implode(', ', array_filter([$this->city, $this->country]));
+    }
+
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
@@ -190,5 +247,12 @@ class Profile
         $this->user = $user;
 
         return $this;
+    }
+
+    private function normalizeOptionalText(?string $value): ?string
+    {
+        $value = $value !== null ? trim($value) : null;
+
+        return $value !== '' ? $value : null;
     }
 }

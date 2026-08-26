@@ -93,6 +93,9 @@ class ProfileController extends AbstractController
             ->setVo2max($this->nullableFloat($data, 'vo2max'))
             ->setFcm($this->nullableInt($data, 'fcm'))
             ->setFcr($this->nullableInt($data, 'fcr'))
+            ->setCity($this->nullableString($data, 'city'))
+            ->setPostalCode($this->nullableString($data, 'postalCode'))
+            ->setCountry($this->nullableString($data, 'country'))
             ->setUpdatedAt(new \DateTimeImmutable())
             ->setUser($user);
 
@@ -136,7 +139,10 @@ class ProfileController extends AbstractController
             return $this->json(['message' => 'Le corps de la requête doit contenir un JSON valide.'], 400);
         }
 
-        $allowedFields = ['firstName', 'lastName', 'age', 'vma', 'vo2max', 'fcm', 'fcr'];
+        $allowedFields = [
+            'firstName', 'lastName', 'age', 'vma', 'vo2max', 'fcm', 'fcr',
+            'city', 'postalCode', 'country',
+        ];
         $submittedFields = array_intersect($allowedFields, array_keys($data));
 
         if ($submittedFields === []) {
@@ -149,6 +155,12 @@ class ProfileController extends AbstractController
             if (array_key_exists($field, $data)
                 && (!is_string($data[$field]) || trim($data[$field]) === '')) {
                 $typeErrors[$field][] = 'Cette valeur doit être une chaîne non vide.';
+            }
+        }
+
+        foreach (['city', 'postalCode', 'country'] as $field) {
+            if (array_key_exists($field, $data) && $data[$field] !== null && !is_string($data[$field])) {
+                $typeErrors[$field][] = 'Cette valeur doit être une chaîne de caractères.';
             }
         }
 
@@ -195,6 +207,15 @@ class ProfileController extends AbstractController
         }
         if (array_key_exists('fcr', $data)) {
             $profile->setFcr($this->nullableInt($data, 'fcr'));
+        }
+        if (array_key_exists('city', $data)) {
+            $profile->setCity($this->nullableString($data, 'city'));
+        }
+        if (array_key_exists('postalCode', $data)) {
+            $profile->setPostalCode($this->nullableString($data, 'postalCode'));
+        }
+        if (array_key_exists('country', $data)) {
+            $profile->setCountry($this->nullableString($data, 'country'));
         }
 
         $violations = $validator->validate($profile);
@@ -246,6 +267,12 @@ class ProfileController extends AbstractController
         return isset($data[$field]) && is_int($data[$field]) ? $data[$field] : null;
     }
 
+    /** @param array<string, mixed> $data */
+    private function nullableString(array $data, string $field): ?string
+    {
+        return isset($data[$field]) && is_string($data[$field]) ? $data[$field] : null;
+    }
+
     /** @return array<string, int|float|string|null> */
     private function profileData(Profile $profile): array
     {
@@ -258,6 +285,10 @@ class ProfileController extends AbstractController
             'vo2max' => $profile->getVo2max(),
             'fcm' => $profile->getFcm(),
             'fcr' => $profile->getFcr(),
+            'city' => $profile->getCity(),
+            'postalCode' => $profile->getPostalCode(),
+            'country' => $profile->getCountry(),
+            'trainingLocation' => $profile->getTrainingLocation(),
             'updatedAt' => $profile->getUpdatedAt()?->format(\DateTimeInterface::ATOM),
         ];
     }

@@ -1,4 +1,5 @@
 import "./controllers/calendar.js";
+import "./controllers/weather.js";
 import "./stimulus_bootstrap.js";
 /*
  * Welcome to your app's main JavaScript file!

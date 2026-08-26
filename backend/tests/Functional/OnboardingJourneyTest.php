@@ -41,6 +41,7 @@ final class OnboardingJourneyTest extends WebTestCase
         self::assertInstanceOf(Profile::class, $user->getProfile());
         self::assertSame(34, $user->getProfile()->getAge());
         self::assertSame(14.8, $user->getProfile()->getVma());
+        self::assertSame('Toulouse, France', $user->getProfile()->getTrainingLocation());
 
         $this->client->request('GET', '/training-goal');
         self::assertResponseIsSuccessful();
@@ -88,6 +89,9 @@ final class OnboardingJourneyTest extends WebTestCase
             'profile[firstName]' => 'Camille',
             'profile[lastName]' => 'Martin',
             'profile[age]' => '34',
+            'profile[city]' => 'Toulouse',
+            'profile[postalCode]' => '31000',
+            'profile[country]' => 'France',
             'profile[vma]' => '14.8',
             'profile[vo2max]' => '46.5',
             'profile[fcm]' => '188',
