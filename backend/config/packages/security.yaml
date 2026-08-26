@@ -40,6 +40,7 @@ security:
         - { path: ^/training, roles: ROLE_USER }
 
         - { path: ^/api/profile, roles: ROLE_USER }
+        - { path: ^/api/dashboard, roles: ROLE_USER }
         - { path: ^/api/training-plans, roles: ROLE_USER }
         - { path: ^/api/performances, roles: ROLE_USER }
         - { path: ^/profile, roles: ROLE_USER }

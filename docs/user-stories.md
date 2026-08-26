@@ -197,6 +197,8 @@
 
 **Critères d'acceptation :**
 - [ ] Indicateur basé sur `progress_score` et les dernières performances
+- [x] Règles métier, niveaux, tendance et états particuliers définis dans
+  [`form-status-business-rules.md`](form-status-business-rules.md)
 
 **Tâches techniques :**
 - [ ] Endpoint `GET /api/dashboard/form-status`
@@ -308,6 +310,5 @@
 **Labels :** `enhancement`, `priority:low`
 
 ---
-
 
 

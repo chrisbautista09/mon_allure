@@ -120,6 +120,12 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextContains('[data-testid="sports-progress-percentage"]', '0 %');
         self::assertSelectorExists('[data-testid="sports-progress-bar"]');
         self::assertSelectorExists('[aria-label="Progression sportive"][aria-valuenow="0"]');
+        self::assertSelectorExists('[data-testid="form-status-card"][data-form-status="UNAVAILABLE"]');
+        self::assertSelectorTextContains('[data-testid="form-status-label"]', 'État de forme indisponible');
+        self::assertSelectorTextContains('[data-testid="form-status-score"]', '— / 100');
+        self::assertSelectorNotExists('[aria-label="Score de forme"]');
+        self::assertSelectorTextContains('[data-testid="form-status-data-state"]', 'Réalisez vos premières séances');
+        self::assertSelectorTextContains('[data-testid="form-status-trend"]', 'Données insuffisantes');
         self::assertSelectorExists('[data-testid="objective-countdown"][data-countdown-status="upcoming"]');
         self::assertSelectorExists(sprintf(
             '[data-testid="objective-date"][datetime="%s"]',

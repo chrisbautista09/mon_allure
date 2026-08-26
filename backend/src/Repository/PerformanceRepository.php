@@ -30,6 +30,27 @@ class PerformanceRepository extends ServiceEntityRepository
         return $this->findBy(['user' => $user], ['createdAt' => 'DESC']);
     }
 
+    /** @return list<Performance> */
+    public function findRecentPerformances(User $user, int $limit = 10): array
+    {
+        if ($limit <= 0) {
+            throw new \InvalidArgumentException('La limite doit être strictement positive.');
+        }
+
+        return $this->createQueryBuilder('performance')
+            ->innerJoin('performance.session', 'session')
+            ->addSelect('session')
+            ->innerJoin('session.trainingPlan', 'plan')
+            ->addSelect('plan')
+            ->andWhere('performance.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('performance.createdAt', 'DESC')
+            ->addOrderBy('performance.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findOneBySessionAndUser(Session $session, User $user): ?Performance
     {
         return $this->findOneBy(['session' => $session, 'user' => $user]);
