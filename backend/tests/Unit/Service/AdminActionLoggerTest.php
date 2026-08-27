@@ -63,4 +63,30 @@ final class AdminActionLoggerTest extends TestCase
             42,
         );
     }
+
+    public function testLogsParameterChangeWithOldAndNewValuesAdministratorAndDate(): void
+    {
+        $administrator = (new User())->setEmail('parameter-admin@example.com');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('info')
+            ->with(
+                'Administrative algorithm parameter change',
+                self::callback(static function (array $context): bool {
+                    return $context['action'] === AdminActionLogger::ACTION_PARAMETER_UPDATE
+                        && $context['administrator']['email'] === 'parameter-admin@example.com'
+                        && $context['parameter'] === 'progression_max_percent'
+                        && $context['old_value'] === 10.0
+                        && $context['new_value'] === 12.5
+                        && (new \DateTimeImmutable($context['occurred_at'])) <= new \DateTimeImmutable();
+                }),
+            );
+
+        (new AdminActionLogger($logger))->logParameterChange(
+            $administrator,
+            'progression_max_percent',
+            10,
+            12.5,
+        );
+    }
 }

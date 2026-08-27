@@ -1,0 +1,8 @@
+<nav class="flex flex-wrap gap-2" aria-label="Navigation de l’administration">
+    <a href="{{ path('app_admin_dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
+        Utilisateurs
+    </a>
+    <a href="{{ path('app_admin_algorithm_parameters') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_algorithm_parameters' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
+        Paramètres de l’algorithme
+    </a>
+</nav>

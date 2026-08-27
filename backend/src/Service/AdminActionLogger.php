@@ -12,6 +12,7 @@ final class AdminActionLogger
     public const ACTION_ACTIVATE = 'user.activate';
     public const ACTION_DEACTIVATE = 'user.deactivate';
     public const ACTION_DELETE = 'user.delete';
+    public const ACTION_PARAMETER_UPDATE = 'algorithm_parameter.update';
 
     public function __construct(private readonly LoggerInterface $logger)
     {
@@ -33,6 +34,25 @@ final class AdminActionLogger
                 'id' => $targetId ?? $target->getId(),
                 'email' => $target->getEmail(),
             ],
+            'occurred_at' => (new \DateTimeImmutable())->format(DATE_ATOM),
+        ]);
+    }
+
+    public function logParameterChange(
+        User $administrator,
+        string $parameterKey,
+        float $oldValue,
+        float $newValue,
+    ): void {
+        $this->logger->info('Administrative algorithm parameter change', [
+            'action' => self::ACTION_PARAMETER_UPDATE,
+            'administrator' => [
+                'id' => $administrator->getId(),
+                'email' => $administrator->getEmail(),
+            ],
+            'parameter' => $parameterKey,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
             'occurred_at' => (new \DateTimeImmutable())->format(DATE_ATOM),
         ]);
     }

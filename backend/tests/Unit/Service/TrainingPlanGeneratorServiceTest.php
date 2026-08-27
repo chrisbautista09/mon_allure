@@ -7,6 +7,7 @@ use App\Entity\AlgorithmParameter;
 use App\Entity\Profile;
 use App\Entity\User;
 use App\Repository\AlgorithmParameterRepository;
+use App\Service\AlgorithmParameterService;
 use App\Service\FeasibilityService;
 use App\Service\SessionGeneratorService;
 use App\Service\TrainingPlanGeneratorService;
@@ -100,7 +101,10 @@ final class TrainingPlanGeneratorServiceTest extends TestCase
     ): TrainingPlanGeneratorService
     {
         $repository = $this->createStub(AlgorithmParameterRepository::class);
-        $repository->method('findAll')->willReturn($parameters);
+        $repository->method('findCurrent')->willReturn(array_combine(
+            array_map(static fn (AlgorithmParameter $parameter): string => (string) $parameter->getParameterKey(), $parameters),
+            $parameters,
+        ));
 
         $validator = $this->createStub(ValidatorInterface::class);
         $validator->method('validate')->willReturn(new ConstraintViolationList());
@@ -112,9 +116,9 @@ final class TrainingPlanGeneratorServiceTest extends TestCase
             ->willReturn([]);
 
         return new TrainingPlanGeneratorService(
-            $repository,
+            new AlgorithmParameterService($repository),
             $validator,
-            new FeasibilityService(),
+            new FeasibilityService(new AlgorithmParameterService($repository)),
             $sessionGenerator,
         );
     }

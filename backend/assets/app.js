@@ -3,6 +3,7 @@ import "./controllers/weather.js";
 import "./controllers/performance_charts.js";
 import "./controllers/intensity_distribution.js";
 import "./controllers/admin_users.js";
+import "./controllers/admin_algorithm_parameters.js";
 import "./stimulus_bootstrap.js";
 /*
  * Welcome to your app's main JavaScript file!
