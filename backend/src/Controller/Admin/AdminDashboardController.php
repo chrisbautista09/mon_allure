@@ -22,4 +22,10 @@ final class AdminDashboardController extends AbstractController
     {
         return $this->render('admin/algorithm_parameters/index.html.twig');
     }
+
+    #[Route('/training-plans', name: 'training_plans', methods: ['GET'])]
+    public function trainingPlans(): Response
+    {
+        return $this->render('admin/training_plans/index.html.twig');
+    }
 }

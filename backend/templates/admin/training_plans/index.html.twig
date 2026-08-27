@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Supervision des plans | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
+        <section
+            class="mx-auto max-w-7xl overflow-hidden rounded-3xl border border-cyan-300/25 bg-slate-950/80 p-5 shadow-2xl shadow-cyan-950/30 sm:p-8"
+            aria-labelledby="training-plans-title"
+            data-admin-training-plans
+            data-admin-training-plans-url="{{ path('api_admin_training_plans_list') }}"
+            data-testid="admin-training-plans"
+        >
+            {% include 'admin/_navigation.html.twig' %}
+
+            <header class="mt-6 flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Supervision algorithmique</p>
+                    <h1 id="training-plans-title" class="mt-2 text-3xl font-black sm:text-4xl">Plans d’entraînement générés</h1>
+                    <p class="mt-3 max-w-3xl leading-7 text-white/60">
+                        Contrôlez les plans produits par l’algorithme et repérez rapidement les données nécessitant une analyse.
+                    </p>
+                </div>
+                <p class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm font-extrabold text-cyan-100">
+                    <span data-admin-training-plans-total>0</span> plan<span data-admin-training-plans-total-plural>s</span>
+                </p>
+            </header>
+
+            <form class="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 md:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_13rem_13rem_auto]" data-admin-training-plans-filters>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Rechercher un utilisateur
+                    <input type="search" class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" placeholder="Pseudo ou adresse e-mail" autocomplete="off" data-admin-training-plans-user>
+                </label>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Faisabilité
+                    <select class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-admin-training-plans-feasibility>
+                        <option value="ALL">Toutes</option>
+                        <option value="OPTIMAL">Optimale</option>
+                        <option value="ACCEPTABLE">Acceptable</option>
+                        <option value="IMPOSSIBLE">Impossible</option>
+                    </select>
+                </label>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Statut
+                    <select class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-admin-training-plans-status-filter>
+                        <option value="ALL">Tous</option>
+                        <option value="ACTIVE">Actif</option>
+                        <option value="COMPLETED">Terminé</option>
+                        <option value="ARCHIVED">Archivé</option>
+                    </select>
+                </label>
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="flex-1 rounded-xl bg-cyan-300 px-4 py-3 font-black text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-slate-950">
+                        Filtrer
+                    </button>
+                    <button type="reset" class="rounded-xl border border-white/20 px-4 py-3 font-bold text-white/75 transition hover:bg-white/10" data-admin-training-plans-reset>
+                        Effacer
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65" aria-live="polite" data-admin-training-plans-status>
+                Chargement des plans…
+            </p>
+
+            <div class="mt-6 overflow-x-auto rounded-2xl border border-white/10" data-admin-training-plans-table hidden>
+                <table class="w-full min-w-[78rem] border-collapse text-left" data-testid="admin-training-plans-table">
+                    <thead class="bg-cyan-300/10 text-xs uppercase tracking-wider text-cyan-200">
+                        <tr>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Utilisateur</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Nom du plan</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Objectif</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Faisabilité</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Progression</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Semaine actuelle</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Durée</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10 bg-blue-950/35" data-admin-training-plans-body></tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-7 text-center" data-admin-training-plans-empty hidden>
+                <p class="text-lg font-extrabold text-cyan-200">Aucun plan généré à afficher.</p>
+            </div>
+
+            <nav class="mt-6 flex items-center justify-between gap-4" aria-label="Pagination des plans" data-admin-training-plans-pagination hidden>
+                <button type="button" class="rounded-xl border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-35" data-admin-training-plans-previous>
+                    Précédent
+                </button>
+                <p class="text-sm font-bold text-white/60" data-admin-training-plans-page>Page 1 sur 1</p>
+                <button type="button" class="rounded-xl border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-35" data-admin-training-plans-next>
+                    Suivant
+                </button>
+            </nav>
+        </section>
+    </main>
+{% endblock %}
