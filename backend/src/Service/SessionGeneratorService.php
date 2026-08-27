@@ -1,0 +1,383 @@
+<?php
+
+namespace App\Service;
+
+use App\Dto\PaceResult;
+use App\Entity\AlgorithmParameter;
+use App\Entity\IntensityZone;
+use App\Entity\Profile;
+use App\Entity\Session;
+use App\Entity\SessionIntensityZone;
+use App\Entity\TrainingPlan;
+use App\Repository\IntensityZoneRepository;
+
+class SessionGeneratorService
+{
+    public function __construct(
+        private readonly IntensityZoneRepository $zoneRepository,
+        private readonly PaceCalculatorService $paceCalculator,
+        private readonly ?AlgorithmParameterService $parameterService = null,
+    ) {
+    }
+
+    /** @return list<Session> */
+    public function generate(TrainingPlan $plan, Profile $profile, ?int $sessionsPerWeek = null): array
+    {
+        $durationWeeks = $plan->getDurationWeeks();
+        $startDate = $plan->getStartDate();
+
+        if ($durationWeeks === null || $durationWeeks <= 0 || $startDate === null) {
+            throw new \InvalidArgumentException('Le plan doit posséder une date de début et une durée valides.');
+        }
+
+        if (!$plan->getSessions()->isEmpty()) {
+            throw new \LogicException('Les séances de ce plan ont déjà été générées.');
+        }
+
+        $parameters = $this->parameterService?->getCurrentParameters() ?? [];
+        $sessionsPerWeek ??= (int) round($this->requiredParameter(
+            $parameters,
+            sprintf('max_sessions_%s', $plan->getPoleType()),
+        ));
+        $recoveryWeekFrequency = isset($parameters[AlgorithmParameter::KEY_RECOVERY_WEEK_FREQUENCY])
+            ? (int) round($parameters[AlgorithmParameter::KEY_RECOVERY_WEEK_FREQUENCY])
+            : 4;
+        $blueprints = $this->sessionBlueprints($plan, $sessionsPerWeek);
+        $zones = [];
+        $paces = [];
+
+        foreach (array_unique(array_column($blueprints, 'zone')) as $zoneName) {
+            $zones[$zoneName] = $this->requiredZone($zoneName);
+            $paces[$zoneName] = $this->paceCalculator->calculate($profile, $zones[$zoneName]);
+        }
+
+        $sessions = [];
+
+        for ($week = 1; $week <= $durationWeeks; ++$week) {
+            $weekStart = $startDate->modify(sprintf('+%d weeks', $week - 1));
+            $recoveryWeek = $week % $recoveryWeekFrequency === 0;
+
+            foreach ($blueprints as $blueprint) {
+                $duration = $recoveryWeek
+                    ? $blueprint['recoveryDuration']
+                    : min(
+                        $blueprint['maximumDuration'],
+                        $blueprint['baseDuration'] + (($week - 1) * $blueprint['weeklyIncrease']),
+                    );
+
+                $sessions[] = $this->createSession(
+                    $plan,
+                    $zones[$blueprint['zone']],
+                    $paces[$blueprint['zone']],
+                    $week,
+                    $blueprint['day'],
+                    $weekStart->modify(sprintf('+%d days', $blueprint['day'] - 1)),
+                    $recoveryWeek && $blueprint['type'] === 'long_run'
+                        ? 'Sortie longue allégée'
+                        : $blueprint['title'],
+                    $blueprint['type'],
+                    $duration,
+                    $blueprint['instruction'],
+                    $blueprint['type'] === 'long_run'
+                        ? $this->weeklyElevation($plan, $durationWeeks)
+                        : null,
+                );
+            }
+        }
+
+        return $sessions;
+    }
+
+    /** @param array<string, float> $parameters */
+    private function requiredParameter(array $parameters, string $key): float
+    {
+        return $parameters[$key]
+            ?? throw new \LogicException(sprintf('Le paramètre algorithmique "%s" est manquant.', $key));
+    }
+
+    /** @return list<Session> */
+    public function recalibrateFutureSessions(
+        TrainingPlan $plan,
+        Session $referenceSession,
+        float $loadFactor,
+    ): array {
+        if ($loadFactor < 0.90 || $loadFactor > 1.10) {
+            throw new \InvalidArgumentException('Le facteur de charge doit être compris entre 0,90 et 1,10.');
+        }
+
+        if ($referenceSession->getTrainingPlan() !== $plan || $referenceSession->getDate() === null) {
+            throw new \InvalidArgumentException('La séance de référence doit appartenir au plan et posséder une date.');
+        }
+
+        if (abs($loadFactor - 1.0) < 0.001) {
+            return [];
+        }
+
+        $adjustedSessions = [];
+
+        foreach ($plan->getSessions() as $session) {
+            if (!$this->isRegenerable($session, $referenceSession)) {
+                continue;
+            }
+
+            $this->applyLoadFactor($session, $loadFactor);
+            $adjustedSessions[] = $session;
+        }
+
+        return $adjustedSessions;
+    }
+
+    /** @return list<Session> */
+    public function regenerateUpcoming(
+        TrainingPlan $plan,
+        Session $referenceSession,
+        float $loadFactor,
+    ): array {
+        if ($loadFactor < 0.90 || $loadFactor > 1.10) {
+            throw new \InvalidArgumentException('Le facteur de charge doit être compris entre 0,90 et 1,10.');
+        }
+
+        if ($referenceSession->getTrainingPlan() !== $plan || $referenceSession->getDate() === null) {
+            throw new \InvalidArgumentException('La séance de référence doit appartenir au plan et posséder une date.');
+        }
+
+        if (abs($loadFactor - 1.0) < 0.001) {
+            return [];
+        }
+
+        $upcomingSessions = array_values(array_filter(
+            $plan->getSessions()->toArray(),
+            fn (Session $session): bool => $this->isRegenerable($session, $referenceSession)
+                && $session->getPerformance() === null
+                && $session->getComments()->isEmpty(),
+        ));
+        $regeneratedSessions = [];
+
+        foreach ($upcomingSessions as $session) {
+            $replacement = (new Session())
+                ->setWeekIndex((int) $session->getWeekIndex())
+                ->setDayOfWeek((int) $session->getDayOfWeek())
+                ->setTitle((string) $session->getTitle())
+                ->setDescription($session->getDescription())
+                ->setSessionType((string) $session->getSessionType())
+                ->setPlannedDistanceKm($session->getPlannedDistanceKm())
+                ->setPlannedDurationMin($session->getPlannedDurationMin())
+                ->setPlannedElevationDPlus($session->getPlannedElevationDPlus())
+                ->setPlannedVmaCoef($session->getPlannedVmaCoef())
+                ->setPlannedFcmZone($session->getPlannedFcmZone())
+                ->setDate($session->getDate())
+                ->setStatus('planned');
+
+            foreach ($session->getSessionIntensityZones() as $sessionZone) {
+                $replacement->addSessionIntensityZone(
+                    (new SessionIntensityZone())
+                        ->setIntensityZone($sessionZone->getIntensityZone())
+                        ->setDurationPercent((float) $sessionZone->getDurationPercent()),
+                );
+            }
+
+            $this->applyLoadFactor($replacement, $loadFactor);
+            $plan->removeSession($session);
+            $plan->addSession($replacement);
+            $regeneratedSessions[] = $replacement;
+        }
+
+        return $regeneratedSessions;
+    }
+
+    private function isRegenerable(Session $session, Session $referenceSession): bool
+    {
+        return $session->getDate() !== null
+            && $session->getDate() > $referenceSession->getDate()
+            && $session->getStatus() === 'planned'
+            && $session->getSessionType() !== 'goal_event';
+    }
+
+    private function applyLoadFactor(Session $session, float $loadFactor): void
+    {
+        if ($session->getPlannedDurationMin() !== null) {
+            $session->setPlannedDurationMin(max(1, (int) round($session->getPlannedDurationMin() * $loadFactor)));
+        }
+
+        if ($session->getPlannedDistanceKm() !== null) {
+            $session->setPlannedDistanceKm(max(0.01, round($session->getPlannedDistanceKm() * $loadFactor, 2)));
+        }
+
+        if ($session->getPlannedElevationDPlus() !== null) {
+            $session->setPlannedElevationDPlus(max(0, (int) round($session->getPlannedElevationDPlus() * $loadFactor)));
+        }
+
+        if (in_array($session->getSessionType(), ['threshold', 'vma'], true)
+            && $session->getPlannedVmaCoef() !== null) {
+            $session->setPlannedVmaCoef(max(0.50, min(1.05, round($session->getPlannedVmaCoef() * $loadFactor, 4))));
+        }
+    }
+
+    /**
+     * @return list<array{
+     *     day: int,
+     *     title: string,
+     *     type: string,
+     *     zone: string,
+     *     baseDuration: int,
+     *     recoveryDuration: int,
+     *     maximumDuration: int,
+     *     weeklyIncrease: int,
+     *     instruction: string
+     * }>
+     */
+    private function sessionBlueprints(TrainingPlan $plan, int $sessionsPerWeek): array
+    {
+        $poleType = $plan->getPoleType();
+        $expectedSessions = match ($poleType) {
+            'discovery' => 2,
+            'intermediate' => 3,
+            'performance' => 5,
+            default => throw new \InvalidArgumentException('Le pôle du plan est invalide.'),
+        };
+
+        if ($sessionsPerWeek !== $expectedSessions) {
+            throw new \LogicException(sprintf(
+                'Le paramètre du pôle %s doit prévoir %d séances par semaine.',
+                $poleType,
+                $expectedSessions,
+            ));
+        }
+
+        $endurance = [
+            'day' => 2,
+            'title' => 'Endurance fondamentale',
+            'type' => 'endurance',
+            'zone' => 'Z2',
+            'baseDuration' => 40,
+            'recoveryDuration' => 35,
+            'maximumDuration' => 60,
+            'weeklyIncrease' => 2,
+            'instruction' => 'Courez à une allure confortable et régulière, en restant capable de parler.',
+        ];
+        $longRun = [
+            'day' => 7,
+            'title' => 'Sortie longue',
+            'type' => 'long_run',
+            'zone' => 'Z2',
+            'baseDuration' => 65,
+            'recoveryDuration' => 60,
+            'maximumDuration' => 120,
+            'weeklyIncrease' => 5,
+            'instruction' => 'Maintenez une allure maîtrisée et hydratez-vous régulièrement.',
+        ];
+
+        if ($poleType === 'discovery') {
+            return [$endurance, $longRun];
+        }
+
+        $threshold = [
+            'day' => 4,
+            'title' => 'Travail au seuil',
+            'type' => 'threshold',
+            'zone' => 'Z4',
+            'baseDuration' => 40,
+            'recoveryDuration' => 35,
+            'maximumDuration' => 55,
+            'weeklyIncrease' => 1,
+            'instruction' => 'Alternez les fractions soutenues et les récupérations à allure lente.',
+        ];
+
+        if ($poleType === 'intermediate') {
+            return [$endurance, $threshold, $longRun];
+        }
+
+        return [
+            [
+                'day' => 1,
+                'title' => 'Récupération active',
+                'type' => 'recovery',
+                'zone' => 'Z1',
+                'baseDuration' => 30,
+                'recoveryDuration' => 25,
+                'maximumDuration' => 40,
+                'weeklyIncrease' => 1,
+                'instruction' => 'Restez très relâché afin de favoriser la récupération.',
+            ],
+            array_merge($threshold, ['day' => 2]),
+            array_merge($endurance, ['day' => 4]),
+            [
+                'day' => 5,
+                'title' => 'Travail VMA',
+                'type' => 'vma',
+                'zone' => 'Z5',
+                'baseDuration' => 40,
+                'recoveryDuration' => 30,
+                'maximumDuration' => 55,
+                'weeklyIncrease' => 1,
+                'instruction' => 'Réalisez des répétitions rapides avec une récupération complète entre les efforts.',
+            ],
+            array_merge($longRun, ['baseDuration' => 75]),
+        ];
+    }
+
+    private function requiredZone(string $name): IntensityZone
+    {
+        $zone = $this->zoneRepository->findOneBy(['name' => $name]);
+
+        if (!$zone instanceof IntensityZone) {
+            throw new \LogicException(sprintf('La zone d’intensité %s est introuvable.', $name));
+        }
+
+        return $zone;
+    }
+
+    private function createSession(
+        TrainingPlan $plan,
+        IntensityZone $zone,
+        PaceResult $pace,
+        int $week,
+        int $dayOfWeek,
+        \DateTimeImmutable $date,
+        string $title,
+        string $type,
+        int $durationMinutes,
+        string $instruction,
+        ?int $elevation = null,
+    ): Session {
+        $description = sprintf(
+            '%s Cible : %s (%.2f km/h), zone %s, %d–%d bpm.',
+            $instruction,
+            $pace->pace,
+            $pace->speed,
+            $pace->heartRateZone,
+            $pace->heartRateMin,
+            $pace->heartRateMax,
+        );
+
+        $session = (new Session())
+            ->setWeekIndex($week)
+            ->setDayOfWeek($dayOfWeek)
+            ->setTitle($title)
+            ->setDescription($description)
+            ->setSessionType($type)
+            ->setPlannedDistanceKm(round($pace->speed * $durationMinutes / 60, 2))
+            ->setPlannedDurationMin($durationMinutes)
+            ->setPlannedElevationDPlus($elevation)
+            ->setPlannedVmaCoef($pace->vmaPercent / 100)
+            ->setPlannedFcmZone($pace->heartRateZone)
+            ->setDate($date)
+            ->setStatus('planned');
+
+        $session->addSessionIntensityZone(
+            (new SessionIntensityZone())
+                ->setIntensityZone($zone)
+                ->setDurationPercent(100.0)
+        );
+        $plan->addSession($session);
+
+        return $session;
+    }
+
+    private function weeklyElevation(TrainingPlan $plan, int $durationWeeks): ?int
+    {
+        $target = $plan->getElevationTargetDPlus();
+
+        return $target === null ? null : (int) round($target / $durationWeeks);
+    }
+}

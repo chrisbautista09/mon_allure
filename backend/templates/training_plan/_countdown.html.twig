@@ -1,0 +1,94 @@
+<section
+    class="mb-8 rounded-3xl border border-cyan-300/30 bg-gradient-to-br from-blue-950/90 to-slate-950/90 p-5 shadow-xl shadow-cyan-950/20 sm:p-7"
+    aria-labelledby="objective-countdown-title"
+    data-testid="objective-countdown"
+    data-countdown-status="{{ countdown.status }}"
+>
+    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-300/10 text-cyan-200" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M8 3v4M16 3v4M3 10h18" />
+                    <path d="M8 14h2M14 14h2M8 17h2" />
+                </svg>
+            </span>
+            <div>
+                <p id="objective-countdown-title" class="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">
+                    Prochain objectif
+                </p>
+                <p class="mt-1 text-sm text-white/60">Date cible</p>
+                {% if plan.endDate is not null %}
+                    <time
+                        class="font-bold text-white"
+                        datetime="{{ plan.endDate|date('Y-m-d') }}"
+                        data-testid="objective-date"
+                    >
+                        {{ plan.endDate|date('d/m/Y') }}
+                    </time>
+                {% else %}
+                    <span class="font-bold text-white/70" data-testid="objective-date-missing">Non renseignée</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-slate-950/60 px-5 py-4 sm:min-w-64 sm:text-right">
+            {% if countdown.status == 'upcoming' %}
+                <p class="text-sm font-semibold text-white/65">Objectif dans</p>
+                <p class="mt-1 text-3xl font-black text-cyan-200" data-testid="days-remaining">
+                    {{ countdown.days_remaining }} jour{{ countdown.days_remaining > 1 ? 's' : '' }}
+                </p>
+                <p class="mt-1 text-sm font-semibold text-cyan-100" data-testid="countdown-message">
+                    Encore {{ countdown.days_remaining }} jour{{ countdown.days_remaining > 1 ? 's' : '' }} avant votre course
+                </p>
+                <p class="mt-1 text-sm text-white/55" data-testid="weeks-remaining">
+                    soit {{ countdown.weeks_remaining }} semaine{{ countdown.weeks_remaining > 1 ? 's' : '' }} complète{{ countdown.weeks_remaining > 1 ? 's' : '' }}
+                </p>
+            {% elseif countdown.status == 'reached' %}
+                <p class="text-2xl font-black text-emerald-300" data-testid="countdown-message">Objectif atteint 🎉</p>
+                <p class="mt-2 text-sm text-white/60">C’est le jour de votre objectif sportif.</p>
+            {% elseif countdown.status == 'completed' %}
+                <p class="text-2xl font-black text-white" data-testid="countdown-message">Préparation terminée</p>
+                <p class="mt-2 text-sm text-white/60">La date de votre objectif est passée.</p>
+            {% else %}
+                <p class="text-2xl font-black text-white/75" data-testid="countdown-message">Aucun objectif défini</p>
+                <p class="mt-2 text-sm text-white/55">Ajoutez une date cible pour activer le compte à rebours.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if timelineComparison.total_days is not null %}
+        <div class="mt-6 border-t border-white/10 pt-5" data-testid="timeline-comparison">
+            <div class="grid gap-3 text-sm sm:grid-cols-3">
+                <p class="rounded-xl bg-white/5 px-4 py-3 text-white/70">
+                    Progression :
+                    <strong class="block text-base text-cyan-200" data-testid="countdown-plan-progress">
+                        Semaine {{ plan.currentWeek }} / {{ plan.durationWeeks }} · {{ progressPercentage }} %
+                    </strong>
+                </p>
+                <p class="rounded-xl bg-white/5 px-4 py-3 text-white/70">
+                    Temps écoulé
+                    <strong class="block text-base text-white" data-testid="days-elapsed">{{ timelineComparison.days_elapsed }} jours</strong>
+                </p>
+                <p class="rounded-xl bg-white/5 px-4 py-3 text-white/70">
+                    Temps restant
+                    <strong class="block text-base text-white" data-testid="timeline-days-remaining">{{ timelineComparison.days_remaining }} jours</strong>
+                </p>
+            </div>
+            <div
+                class="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-900"
+                role="progressbar"
+                aria-label="Temps écoulé dans la préparation"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ timelineComparison.elapsed_percentage }}"
+            >
+                <div
+                    class="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-300"
+                    style="width: {{ timelineComparison.elapsed_percentage }}%;"
+                    data-testid="timeline-progress-fill"
+                ></div>
+            </div>
+        </div>
+    {% endif %}
+</section>

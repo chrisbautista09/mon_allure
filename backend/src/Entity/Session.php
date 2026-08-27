@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use App\Enum\SessionStatus;
 use App\Repository\SessionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
 class Session
@@ -30,10 +32,11 @@ class Session
     private ?int $dayOfWeek = null;
 
     #[ORM\Column(length: 150)]
+    #[Assert\NotBlank(message: 'Le titre de la séance est obligatoire.')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null;
+    private ?string $instructions = null;
 
     /**
      * Exemples :
@@ -67,27 +70,30 @@ class Session
     private ?string $plannedFcmZone = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\NotNull(message: 'La date de la séance est obligatoire.')]
     private ?\DateTimeImmutable $date = null;
 
     /**
      * Valeurs prévues :
-     * planned, done, missed.
+     * planned, completed, missed, cancelled.
      */
     #[ORM\Column(length: 20, options: ['default' => 'planned'])]
+    #[Assert\Choice(
+        choices: ['planned', 'completed', 'missed', 'cancelled'],
+        message: 'Le statut de la séance est invalide.',
+    )]
     private string $status = 'planned';
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $completedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'La séance doit être rattachée à un plan d’entraînement.')]
     private ?TrainingPlan $trainingPlan = null;
 
-    /**
-     * @var Collection<int, Performance>
-     */
-    #[ORM\OneToMany(
-        targetEntity: Performance::class,
-        mappedBy: 'session'
-    )]
-    private Collection $performances;
+    #[ORM\OneToOne(mappedBy: 'session', targetEntity: Performance::class)]
+    private ?Performance $performance = null;
 
     /**
      * @var Collection<int, SessionIntensityZone>
@@ -111,7 +117,6 @@ class Session
 
     public function __construct()
     {
-        $this->performances = new ArrayCollection();
         $this->sessionIntensityZones = new ArrayCollection();
         $this->comments = new ArrayCollection();
     }
@@ -159,12 +164,24 @@ class Session
 
     public function getDescription(): ?string
     {
-        return $this->description;
+        return $this->instructions;
     }
 
     public function setDescription(?string $description): static
     {
-        $this->description = $description;
+        $this->instructions = $description;
+
+        return $this;
+    }
+
+    public function getInstructions(): ?string
+    {
+        return $this->instructions;
+    }
+
+    public function setInstructions(?string $instructions): static
+    {
+        $this->instructions = $instructions !== null ? trim($instructions) : null;
 
         return $this;
     }
@@ -263,9 +280,52 @@ class Session
         return $this->status;
     }
 
-    public function setStatus(string $status): static
+    public function setStatus(string|SessionStatus $status): static
     {
-        $this->status = $status;
+        $normalizedStatus = $status instanceof SessionStatus
+            ? $status
+            : SessionStatus::tryFrom(strtolower(trim($status)));
+
+        if ($normalizedStatus === null) {
+            throw new \InvalidArgumentException('Le statut de la séance est invalide.');
+        }
+
+        $this->status = $normalizedStatus->value;
+        $this->completedAt = $normalizedStatus->isTerminal()
+            ? ($this->completedAt ?? new \DateTimeImmutable())
+            : null;
+
+        return $this;
+    }
+
+    public function getStatusValue(): SessionStatus
+    {
+        return SessionStatus::from($this->status);
+    }
+
+    public function isSuccessful(): bool
+    {
+        return $this->getStatusValue()->isSuccessful();
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->getStatusValue()->isFailed();
+    }
+
+    public function isTerminal(): bool
+    {
+        return $this->getStatusValue()->isTerminal();
+    }
+
+    public function getCompletedAt(): ?\DateTimeImmutable
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeImmutable $completedAt): static
+    {
+        $this->completedAt = $completedAt;
 
         return $this;
     }
@@ -283,38 +343,44 @@ class Session
         return $this;
     }
 
-    /**
-     * @return Collection<int, Performance>
-     */
-    public function getPerformances(): Collection
+    public function getPerformance(): ?Performance
     {
-        return $this->performances;
+        return $this->performance;
     }
 
-    public function addPerformance(
-        Performance $performance
-    ): static {
-        if (!$this->performances->contains($performance)) {
-            $this->performances->add($performance);
+    public function setPerformance(?Performance $performance): static
+    {
+        if ($this->performance === $performance) {
+            return $this;
+        }
+
+        $previousPerformance = $this->performance;
+        $this->performance = $performance;
+
+        if ($previousPerformance?->getSession() === $this) {
+            $previousPerformance->setSession(null);
+        }
+
+        if ($performance !== null && $performance->getSession() !== $this) {
             $performance->setSession($this);
         }
 
         return $this;
     }
 
-    public function removePerformance(
-        Performance $performance
-    ): static {
-        if (
-            $this->performances->removeElement($performance)
-            && $performance->getSession() === $this
-        ) {
-            $performance->setSession(null);
+    public function clearPerformance(): static
+    {
+        if ($this->performance !== null) {
+            $performance = $this->performance;
+            $this->performance = null;
+
+            if ($performance->getSession() === $this) {
+                $performance->setSession(null);
+            }
         }
 
         return $this;
     }
-
     /**
      * @return Collection<int, SessionIntensityZone>
      */

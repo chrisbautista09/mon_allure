@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% set categories = {
+    progression: {
+        title: 'Progression',
+        description: 'Rythme d’évolution et fréquence des semaines allégées.',
+        parameters: {
+            progression_max_percent: {label: 'Progression maximale', unit: '%', min: 0, max: 30, step: 0.5},
+            recovery_week_frequency: {label: 'Fréquence de récupération', unit: 'semaines', min: 1, max: 12, step: 1}
+        }
+    },
+    volume: {
+        title: 'Volume',
+        description: 'Répartition de la charge et tolérance aux séances manquées.',
+        parameters: {
+            long_run_ratio_max: {label: 'Part maximale de sortie longue', unit: 'ratio', min: 0, max: 1, step: 0.05},
+            missed_session_tolerance: {label: 'Tolérance de séances manquées', unit: 'séances', min: 0, max: 10, step: 1}
+        }
+    },
+    sessions: {
+        title: 'Séances',
+        description: 'Nombre maximal de séances hebdomadaires par pôle.',
+        parameters: {
+            max_sessions_discovery: {label: 'Discovery', unit: 'séances / semaine', min: 1, max: 7, step: 1},
+            max_sessions_intermediate: {label: 'Intermediate', unit: 'séances / semaine', min: 1, max: 7, step: 1},
+            max_sessions_performance: {label: 'Performance', unit: 'séances / semaine', min: 1, max: 7, step: 1}
+        }
+    },
+    coefficients: {
+        title: 'Coefficients',
+        description: 'Coefficients VMA appliqués aux différentes intensités.',
+        parameters: {
+            coef_endurance: {label: 'Endurance', unit: 'coefficient VMA', min: 0.5, max: 1.2, step: 0.01},
+            coef_active: {label: 'Allure active', unit: 'coefficient VMA', min: 0.5, max: 1.2, step: 0.01},
+            coef_threshold: {label: 'Seuil', unit: 'coefficient VMA', min: 0.5, max: 1.2, step: 0.01},
+            coef_vma: {label: 'VMA', unit: 'coefficient VMA', min: 0.5, max: 1.2, step: 0.01}
+        }
+    },
+    validation: {
+        title: 'Validation',
+        description: 'Seuil utilisé pour valider la réussite d’un bloc.',
+        parameters: {
+            success_validation_rate: {label: 'Taux de réussite minimal', unit: '%', min: 0, max: 100, step: 1}
+        }
+    },
+    duration: {
+        title: 'Durée des plans',
+        description: 'Bornes de durée utilisées lors de la génération.',
+        parameters: {
+            default_plan_min_weeks: {label: 'Durée minimale', unit: 'semaines', min: 1, max: 52, step: 1},
+            default_plan_max_weeks: {label: 'Durée maximale', unit: 'semaines', min: 1, max: 52, step: 1}
+        }
+    }
+} %}
+
+{% block title %}Paramètres de l’algorithme | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
+        <section class="mx-auto max-w-7xl rounded-3xl border border-cyan-300/25 bg-slate-950/80 p-5 shadow-2xl shadow-cyan-950/30 sm:p-8" data-admin-algorithm-parameters data-admin-algorithm-parameters-url="{{ path('api_admin_algorithm_parameters_show') }}" data-testid="admin-algorithm-parameters">
+            {% include 'admin/_navigation.html.twig' %}
+
+            <header class="mt-6 border-b border-white/10 pb-6">
+                <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Configuration sécurisée</p>
+                <h1 id="algorithm-parameters-title" class="mt-2 text-3xl font-black sm:text-4xl">Paramètres de l’algorithme</h1>
+                <p class="mt-3 max-w-3xl leading-7 text-white/60">Ajustez les règles utilisées pour générer, évaluer et adapter les plans d’entraînement.</p>
+            </header>
+
+            <p class="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65" aria-live="polite" data-admin-algorithm-parameters-status>Chargement des paramètres…</p>
+
+            <form class="mt-6" aria-labelledby="algorithm-parameters-title" data-admin-algorithm-parameters-form hidden>
+                <div class="grid gap-5 lg:grid-cols-2">
+                    {% for categoryKey, category in categories %}
+                        <fieldset class="rounded-2xl border border-white/10 bg-blue-950/35 p-5" data-parameter-category="{{ categoryKey }}">
+                            <legend class="px-2 text-lg font-black text-cyan-200">{{ category.title }}</legend>
+                            <p class="mb-5 text-sm leading-6 text-white/50">{{ category.description }}</p>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                {% for key, parameter in category.parameters %}
+                                    <label class="grid gap-2 text-sm font-bold text-white/80" for="algorithm-parameter-{{ key }}">
+                                        <span>{{ parameter.label }}</span>
+                                        <span class="relative">
+                                            <input id="algorithm-parameter-{{ key }}" name="{{ key }}" type="number" min="{{ parameter.min }}" max="{{ parameter.max }}" step="{{ parameter.step }}" required class="w-full rounded-xl border border-white/15 bg-slate-950/75 px-4 py-3 pr-28 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-algorithm-parameter-key="{{ key }}">
+                                            <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white/40">{{ parameter.unit }}</span>
+                                        </span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6 flex flex-col gap-3 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm text-white/55">Les modifications influencent les prochains calculs de l’algorithme.</p>
+                    <button type="submit" class="rounded-xl bg-cyan-300 px-6 py-3 font-black text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50" disabled data-admin-algorithm-parameters-save>
+                        Enregistrer les paramètres
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+{% endblock %}

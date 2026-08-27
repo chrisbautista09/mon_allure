@@ -22,6 +22,7 @@ backend/public/bundles/
 
 # Si tu utilises PHPUnit pour tes tests
 backend/.phpunit.result.cache
+backend/.phpunit.cache/
 
 # --- 💻 FRONTEND (React / Node.js) ---
 frontend/node_modules/

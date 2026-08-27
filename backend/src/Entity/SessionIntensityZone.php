@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\SessionIntensityZoneRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SessionIntensityZoneRepository::class)]
 #[ORM\UniqueConstraint(
@@ -22,14 +23,21 @@ class SessionIntensityZone
      * Exemple : 60.0 pour 60 %.
      */
     #[ORM\Column]
+    #[Assert\Range(
+        min: 0.01,
+        max: 100.0,
+        notInRangeMessage: 'La part de la séance doit être comprise entre {{ min }} % et {{ max }} %.',
+    )]
     private ?float $durationPercent = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessionIntensityZones')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Une répartition doit être associée à une zone d’intensité.')]
     private ?IntensityZone $intensityZone = null;
 
     #[ORM\ManyToOne(inversedBy: 'sessionIntensityZones')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Assert\NotNull(message: 'Une répartition doit être associée à une séance.')]
     private ?Session $session = null;
 
     public function getId(): ?int

@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: TrainingPlanRepository::class)]
 class TrainingPlan
@@ -58,7 +60,7 @@ class TrainingPlan
 
     /**
      * Valeurs possibles :
-     * realistic, ambitious, dangerous
+     * FAIBLE, MOYEN, BON, OPTIMAL
      */
     #[ORM\Column(length: 30)]
     private ?string $feasibilityIndicator = null;
@@ -67,9 +69,14 @@ class TrainingPlan
     private ?\DateTimeImmutable $startDate = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'startDate',
+        message: 'La date de fin doit être postérieure ou égale à la date de début.',
+    )]
     private ?\DateTimeImmutable $endDate = null;
 
     #[ORM\Column]
+    #[Assert\Positive(message: 'La durée du plan doit être strictement positive.')]
     private ?int $durationWeeks = null;
 
     #[ORM\Column(options: ['default' => true])]
@@ -78,8 +85,11 @@ class TrainingPlan
     #[ORM\Column(options: ['default' => 1])]
     private int $currentWeek = 1;
 
-    #[ORM\Column(options: ['default' => 0])]
+    #[ORM\Column]
     private float $progressScore = 0.0;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -109,10 +119,47 @@ class TrainingPlan
     ])]
     private Collection $sessions;
 
+    /**
+     * @var list<array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * }>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $adaptationHistory = [];
+
+    /**
+     * @var list<array{
+     *     typeAnomaly: string,
+     *     description: string,
+     *     createdAt: string,
+     *     resolved: bool,
+     *     resolvedAt: string|null
+     * }>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $monitoringHistory = [];
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->sessions = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[Assert\Callback]
+    public function validateActivePlanDates(ExecutionContextInterface $context): void
+    {
+        if ($this->isActive && $this->endDate === null) {
+            $context->buildViolation('La date de fin est obligatoire pour un plan actif.')
+                ->atPath('endDate')
+                ->addViolation();
+        }
     }
 
     public function getId(): ?int
@@ -280,6 +327,17 @@ class TrainingPlan
         return $this;
     }
 
+    public function getProgressPercentage(): int
+    {
+        if ($this->durationWeeks === null || $this->durationWeeks <= 0) {
+            return 0;
+        }
+
+        $percentage = ($this->currentWeek / $this->durationWeeks) * 100;
+
+        return (int) round(min(100, max(0, $percentage)));
+    }
+
     public function getProgressScore(): float
     {
         return $this->progressScore;
@@ -288,6 +346,18 @@ class TrainingPlan
     public function setProgressScore(float $progressScore): static
     {
         $this->progressScore = $progressScore;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -360,6 +430,99 @@ class TrainingPlan
         ) {
             $session->setTrainingPlan(null);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return list<array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * }>
+     */
+    public function getAdaptationHistory(): array
+    {
+        return $this->adaptationHistory;
+    }
+
+    /**
+     * @return list<array{
+     *     typeAnomaly: string,
+     *     description: string,
+     *     createdAt: string,
+     *     resolved: bool,
+     *     resolvedAt: string|null
+     * }>
+     */
+    public function getMonitoringHistory(): array
+    {
+        return $this->monitoringHistory;
+    }
+
+    /**
+     * @param array<string, string> $currentAnomalies Types indexés par leur description
+     */
+    public function synchronizeMonitoringHistory(
+        array $currentAnomalies,
+        ?\DateTimeImmutable $analyzedAt = null,
+    ): bool {
+        $analyzedAt ??= new \DateTimeImmutable();
+        $changed = false;
+        $activeTypes = [];
+
+        foreach ($this->monitoringHistory as &$entry) {
+            if ($entry['resolved']) {
+                continue;
+            }
+
+            if (!array_key_exists($entry['typeAnomaly'], $currentAnomalies)) {
+                $entry['resolved'] = true;
+                $entry['resolvedAt'] = $analyzedAt->format(\DateTimeInterface::ATOM);
+                $changed = true;
+                continue;
+            }
+
+            $activeTypes[$entry['typeAnomaly']] = true;
+        }
+        unset($entry);
+
+        foreach ($currentAnomalies as $type => $description) {
+            if (isset($activeTypes[$type])) {
+                continue;
+            }
+
+            $this->monitoringHistory[] = [
+                'typeAnomaly' => $type,
+                'description' => $description,
+                'createdAt' => $analyzedAt->format(\DateTimeInterface::ATOM),
+                'resolved' => false,
+                'resolvedAt' => null,
+            ];
+            $changed = true;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @param array{
+     *     adaptedAt: string,
+     *     successRate: float,
+     *     successValidationRate: float,
+     *     decision: string,
+     *     loadFactor: float,
+     *     reason: string,
+     *     modification: string
+     * } $history
+     */
+    public function addAdaptationHistory(array $history): static
+    {
+        array_unshift($this->adaptationHistory, $history);
 
         return $this;
     }

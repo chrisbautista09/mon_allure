@@ -6,13 +6,20 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(
     name: 'UNIQ_IDENTIFIER_EMAIL',
     fields: ['email']
+)]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[UniqueEntity(
+    fields: ['pseudo'],
+    message: 'Ce pseudo est déjà utilisé.'
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -22,12 +29,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank(message: 'Veuillez saisir une adresse e-mail.')]
+    #[Assert\Email(message: 'Veuillez saisir une adresse e-mail valide.')]
+    #[Assert\Length(max: 180, maxMessage: 'L’adresse e-mail ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $email = null;
 
     /**
      * @var list<string>
      */
     #[ORM\Column]
+    #[Assert\All([
+        new Assert\Choice(
+            choices: ['ROLE_USER', 'ROLE_ADMIN'],
+            message: 'Le rôle {{ value }} n’est pas autorisé.',
+        ),
+    ])]
     private array $roles = [];
 
     /**
@@ -37,6 +53,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 50, unique: true)]
+    #[Assert\NotBlank(message: 'Veuillez saisir un pseudo.')]
+    #[Assert\Length(
+        min: 3,
+        max: 50,
+        minMessage: 'Le pseudo doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le pseudo ne peut pas dépasser {{ limit }} caractères.',
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\p{N}_-]+$/u',
+        message: 'Le pseudo peut uniquement contenir des lettres, chiffres, tirets et underscores.',
+    )]
     private ?string $pseudo = null;
 
     #[ORM\Column(options: ['default' => true])]

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Allure Training{% endblock %}
+
+{% block body %}
+    <main
+        class="
+            mx-auto
+            min-h-screen
+            w-full
+            max-w-\[430px]
+            overflow-hidden
+            bg-[radial-gradient(circle_at_80%_5%,rgba(37,99,235,0.65),transparent_32%),linear-gradient(180deg,#17368f_0%,#0e245f_36%,#07142d_68%,#020611_100%)]
+            px-2
+            pb-5
+            text-white
+            shadow-2xl
+        "
+    >
+        {% include 'components/Header.html.twig' %}
+        {% include 'components/Hero.html.twig' %}
+        {% include 'components/TrainingCard.html.twig' %}
+        {% include 'components/Calendar.html.twig' %}
+        {% include 'components/BottomNavigation.html.twig' %}
+    </main>
+{% endblock %}

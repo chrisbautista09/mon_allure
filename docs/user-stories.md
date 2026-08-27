@@ -1,12 +1,12 @@
-# Issues GitHub — Mon Allure
+# Découpage Epics → Issues GitHub — Mon Allure
 
 
 ---
 
-## EPIC 1 — User Authentication
+## EPIC 1 — Authentification & compte
 **Label epic** : `epic:auth` · **Labels génériques** : `backend`, `security`
 
-### Issue — US 1.1 : Register a New Account
+### Issue — US 1.1 : Création de compte
 > En tant qu'utilisateur, je veux pouvoir créer un compte afin d'accéder à l'application.
 
 **Critères d'acceptation :**
@@ -25,7 +25,7 @@
 
 ---
 
-### Issue — US 1.2 : Log In / Log Out
+### Issue — US 1.2 : Connexion / déconnexion
 > En tant qu'utilisateur, je veux pouvoir me connecter et me déconnecter afin de sécuriser mes données personnelles.
 
 **Critères d'acceptation :**
@@ -44,10 +44,10 @@
 
 ---
 
-## EPIC 2 — User Profile & Training Calibration
+## EPIC 2 — Profil & calibrage sportif
 **Label epic** : `epic:profile` · **Labels génériques** : `backend`, `frontend`
 
-### Issue — US 2.1 : Complete the Physiological Profile
+### Issue — US 2.1 : Compléter le profil physiologique
 > En tant que nouvel utilisateur, je veux compléter un profil physiologique (âge, VMA, FCM, FCR) afin que l'application adapte mes entraînements.
 
 **Critères d'acceptation :**
@@ -65,7 +65,7 @@
 
 ---
 
-### Issue — US 2.2 : Update Physiological Data
+### Issue — US 2.2 : Mettre à jour les données physiologiques
 > En tant qu'utilisateur, je veux pouvoir mettre à jour mes données physiologiques afin que le plan reste cohérent avec mon niveau réel.
 
 **Critères d'acceptation :**
@@ -81,7 +81,7 @@
 
 ---
 
-### Issue — US 2.3 : Define a Training Goal 
+### Issue — US 2.3 : Définir un objectif de course
 > En tant qu'utilisateur, je veux définir un objectif de course (distance et/ou durée avec unité) afin de préparer un plan d'entraînement adapté.
 
 **Critères d'acceptation :**
@@ -98,10 +98,10 @@
 
 ---
 
-## EPIC 3 — Training Plan Generation
+## EPIC 3 — Génération du plan d'entraînement
 **Label epic** : `epic:plan-generation` · **Labels génériques** : `backend`, `algorithm`
 
-### Issue — US 3.1 : View a Personalized Training Plan
+### Issue — US 3.1 : Consulter un plan d'entraînement personnalisé
 > En tant qu'utilisateur, je veux consulter un plan d'entraînement personnalisé généré dynamiquement afin de savoir quoi faire chaque semaine.
 
 **Critères d'acceptation :**
@@ -119,7 +119,7 @@
 
 ---
 
-### Issue — US 3.2 : Automatically Adapt the Training Plan
+### Issue — US 3.2 : Adaptation automatique du plan
 > En tant qu'utilisateur, je veux que mon plan s'adapte automatiquement à mes performances réelles afin de progresser efficacement.
 
 **Critères d'acceptation :**
@@ -135,7 +135,7 @@
 
 ---
 
-### Issue — US 3.3 : Recalculate the Training Plan Based on Completed and Missed
+### Issue — US 3.3 : Recalcul du plan selon séances ratées/réussies
 > En tant qu'utilisateur, je veux que mon plan soit recalculé si je rate ou réussis plusieurs séances afin de maintenir un niveau de progression optimal.
 
 **Critères d'acceptation :**
@@ -152,7 +152,7 @@
 
 ---
 
-### Issue — US 3.4 : Export the Training Plan as PDF
+### Issue — US 3.4 : Export du plan en PDF
 > En tant qu'utilisateur, je veux exporter mon plan au format PDF afin de pouvoir le consulter hors ligne.
 
 **Critères d'acceptation :**
@@ -168,10 +168,10 @@
 
 ---
 
-## EPIC 4 — User Dashboard
+## EPIC 4 — Dashboard utilisateur
 **Label epic** : `epic:dashboard` · **Labels génériques** : `frontend`, `backend`
 
-### Issue — US 4.1 : View Training Progress
+### Issue — US 4.1 : État d'avancement du plan
 > En tant qu'utilisateur, je veux voir l'état d'avancement de mon plan afin de savoir où j'en suis dans ma préparation.
 
 **Critères d'acceptation :**
@@ -182,7 +182,7 @@
 
 ---
 
-### Issue — US 4.2 : View Remaining Time Until the Goal
+### Issue — US 4.2 : Temps restant avant l'objectif
 > En tant qu'utilisateur, je veux visualiser le temps restant avant mon objectif afin de me projeter dans ma préparation.
 
 **Critères d'acceptation :**
@@ -192,11 +192,13 @@
 
 ---
 
-### Issue — US 4.3 :  View Current Fitness Status
+### Issue — US 4.3 : État de forme actuel
 > En tant qu'utilisateur, je veux connaître mon état de forme actuel basé sur mes performances récentes afin d'adapter mon effort.
 
 **Critères d'acceptation :**
 - [ ] Indicateur basé sur `progress_score` et les dernières performances
+- [x] Règles métier, niveaux, tendance et états particuliers définis dans
+  [`form-status-business-rules.md`](form-status-business-rules.md)
 
 **Tâches techniques :**
 - [ ] Endpoint `GET /api/dashboard/form-status`
@@ -205,58 +207,121 @@
 
 ---
 
-### Issue — US 4.4 : View Weather Forecast
+### Issue — US 4.4 : Consultation météo
 > En tant qu'utilisateur, je veux consulter la météo afin d'adapter ma tenue et mes conditions d'entraînement.
 
 **Critères d'acceptation :**
-- [ ] Intégration d'une API météo externe
-- [ ] Affichage sur le dashboard
+- [x] Intégration backend d’Open-Meteo via un endpoint authentifié
+- [x] Carte météo responsive affichée sur le dashboard avec icônes et conseils
+- [x] Données utiles, fréquence, format et états particuliers définis dans
+  [`weather-functional-requirements.md`](weather-functional-requirements.md)
 
 **Tâches techniques :**
-- [ ] Choix d'une API météo (ex: OpenWeatherMap)
-- [ ] Service d'appel API + cache
+- [x] Choix d’Open-Meteo Forecast API documenté dans
+  [`weather-provider-decision.md`](weather-provider-decision.md)
+- [x] Client HTTP Symfony configuré pour Open-Meteo avec délais d’attente,
+  nouvelles tentatives et tests JSON/réseau
+- [x] `WeatherService` centralise l’appel API, normalise les données et contrôle
+  les erreurs du fournisseur
+- [x] Cache météo dédié par position arrondie avec un TTL d’une heure
+- [x] Endpoint JSON `GET /api/dashboard/weather` avec gestion des états de
+  localisation et d’indisponibilité
+- [x] Lieu d’entraînement configurable dans le profil (ville, code postal,
+  pays) et réutilisé par l’endpoint météo
+- [x] Composant Twig météo avec géolocalisation progressive, états accessibles
+  et attribution Open-Meteo
+- [x] `WeatherAdviceService` fournit des recommandations simples selon la
+  chaleur, la pluie, le vent, le froid et l’orage
+- [x] Tests d’intégration météo : appel réel, cache actif, renouvellement,
+  indisponibilité et dernière donnée connue pendant trois heures
 
 **Labels :** `feature`, `frontend`, `integration`, `priority:low`
 
 ---
 
-## EPIC 5 — Progress Tracking & Statistics
+## EPIC 5 — Suivi & statistiques
 **Label epic** : `epic:stats` · **Labels génériques** : `backend`, `frontend`
 
-### Issue — US 5.1 : View Training History
+### Issue — US 5.1 : Historique des séances
 > En tant qu'utilisateur, je veux consulter l'historique de mes séances afin de suivre ma progression.
 
 **Critères d'acceptation :**
-- [ ] Liste des séances passées avec statut (générée, validée, manquée)
+- [x] Liste des séances passées avec statut (générée, validée, manquée)
+
+**Tâches techniques :**
+- [x] Modèle `Session` validé : plan et date obligatoires, consignes dédiées et
+  statuts `planned`, `completed`, `missed`, `cancelled`
+- [x] Requêtes paginées de récupération de l’historique, isolées par
+  utilisateur et triées de la plus récente à la plus ancienne
+- [x] `HistoryService` formate les séances, leur plan et leur performance
+  éventuelle avec les métadonnées de pagination
+- [x] Endpoint sécurisé `GET /api/history/sessions` avec pagination validée,
+  isolation des données de l’utilisateur connecté et tri antéchronologique
+- [x] Page responsive `/history/sessions` affichant les informations principales
+  des séances passées avec navigation paginée
+- [x] Badges de statut homogènes et réutilisables : complétée en vert,
+  planifiée en orange, manquée en rouge et annulée en gris
+- [x] Résultats réalisés affichés de façon compacte lorsqu’ils existent :
+  distance, temps, dénivelé et terrain validé du plan
+- [x] Filtres combinables par statut et période, avec recherche par titre et
+  conservation des critères lors de la pagination
+- [x] Tests fonctionnels de l’historique vide et complet, des associations de
+  performances, du filtre « Complétées » et des paginations à 50 et 100 séances
 
 **Labels :** `feature`, `backend`, `frontend`, `priority:medium`
 
 ---
 
-### Issue — US 5.2 : View Performance History
+### Issue — US 5.2 : Visualisation des performances passées
 > En tant qu'utilisateur, je veux visualiser mes performances passées afin d'analyser mon évolution (distance, temps, dénivelé).
 
 **Critères d'acceptation :**
-- [ ] Graphiques d'évolution (distance, temps, dénivelé) dans le temps
+- [x] Graphiques d'évolution (distance, temps, dénivelé) dans le temps
+
+**Tâches techniques :**
+- [x] Modèle `Performance` validé : métriques cohérentes, séance et utilisateur
+  obligatoires, propriétaire conforme au plan et terrain dérivé sans duplication
+- [x] Requêtes chronologiques du `PerformanceRepository` isolées par utilisateur,
+  avec séries distance, temps, dénivelé et filtrage inclusif par période
+- [x] `PerformanceStatisticsService` prépare les séries graphiques et calcule
+  moyenne, meilleur résultat, pire résultat et progression par métrique
+- [x] Endpoint sécurisé `GET /api/performances/history` renvoyant les métriques
+  chronologiques du seul utilisateur connecté au format JSON
+- [x] Composant responsive de graphiques Chart.js affichant les évolutions de
+  distance, temps et dénivelé dans le dashboard utilisateur
+- [x] Cartes de synthèse automatiques : distance, temps et dénivelé cumulés,
+  nombre de séances, distance moyenne et temps moyen
+- [x] Filtrage dynamique des graphiques et statistiques sur 7 jours, 30 jours,
+  3 mois, 6 mois, 1 an ou tout l’historique
+- [x] Comparaison prévu/réalisé pour distance, temps et dénivelé, avec objectifs
+  en pointillés et indicateurs vert, orange ou rouge selon l’écart
+- [x] États robustes pour nouvel utilisateur, historique vide, erreur de
+  chargement et dénivelé non renseigné, sans afficher de graphique vide
+- [x] Tests de clôture sur historique vide, filtres, exactitude des statistiques
+  et stabilité avec 300 performances chronologiques
 
 **Labels :** `feature`, `frontend`, `priority:medium`
 
 ---
 
-### Issue — US 5.3 : View Training Intensity Distribution
+### Issue — US 5.3 : Répartition par zones d'intensité
 > En tant qu'utilisateur, je veux connaître la répartition de mes entraînements par zones d'intensité afin d'évaluer la qualité de mon plan.
 
 **Critères d'acceptation :**
-- [ ] Graphique de répartition basé sur `SESSION_INTENSITY_ZONE`
+- [x] Graphique interactif de répartition basé sur `SESSION_INTENSITY_ZONE`
+- [x] Statistiques détaillées, zone dominante et diagnostic d’équilibre par pôle
+- [x] Filtres par période et par périmètre de plans
+- [x] États vide, zone unique et données incomplètes sécurisés
+- [x] Tests du calcul à 100 %, de la sécurité, des filtres et de l’affichage
 
 **Labels :** `feature`, `backend`, `frontend`, `priority:low`
 
 ---
 
-## EPIC 6 — Administration & Algorithm Management
+## EPIC 6 — Administration & algorithme
 **Label epic** : `epic:admin` · **Labels génériques** : `backend`, `admin`
 
-### Issue — US 6.1 : Manage User Accounts
+### Issue — US 6.1 : Gestion des comptes utilisateurs
 > En tant qu'administrateur, je veux pouvoir gérer les comptes utilisateurs afin de supprimer ou désactiver les comptes inactifs.
 
 **Critères d'acceptation :**
@@ -272,7 +337,7 @@
 
 ---
 
-### Issue — US 6.2 : Manage Algorithm Parameters
+### Issue — US 6.2 : Modifier les paramètres de l'algorithme
 > En tant qu'administrateur, je veux pouvoir modifier les paramètres de l'algorithme afin d'ajuster les plans d'entraînement sans modifier le code.
 
 **Critères d'acceptation :**
@@ -288,7 +353,7 @@
 
 ---
 
-### Issue — US 6.3 : Monitor Generated Training Plans
+### Issue — US 6.3 : Superviser le comportement des plans générés
 > En tant qu'administrateur, je veux pouvoir superviser le comportement des plans générés afin de détecter d'éventuelles incohérences dans l'algorithme.
 
 **Critères d'acceptation :**
@@ -299,7 +364,7 @@
 
 ---
 
-### Issue — US 6.4 : Manage Product Evolution
+### Issue — US 6.4 : Faire évoluer l'interface et les fonctionnalités
 > En tant qu'administrateur, je veux pouvoir faire évoluer l'interface et les fonctionnalités afin d'améliorer l'expérience utilisateur.
 
 **Critères d'acceptation :**
@@ -308,6 +373,3 @@
 **Labels :** `enhancement`, `priority:low`
 
 ---
-
-
-

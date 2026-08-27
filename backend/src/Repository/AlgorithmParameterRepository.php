@@ -16,28 +16,61 @@ class AlgorithmParameterRepository extends ServiceEntityRepository
         parent::__construct($registry, AlgorithmParameter::class);
     }
 
-    //    /**
-    //     * @return AlgorithmParameter[] Returns an array of AlgorithmParameter objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Retourne l’unique configuration courante, indexée par clé.
+     *
+     * @return array<string, AlgorithmParameter>
+     */
+    public function findCurrent(): array
+    {
+        /** @var array<string, AlgorithmParameter> $parameters */
+        $parameters = $this->createQueryBuilder('parameter', 'parameter.parameterKey')
+            ->andWhere('parameter.parameterKey IN (:supportedKeys)')
+            ->setParameter('supportedKeys', AlgorithmParameter::SUPPORTED_KEYS)
+            ->getQuery()
+            ->getResult();
 
-    //    public function findOneBySomeField($value): ?AlgorithmParameter
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $orderedConfiguration = [];
+        foreach (AlgorithmParameter::SUPPORTED_KEYS as $key) {
+            if (isset($parameters[$key])) {
+                $orderedConfiguration[$key] = $parameters[$key];
+            }
+        }
+
+        return $orderedConfiguration;
+    }
+
+    /**
+     * Met à jour plusieurs paramètres en une transaction et un seul flush.
+     *
+     * @param array<string, float|int> $values
+     */
+    public function updateParameters(array $values): void
+    {
+        if ($values === []) {
+            return;
+        }
+
+        $unknownKeys = array_diff(array_keys($values), AlgorithmParameter::SUPPORTED_KEYS);
+        if ($unknownKeys !== []) {
+            throw new \InvalidArgumentException(sprintf(
+                'Paramètre algorithmique inconnu : %s.',
+                implode(', ', $unknownKeys),
+            ));
+        }
+
+        $this->getEntityManager()->wrapInTransaction(function () use ($values): void {
+            $parameters = $this->findCurrent();
+
+            foreach ($values as $key => $value) {
+                if (!isset($parameters[$key])) {
+                    throw new \LogicException(sprintf('Le paramètre algorithmique "%s" est manquant.', $key));
+                }
+
+                $parameters[$key]->updateValue((float) $value);
+            }
+
+            $this->getEntityManager()->flush();
+        });
+    }
 }

@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer mon compte | Mon Allure{% endblock %}
+
+{% block body %}
+<main class="account-page">
+    <section class="account-card" aria-labelledby="register-title">
+        {% include 'components/_account_header.html.twig' %}
+        <h1 id="register-title" class="account-title">Créer mon compte</h1>
+        {% include 'components/_account_hero.html.twig' %}
+        <p class="account-intro">Créez votre compte pour commencer votre aventure avec Mon Allure.</p>
+        {{ form_start(registrationForm, {attr: {class: 'account-form'}}) }}
+            {{ form_errors(registrationForm) }}
+            <fieldset class="account-fieldset">
+                <legend>Informations de connexion</legend>
+                <div class="account-field">{{ form_label(registrationForm.email) }}<div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">✉</span>{{ form_widget(registrationForm.email) }}</div>{{ form_errors(registrationForm.email) }}</div>
+                <div class="account-field">{{ form_label(registrationForm.pseudo) }}<div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">♙</span>{{ form_widget(registrationForm.pseudo) }}</div>{{ form_errors(registrationForm.pseudo) }}</div>
+                <div class="account-field">{{ form_label(registrationForm.plainPassword.first) }}<div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">⌑</span>{{ form_widget(registrationForm.plainPassword.first, {attr: {placeholder: 'Votre mot de passe'}}) }}</div><small>8 caractères minimum avec lettres et chiffres.</small>{{ form_errors(registrationForm.plainPassword.first) }}</div>
+                <div class="account-field">{{ form_label(registrationForm.plainPassword.second) }}<div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">⌑</span>{{ form_widget(registrationForm.plainPassword.second, {attr: {placeholder: 'Confirmez votre mot de passe'}}) }}</div>{{ form_errors(registrationForm.plainPassword.second) }}</div>
+            </fieldset>
+            <div class="account-info">ⓘ <span>Vous pourrez compléter vos informations physiologiques après la création de votre compte.</span></div>
+            <div class="account-terms">{{ form_widget(registrationForm.agreeTerms) }} {{ form_label(registrationForm.agreeTerms) }} {{ form_errors(registrationForm.agreeTerms) }}</div>
+            <button type="submit" class="account-submit">Créer mon compte <span aria-hidden="true">→</span></button>
+        {{ form_end(registrationForm) }}
+        <div class="account-separator"><span>ou</span></div>
+        <p class="account-switch">Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a></p>
+        <a class="account-home-link" href="{{ path('app_home') }}">Retour accueil</a>
+    </section>
+</main>
+{% endblock %}
