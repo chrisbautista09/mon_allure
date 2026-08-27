@@ -183,6 +183,10 @@ final class TrainingPlanController extends AbstractController
             'id' => $plan->getId(),
             'name' => $plan->getName(),
             'poleType' => $plan->getPoleType(),
+            'targetType' => $plan->getTargetType(),
+            'targetValue' => $plan->getTargetValue(),
+            'targetUnit' => $plan->getTargetUnit(),
+            'targetDurationMinutes' => $plan->getTargetDurationMinutes(),
             'feasibilityIndicator' => $plan->getFeasibilityIndicator(),
             'startDate' => $plan->getStartDate()?->format('Y-m-d'),
             'endDate' => $plan->getEndDate()?->format('Y-m-d'),
@@ -199,6 +203,9 @@ final class TrainingPlanController extends AbstractController
         $goal->targetType = $data['targetType'] ?? null;
         $goal->targetValue = isset($data['targetValue']) ? (float) $data['targetValue'] : null;
         $goal->targetUnit = $data['targetUnit'] ?? null;
+        $goal->targetDurationMinutes = isset($data['targetDurationMinutes'])
+            ? (int) $data['targetDurationMinutes']
+            : null;
         $goal->terrainType = $data['terrainType'] ?? null;
         $goal->elevationTargetDPlus = isset($data['elevationTargetDPlus'])
             ? (int) $data['elevationTargetDPlus']
@@ -230,6 +237,10 @@ final class TrainingPlanController extends AbstractController
 
         if (isset($data['elevationTargetDPlus']) && !is_int($data['elevationTargetDPlus'])) {
             $errors['elevationTargetDPlus'][] = 'Cette valeur doit être un nombre entier.';
+        }
+
+        if (isset($data['targetDurationMinutes']) && !is_int($data['targetDurationMinutes'])) {
+            $errors['targetDurationMinutes'][] = 'Cette valeur doit être un nombre entier.';
         }
 
         return $errors;
@@ -268,6 +279,7 @@ final class TrainingPlanController extends AbstractController
             'targetType' => $plan->getTargetType(),
             'targetValue' => $plan->getTargetValue(),
             'targetUnit' => $plan->getTargetUnit(),
+            'targetDurationMinutes' => $plan->getTargetDurationMinutes(),
             'terrainType' => $plan->getTerrainType(),
             'elevationTargetDPlus' => $plan->getElevationTargetDPlus(),
             'feasibilityIndicator' => $plan->getFeasibilityIndicator(),

@@ -33,7 +33,7 @@
                 <div class="training-goal-form__grid">
                     {% for field in trainingGoalForm %}
                         {% if field.vars.name != '_token' %}
-                            <div class="training-goal-form__field {{ field.vars.errors|length ? 'training-goal-form__field--error' }}">
+                            <div class="training-goal-form__field {{ field.vars.errors|length ? 'training-goal-form__field--error' }}" data-training-goal-field="{{ field.vars.name }}">
                                 {{ form_label(field) }}
                                 {{ form_widget(field) }}
                                 {{ form_help(field) }}

@@ -48,6 +48,9 @@ class TrainingPlan
     #[ORM\Column(length: 10)]
     private ?string $targetUnit = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $targetDurationMinutes = null;
+
     /**
      * Valeurs prévues :
      * route, trail
@@ -226,6 +229,18 @@ class TrainingPlan
     public function setTargetUnit(string $targetUnit): static
     {
         $this->targetUnit = $targetUnit;
+
+        return $this;
+    }
+
+    public function getTargetDurationMinutes(): ?int
+    {
+        return $this->targetDurationMinutes;
+    }
+
+    public function setTargetDurationMinutes(?int $targetDurationMinutes): static
+    {
+        $this->targetDurationMinutes = $targetDurationMinutes;
 
         return $this;
     }

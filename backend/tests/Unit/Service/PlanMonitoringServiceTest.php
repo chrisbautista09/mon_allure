@@ -28,6 +28,7 @@ final class PlanMonitoringServiceTest extends TestCase
             'type' => 'distance',
             'value' => 10.0,
             'unit' => 'km',
+            'durationMinutes' => null,
             'terrainType' => 'road',
         ], $analysis['objective']);
         self::assertSame(3, $analysis['trainingLoad']['sessionCount']);

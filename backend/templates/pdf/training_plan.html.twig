@@ -95,7 +95,7 @@
 
 <table class="summary">
     <tr>
-        <td><span class="label">Objectif</span><span class="value">{{ plan.targetValue|number_format(plan.targetValue % 1 == 0 ? 0 : 1, ',', ' ') }} {{ plan.targetUnit }}</span></td>
+        <td><span class="label">Objectif</span><span class="value">{{ plan.targetValue|number_format(plan.targetValue % 1 == 0 ? 0 : 1, ',', ' ') }} {{ plan.targetUnit }}{% if plan.targetDurationMinutes is not null %} en {{ (plan.targetDurationMinutes // 60) > 0 ? (plan.targetDurationMinutes // 60) ~ ' h ' : '' }}{{ '%02d'|format(plan.targetDurationMinutes % 60) }} min{% endif %}</span></td>
         <td><span class="label">Pôle</span><span class="value">{{ poleLabels[plan.poleType]|default(plan.poleType|capitalize) }}</span></td>
         <td><span class="label">Durée</span><span class="value">{{ plan.durationWeeks }} semaines</span></td>
         <td><span class="label">Terrain</span><span class="value">{{ plan.terrainType|capitalize }}</span></td>

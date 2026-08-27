@@ -34,6 +34,7 @@ final class TrainingPlanDTOTest extends KernelTestCase
         yield 'distance en mètres' => ['distance', 'm'];
         yield 'durée en minutes' => ['time', 'min'];
         yield 'durée en secondes' => ['time', 's'];
+        yield 'épreuve en kilomètres' => ['race', 'km'];
     }
 
     public function testUnitMustMatchGoalType(): void
@@ -55,6 +56,17 @@ final class TrainingPlanDTOTest extends KernelTestCase
         self::assertCount(2, $this->validator->validate($goal));
     }
 
+    public function testRaceRequiresTargetDuration(): void
+    {
+        $goal = $this->goal('race', 'km');
+        $goal->targetDurationMinutes = null;
+
+        $violations = $this->validator->validate($goal);
+
+        self::assertCount(1, $violations);
+        self::assertSame('targetDurationMinutes', $violations[0]->getPropertyPath());
+    }
+
     private function goal(string $type, string $unit): TrainingPlanDTO
     {
         $goal = new TrainingPlanDTO();
@@ -64,6 +76,7 @@ final class TrainingPlanDTOTest extends KernelTestCase
         $goal->targetUnit = $unit;
         $goal->terrainType = 'road';
         $goal->elevationTargetDPlus = 100;
+        $goal->targetDurationMinutes = $type === 'race' ? 45 : null;
 
         return $goal;
     }
