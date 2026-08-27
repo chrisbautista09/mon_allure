@@ -20,6 +20,9 @@ backend/vendor/
 backend/var/
 backend/public/bundles/
 
+# Documents de validation générés localement
+output/
+
 # Si tu utilises PHPUnit pour tes tests
 backend/.phpunit.result.cache
 backend/.phpunit.cache/
