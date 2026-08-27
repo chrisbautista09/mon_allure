@@ -24,8 +24,14 @@ if (root) {
         return element;
     };
 
-    const objective = (plan) =>
-        String(plan.target_value) + " " + plan.target_unit + " · " + plan.terrain_type;
+    const objective = (plan) => {
+        const target = String(plan.target_value) + " " + plan.target_unit;
+        const duration = plan.target_duration_minutes
+            ? " en " + String(plan.target_duration_minutes) + " min"
+            : "";
+
+        return target + duration + " · " + plan.terrain_type;
+    };
 
     const feasibilityCell = (plan) => {
         const element = document.createElement("td");

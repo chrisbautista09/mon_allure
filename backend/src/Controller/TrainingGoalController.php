@@ -5,7 +5,11 @@ namespace App\Controller;
 use App\Dto\TrainingPlanDTO;
 use App\Entity\User;
 use App\Form\TrainingGoalType;
+use App\Repository\TrainingPlanRepository;
+use App\Service\TrainingPlanGeneratorService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,8 +17,12 @@ use Symfony\Component\Routing\Attribute\Route;
 class TrainingGoalController extends AbstractController
 {
     #[Route('/training-goal', name: 'app_training_goal', methods: ['GET', 'POST'])]
-    public function define(Request $request): Response
-    {
+    public function define(
+        Request $request,
+        TrainingPlanGeneratorService $generator,
+        TrainingPlanRepository $trainingPlanRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
         $user = $this->getUser();
 
         if (!$user instanceof User) {
@@ -32,10 +40,36 @@ class TrainingGoalController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $request->getSession()->set('training_goal', $goal->toArray());
-            $this->addFlash('success', 'Votre objectif est prêt pour la génération du plan.');
+            try {
+                $entityManager->wrapInTransaction(function () use (
+                    $generator,
+                    $user,
+                    $goal,
+                    $trainingPlanRepository,
+                    $entityManager,
+                ): void {
+                    foreach ($trainingPlanRepository->findBy([
+                        'user' => $user,
+                        'isActive' => true,
+                    ]) as $activePlan) {
+                        $activePlan->setIsActive(false);
+                    }
 
-            return $this->redirectToRoute('app_training_goal');
+                    $entityManager->persist($generator->generatePlan($user, $goal));
+                });
+            } catch (\DomainException|\InvalidArgumentException $exception) {
+                $form->addError(new FormError($exception->getMessage()));
+
+                return $this->render('training_goal/define.html.twig', [
+                    'trainingGoalForm' => $form,
+                    'savedGoal' => null,
+                ], new Response(status: 422));
+            }
+
+            $request->getSession()->remove('training_goal');
+            $this->addFlash('success', 'Votre plan d’entraînement a bien été généré.');
+
+            return $this->redirectToRoute('app_training_weekly');
         }
 
         return $this->render('training_goal/define.html.twig', [

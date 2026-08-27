@@ -72,6 +72,7 @@ final class AdminTrainingPlanController extends AbstractController
             'target_type' => $plan['objective']['type'],
             'target_value' => $plan['objective']['value'],
             'target_unit' => $plan['objective']['unit'],
+            'target_duration_minutes' => $plan['objective']['durationMinutes'],
             'terrain_type' => $plan['objective']['terrainType'],
             'current_week' => $plan['currentWeek'],
             'duration_weeks' => $plan['durationWeeks'],

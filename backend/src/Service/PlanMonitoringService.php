@@ -106,6 +106,7 @@ final class PlanMonitoringService
                 'type' => $plan->getTargetType(),
                 'value' => $plan->getTargetValue(),
                 'unit' => $plan->getTargetUnit(),
+                'durationMinutes' => $plan->getTargetDurationMinutes(),
                 'terrainType' => $plan->getTerrainType(),
             ],
             'durationWeeks' => $plan->getDurationWeeks(),

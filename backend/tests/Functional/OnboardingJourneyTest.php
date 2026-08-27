@@ -2,7 +2,11 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\AlgorithmParameter;
+use App\Entity\IntensityZone;
 use App\Entity\Profile;
+use App\Entity\Session;
+use App\Entity\TrainingPlan;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -30,6 +34,7 @@ final class OnboardingJourneyTest extends WebTestCase
         $this->registerUser();
         $this->loginUser();
         $this->completePhysiologicalProfile();
+        $this->persistAlgorithmData();
         $this->defineTrainingGoal();
 
         $this->entityManager->clear();
@@ -43,10 +48,8 @@ final class OnboardingJourneyTest extends WebTestCase
         self::assertSame(14.8, $user->getProfile()->getVma());
         self::assertSame('Toulouse, France', $user->getProfile()->getTrainingLocation());
 
-        $this->client->request('GET', '/training-goal');
-        self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('.training-goal__saved', '42.2 km');
-        self::assertSelectorTextContains('.training-goal__saved', 'trail');
+        self::assertSame(1, $this->entityManager->getRepository(TrainingPlan::class)->count([]));
+        self::assertSame(80, $this->entityManager->getRepository(Session::class)->count([]));
     }
 
     private function registerUser(): void
@@ -117,8 +120,40 @@ final class OnboardingJourneyTest extends WebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/training-goal');
+        self::assertResponseRedirects('/training/weekly');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('.training-goal__success', 'Votre objectif est prêt');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('#training-plan-title', 'Objectif 42.2 km');
+    }
+
+    private function persistAlgorithmData(): void
+    {
+        foreach ([
+            'default_plan_min_weeks' => 8,
+            'default_plan_max_weeks' => 18,
+            'max_sessions_discovery' => 2,
+            'max_sessions_intermediate' => 3,
+            'max_sessions_performance' => 5,
+        ] as $key => $value) {
+            $this->entityManager->persist((new AlgorithmParameter())
+                ->setParameterKey($key)
+                ->setParameterValue($value));
+        }
+
+        foreach ([
+            ['Z1', 0.50, 0.65, 50, 60],
+            ['Z2', 0.65, 0.75, 60, 70],
+            ['Z4', 0.85, 0.95, 80, 90],
+            ['Z5', 0.95, 1.05, 90, 100],
+        ] as [$name, $vmaMin, $vmaMax, $fcmMin, $fcmMax]) {
+            $this->entityManager->persist((new IntensityZone())
+                ->setName($name)
+                ->setVmaCoefMin($vmaMin)
+                ->setVmaCoefMax($vmaMax)
+                ->setFcmPercentMin($fcmMin)
+                ->setFcmPercentMax($fcmMax));
+        }
+
+        $this->entityManager->flush();
     }
 }

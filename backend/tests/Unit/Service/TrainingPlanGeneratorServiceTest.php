@@ -61,6 +61,21 @@ final class TrainingPlanGeneratorServiceTest extends TestCase
         self::assertSame(12, $longPlan->getDurationWeeks());
     }
 
+    public function testGeneratesRaceGoalWithDistanceAndTargetTime(): void
+    {
+        $service = $this->serviceWithParameters(8, 18, 1);
+        $goal = $this->distanceGoal(10, 'km');
+        $goal->targetType = 'race';
+        $goal->targetDurationMinutes = 45;
+
+        $plan = $service->generatePlan($this->userWithProfile(16), $goal);
+
+        self::assertSame('Épreuve 10 km en 45 min', $plan->getName());
+        self::assertSame('race', $plan->getTargetType());
+        self::assertSame(45, $plan->getTargetDurationMinutes());
+        self::assertSame(8, $plan->getDurationWeeks());
+    }
+
     public function testProfileIsRequired(): void
     {
         $service = $this->serviceWithParameters(8, 18, 0);

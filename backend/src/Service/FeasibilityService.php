@@ -31,7 +31,7 @@ class FeasibilityService
         }
 
         $fitnessScore = $this->fitnessScore($profile);
-        $difficultyScore = $this->difficultyScore($plan);
+        $difficultyScore = $this->difficultyScore($profile, $plan);
         $preparationBonus = match (true) {
             $durationWeeks >= $minimumWeeks + 8 => 1,
             $durationWeeks < $minimumWeeks + 4 => -1,
@@ -87,19 +87,35 @@ class FeasibilityService
         return (int) round(array_sum($scores) / count($scores));
     }
 
-    private function difficultyScore(TrainingPlan $plan): int
+    private function difficultyScore(Profile $profile, TrainingPlan $plan): int
     {
         $targetValue = $plan->getTargetValue() ?? 0.0;
 
-        if ($plan->getTargetType() === 'distance') {
+        if (in_array($plan->getTargetType(), ['distance', 'race'], true)) {
             $distanceKm = $plan->getTargetUnit() === 'm' ? $targetValue / 1000 : $targetValue;
 
-            return match (true) {
+            $distanceScore = match (true) {
                 $distanceKm <= 10 => 0,
                 $distanceKm <= 21.1 => 1,
                 $distanceKm <= 42.2 => 2,
                 default => 3,
             };
+
+            if ($plan->getTargetType() !== 'race'
+                || $plan->getTargetDurationMinutes() === null
+                || $profile->getVma() === null) {
+                return $distanceScore;
+            }
+
+            $targetSpeed = $distanceKm / ($plan->getTargetDurationMinutes() / 60);
+            $paceScore = match (true) {
+                $targetSpeed / $profile->getVma() <= 0.65 => 0,
+                $targetSpeed / $profile->getVma() <= 0.75 => 1,
+                $targetSpeed / $profile->getVma() <= 0.85 => 2,
+                default => 3,
+            };
+
+            return max($distanceScore, $paceScore);
         }
 
         $durationMinutes = $plan->getTargetUnit() === 's' ? $targetValue / 60 : $targetValue;

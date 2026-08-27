@@ -31,7 +31,9 @@ class TrainingGoalType extends AbstractType
                 'choices' => [
                     'Distance' => 'distance',
                     'Durée' => 'time',
+                    'Épreuve (distance et temps visé)' => 'race',
                 ],
+                'attr' => ['data-training-goal-type' => true],
             ])
             ->add('targetValue', NumberType::class, [
                 'label' => 'Valeur cible',
@@ -48,6 +50,18 @@ class TrainingGoalType extends AbstractType
                     'Minutes (min)' => 'min',
                     'Secondes (s)' => 's',
                 ],
+                'attr' => ['data-training-goal-unit' => true],
+            ])
+            ->add('targetDurationMinutes', IntegerType::class, [
+                'label' => 'Temps visé pour l’épreuve (minutes)',
+                'required' => false,
+                'attr' => [
+                    'min' => 1,
+                    'inputmode' => 'numeric',
+                    'placeholder' => 'Ex. 45 pour un 10 km en 45 min',
+                    'data-training-goal-race-duration' => true,
+                ],
+                'help' => 'Uniquement pour une épreuve : indiquez la durée totale visée en minutes.',
             ])
             ->add('terrainType', ChoiceType::class, [
                 'label' => 'Terrain',

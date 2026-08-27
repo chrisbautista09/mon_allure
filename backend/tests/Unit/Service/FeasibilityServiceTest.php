@@ -69,6 +69,21 @@ final class FeasibilityServiceTest extends TestCase
         );
     }
 
+    public function testRaceGoalUsesBothDistanceAndTargetPace(): void
+    {
+        $plan = (new TrainingPlan())
+            ->setTargetType('race')
+            ->setTargetValue(10)
+            ->setTargetUnit('km')
+            ->setTargetDurationMinutes(40)
+            ->setDurationWeeks(8);
+
+        self::assertSame(
+            FeasibilityLevel::MEDIUM,
+            $this->service->evaluate($this->profile(17, 58), $plan, 8)
+        );
+    }
+
     private function profile(float $vma, ?float $vo2max): Profile
     {
         return (new Profile())

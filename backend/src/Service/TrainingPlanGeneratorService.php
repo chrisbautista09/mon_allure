@@ -58,6 +58,7 @@ class TrainingPlanGeneratorService
             ->setTargetType((string) $data->targetType)
             ->setTargetValue((float) $data->targetValue)
             ->setTargetUnit((string) $data->targetUnit)
+            ->setTargetDurationMinutes($data->targetDurationMinutes)
             ->setTerrainType((string) $data->terrainType)
             ->setElevationTargetDPlus($data->elevationTargetDPlus)
             ->setFeasibilityIndicator('pending')
@@ -91,7 +92,7 @@ class TrainingPlanGeneratorService
     {
         $value = (float) $data->targetValue;
 
-        if ($data->targetType === 'distance') {
+        if (in_array($data->targetType, ['distance', 'race'], true)) {
             $distanceKm = $data->targetUnit === 'm' ? $value / 1000 : $value;
 
             return match (true) {
@@ -112,6 +113,25 @@ class TrainingPlanGeneratorService
 
     private function planName(TrainingPlanDTO $data): string
     {
+        if ($data->targetType === 'race') {
+            return sprintf(
+                'Épreuve %s %s en %s',
+                $data->targetValue,
+                $data->targetUnit,
+                $this->formatDuration((int) $data->targetDurationMinutes),
+            );
+        }
+
         return sprintf('Objectif %s %s', $data->targetValue, $data->targetUnit);
+    }
+
+    private function formatDuration(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $remainingMinutes = $minutes % 60;
+
+        return $hours > 0
+            ? sprintf('%d h %02d', $hours, $remainingMinutes)
+            : sprintf('%d min', $remainingMinutes);
     }
 }
