@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des utilisateurs | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
+        <section
+            class="mx-auto max-w-7xl overflow-hidden rounded-3xl border border-cyan-300/25 bg-slate-950/80 p-5 shadow-2xl shadow-cyan-950/30 sm:p-8"
+            aria-labelledby="admin-title"
+            data-admin-users
+            data-admin-users-url="{{ path('api_admin_users_list') }}"
+            data-admin-users-csrf="{{ csrf_token('admin_users') }}"
+            data-admin-current-user-id="{{ app.user.id }}"
+            data-testid="admin-dashboard"
+        >
+            <div class="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Espace sécurisé</p>
+                    <h1 id="admin-title" class="mt-2 text-3xl font-black sm:text-4xl">Gestion des utilisateurs</h1>
+                    <p class="mt-3 max-w-2xl leading-7 text-white/60">
+                        Consultez les comptes Mon Allure et leur état depuis une interface réservée aux administrateurs.
+                    </p>
+                </div>
+                <p class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm font-extrabold text-cyan-100">
+                    <span data-admin-user-total>0</span> compte<span data-admin-user-total-plural>s</span>
+                </p>
+            </div>
+
+            <form class="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 md:grid-cols-2 xl:grid-cols-[minmax(18rem,1fr)_13rem_13rem_auto]" data-admin-users-filters>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Rechercher un compte
+                    <input type="search" class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" placeholder="Pseudo ou adresse e-mail" autocomplete="off" data-admin-users-search>
+                </label>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Statut
+                    <select class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-admin-users-status-filter>
+                        <option value="all">Tous les statuts</option>
+                        <option value="active">Actif</option>
+                        <option value="inactive">Désactivé</option>
+                    </select>
+                </label>
+                <label class="grid gap-2 text-sm font-bold text-cyan-100">
+                    Rôle
+                    <select class="rounded-xl border border-white/15 bg-slate-950/70 px-4 py-3 text-white outline-none transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" data-admin-users-role-filter>
+                        <option value="all">Tous les rôles</option>
+                        <option value="admin">Administrateur</option>
+                        <option value="user">Utilisateur</option>
+                    </select>
+                </label>
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="flex-1 rounded-xl bg-cyan-300 px-4 py-3 font-black text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-200 focus:ring-offset-2 focus:ring-offset-slate-950">
+                        Rechercher
+                    </button>
+                    <button type="reset" class="rounded-xl border border-white/20 px-4 py-3 font-bold text-white/75 transition hover:bg-white/10" data-admin-users-reset>
+                        Effacer
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65" aria-live="polite" data-admin-users-status>
+                Chargement des utilisateurs…
+            </p>
+
+            <p class="mt-6 rounded-xl border px-4 py-3 text-sm font-bold" role="status" aria-live="polite" data-admin-users-feedback hidden></p>
+
+            <div class="mt-6 overflow-x-auto rounded-2xl border border-white/10" data-admin-users-table hidden>
+                <table class="min-w-[58rem] w-full border-collapse text-left" data-testid="admin-users-table">
+                    <thead class="bg-cyan-300/10 text-xs uppercase tracking-wider text-cyan-200">
+                        <tr>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Pseudo</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Email</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Rôle</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Statut</th>
+                            <th class="px-4 py-4 font-extrabold" scope="col">Date de création</th>
+                            <th class="px-4 py-4 text-right font-extrabold" scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10 bg-blue-950/35" data-admin-users-body></tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-7 text-center" data-admin-users-empty hidden>
+                <p class="text-lg font-extrabold text-cyan-200">Aucun utilisateur à afficher.</p>
+            </div>
+
+            <nav class="mt-6 flex items-center justify-between gap-4" aria-label="Pagination des utilisateurs" data-admin-users-pagination hidden>
+                <button type="button" class="rounded-xl border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-35" data-admin-users-previous>
+                    Précédent
+                </button>
+                <p class="text-sm font-bold text-white/60" data-admin-users-page>Page 1 sur 1</p>
+                <button type="button" class="rounded-xl border border-cyan-300/30 px-4 py-2 font-bold text-cyan-200 transition hover:bg-cyan-300/10 disabled:cursor-not-allowed disabled:opacity-35" data-admin-users-next>
+                    Suivant
+                </button>
+            </nav>
+        </section>
+    </main>
+{% endblock %}

@@ -2,6 +2,7 @@ import "./controllers/calendar.js";
 import "./controllers/weather.js";
 import "./controllers/performance_charts.js";
 import "./controllers/intensity_distribution.js";
+import "./controllers/admin_users.js";
 import "./stimulus_bootstrap.js";
 /*
  * Welcome to your app's main JavaScript file!

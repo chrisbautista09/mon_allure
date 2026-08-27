@@ -38,6 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string>
      */
     #[ORM\Column]
+    #[Assert\All([
+        new Assert\Choice(
+            choices: ['ROLE_USER', 'ROLE_ADMIN'],
+            message: 'Le rôle {{ value }} n’est pas autorisé.',
+        ),
+    ])]
     private array $roles = [];
 
     /**
