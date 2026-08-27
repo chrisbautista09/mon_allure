@@ -88,6 +88,9 @@ class TrainingPlan
     #[ORM\Column]
     private float $progressScore = 0.0;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
+
     #[ORM\ManyToOne(inversedBy: 'trainingPlans')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
@@ -130,10 +133,23 @@ class TrainingPlan
     #[ORM\Column(type: Types::JSON)]
     private array $adaptationHistory = [];
 
+    /**
+     * @var list<array{
+     *     typeAnomaly: string,
+     *     description: string,
+     *     createdAt: string,
+     *     resolved: bool,
+     *     resolvedAt: string|null
+     * }>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $monitoringHistory = [];
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->sessions = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     #[Assert\Callback]
@@ -334,6 +350,18 @@ class TrainingPlan
         return $this;
     }
 
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -420,6 +448,65 @@ class TrainingPlan
     public function getAdaptationHistory(): array
     {
         return $this->adaptationHistory;
+    }
+
+    /**
+     * @return list<array{
+     *     typeAnomaly: string,
+     *     description: string,
+     *     createdAt: string,
+     *     resolved: bool,
+     *     resolvedAt: string|null
+     * }>
+     */
+    public function getMonitoringHistory(): array
+    {
+        return $this->monitoringHistory;
+    }
+
+    /**
+     * @param array<string, string> $currentAnomalies Types indexés par leur description
+     */
+    public function synchronizeMonitoringHistory(
+        array $currentAnomalies,
+        ?\DateTimeImmutable $analyzedAt = null,
+    ): bool {
+        $analyzedAt ??= new \DateTimeImmutable();
+        $changed = false;
+        $activeTypes = [];
+
+        foreach ($this->monitoringHistory as &$entry) {
+            if ($entry['resolved']) {
+                continue;
+            }
+
+            if (!array_key_exists($entry['typeAnomaly'], $currentAnomalies)) {
+                $entry['resolved'] = true;
+                $entry['resolvedAt'] = $analyzedAt->format(\DateTimeInterface::ATOM);
+                $changed = true;
+                continue;
+            }
+
+            $activeTypes[$entry['typeAnomaly']] = true;
+        }
+        unset($entry);
+
+        foreach ($currentAnomalies as $type => $description) {
+            if (isset($activeTypes[$type])) {
+                continue;
+            }
+
+            $this->monitoringHistory[] = [
+                'typeAnomaly' => $type,
+                'description' => $description,
+                'createdAt' => $analyzedAt->format(\DateTimeInterface::ATOM),
+                'resolved' => false,
+                'resolvedAt' => null,
+            ];
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     /**

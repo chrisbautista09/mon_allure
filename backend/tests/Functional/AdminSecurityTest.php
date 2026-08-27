@@ -81,7 +81,7 @@ final class AdminSecurityTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-testid="admin-algorithm-parameters"]');
         self::assertSelectorTextContains('#algorithm-parameters-title', 'Paramètres de l’algorithme');
-        self::assertSelectorCount(2, 'nav[aria-label="Navigation de l’administration"] a');
+        self::assertSelectorCount(3, 'nav[aria-label="Navigation de l’administration"] a');
         self::assertSelectorCount(6, '[data-parameter-category]');
         self::assertSelectorCount(14, 'input[data-algorithm-parameter-key][type="number"][required]');
         self::assertSelectorExists('[data-parameter-category="progression"]');
@@ -92,6 +92,34 @@ final class AdminSecurityTest extends WebTestCase
         self::assertSelectorExists('[data-parameter-category="duration"]');
         self::assertSelectorExists('[data-admin-algorithm-parameters-form][hidden]');
         self::assertSelectorExists('[data-admin-algorithm-parameters-save][disabled]');
+    }
+
+    public function testTrainingPlansMonitoringPageIsRestrictedAndResponsive(): void
+    {
+        $this->client->request('GET', '/admin/training-plans');
+        self::assertResponseRedirects('http://localhost/login');
+
+        $this->client->loginUser($this->persist($this->user()));
+        $this->client->request('GET', '/admin/training-plans');
+        self::assertResponseStatusCodeSame(403);
+
+        $administrator = $this->persist($this->user()->setRoles(['ROLE_ADMIN']));
+        $this->client->loginUser($administrator);
+        $this->client->request('GET', '/admin/training-plans');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="admin-training-plans"]');
+        self::assertSelectorTextContains('#training-plans-title', 'Plans d’entraînement générés');
+        self::assertSelectorExists('[data-admin-training-plans][data-admin-training-plans-url="/api/admin/training-plans"]');
+        self::assertSelectorCount(3, 'nav[aria-label="Navigation de l’administration"] a');
+        self::assertSelectorCount(8, '[data-testid="admin-training-plans-table"] thead th');
+        self::assertSelectorExists('form[data-admin-training-plans-filters]');
+        self::assertSelectorExists('input[type="search"][data-admin-training-plans-user]');
+        self::assertSelectorCount(4, '[data-admin-training-plans-feasibility] option');
+        self::assertSelectorCount(4, '[data-admin-training-plans-status-filter] option');
+        self::assertSelectorExists('[data-admin-training-plans-table][hidden].overflow-x-auto');
+        self::assertSelectorExists('[data-admin-training-plans-empty][hidden]');
+        self::assertSelectorExists('[data-admin-training-plans-pagination][hidden]');
     }
 
     private function user(): User

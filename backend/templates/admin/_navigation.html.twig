@@ -5,4 +5,7 @@
     <a href="{{ path('app_admin_algorithm_parameters') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_algorithm_parameters' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
         Paramètres de l’algorithme
     </a>
+    <a href="{{ path('app_admin_training_plans') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_training_plans' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
+        Plans générés
+    </a>
 </nav>
