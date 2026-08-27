@@ -3,11 +3,16 @@
 namespace App\Service;
 
 use App\Dto\PaceResult;
+use App\Entity\AlgorithmParameter;
 use App\Entity\IntensityZone;
 use App\Entity\Profile;
 
 class PaceCalculatorService
 {
+    public function __construct(private readonly ?AlgorithmParameterService $parameterService = null)
+    {
+    }
+
     public function calculate(
         Profile $profile,
         IntensityZone $zone,
@@ -38,7 +43,9 @@ class PaceCalculatorService
             throw new \InvalidArgumentException('La zone d’intensité est incomplète ou incohérente.');
         }
 
-        $coefficient = $vmaCoefficient ?? (($vmaMin + $vmaMax) / 2);
+        $coefficient = $vmaCoefficient
+            ?? $this->configuredCoefficient($zoneName)
+            ?? (($vmaMin + $vmaMax) / 2);
 
         if ($coefficient < $vmaMin || $coefficient > $vmaMax) {
             throw new \InvalidArgumentException(sprintf(
@@ -63,6 +70,25 @@ class PaceCalculatorService
             fcmPercentMin: $fcmMin,
             fcmPercentMax: $fcmMax,
         );
+    }
+
+    private function configuredCoefficient(string $zoneName): ?float
+    {
+        if ($this->parameterService === null) {
+            return null;
+        }
+
+        $key = match ($zoneName) {
+            'Z2' => AlgorithmParameter::KEY_COEF_ENDURANCE,
+            'Z3' => AlgorithmParameter::KEY_COEF_ACTIVE,
+            'Z4' => AlgorithmParameter::KEY_COEF_THRESHOLD,
+            'Z5' => AlgorithmParameter::KEY_COEF_VMA,
+            default => null,
+        };
+
+        return $key === null
+            ? null
+            : ($this->parameterService->getCurrentParameters()[$key] ?? null);
     }
 
     private function formatPace(int $secondsPerKm): string

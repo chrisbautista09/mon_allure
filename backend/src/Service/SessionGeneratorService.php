@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Dto\PaceResult;
+use App\Entity\AlgorithmParameter;
 use App\Entity\IntensityZone;
 use App\Entity\Profile;
 use App\Entity\Session;
@@ -15,11 +16,12 @@ class SessionGeneratorService
     public function __construct(
         private readonly IntensityZoneRepository $zoneRepository,
         private readonly PaceCalculatorService $paceCalculator,
+        private readonly ?AlgorithmParameterService $parameterService = null,
     ) {
     }
 
     /** @return list<Session> */
-    public function generate(TrainingPlan $plan, Profile $profile, int $sessionsPerWeek): array
+    public function generate(TrainingPlan $plan, Profile $profile, ?int $sessionsPerWeek = null): array
     {
         $durationWeeks = $plan->getDurationWeeks();
         $startDate = $plan->getStartDate();
@@ -32,6 +34,14 @@ class SessionGeneratorService
             throw new \LogicException('Les séances de ce plan ont déjà été générées.');
         }
 
+        $parameters = $this->parameterService?->getCurrentParameters() ?? [];
+        $sessionsPerWeek ??= (int) round($this->requiredParameter(
+            $parameters,
+            sprintf('max_sessions_%s', $plan->getPoleType()),
+        ));
+        $recoveryWeekFrequency = isset($parameters[AlgorithmParameter::KEY_RECOVERY_WEEK_FREQUENCY])
+            ? (int) round($parameters[AlgorithmParameter::KEY_RECOVERY_WEEK_FREQUENCY])
+            : 4;
         $blueprints = $this->sessionBlueprints($plan, $sessionsPerWeek);
         $zones = [];
         $paces = [];
@@ -45,7 +55,7 @@ class SessionGeneratorService
 
         for ($week = 1; $week <= $durationWeeks; ++$week) {
             $weekStart = $startDate->modify(sprintf('+%d weeks', $week - 1));
-            $recoveryWeek = $week % 4 === 0;
+            $recoveryWeek = $week % $recoveryWeekFrequency === 0;
 
             foreach ($blueprints as $blueprint) {
                 $duration = $recoveryWeek
@@ -76,6 +86,13 @@ class SessionGeneratorService
         }
 
         return $sessions;
+    }
+
+    /** @param array<string, float> $parameters */
+    private function requiredParameter(array $parameters, string $key): float
+    {
+        return $parameters[$key]
+            ?? throw new \LogicException(sprintf('Le paramètre algorithmique "%s" est manquant.', $key));
     }
 
     /** @return list<Session> */

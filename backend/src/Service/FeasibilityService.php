@@ -2,17 +2,24 @@
 
 namespace App\Service;
 
+use App\Entity\AlgorithmParameter;
 use App\Entity\Profile;
 use App\Entity\TrainingPlan;
 use App\Enum\FeasibilityLevel;
 
 class FeasibilityService
 {
+    public function __construct(private readonly ?AlgorithmParameterService $parameterService = null)
+    {
+    }
+
     public function evaluate(
         Profile $profile,
         TrainingPlan $plan,
-        int $minimumWeeks,
+        ?int $minimumWeeks = null,
     ): FeasibilityLevel {
+        $minimumWeeks ??= (int) round($this->requiredParameter(AlgorithmParameter::KEY_DEFAULT_PLAN_MIN_WEEKS));
+
         if ($minimumWeeks <= 0) {
             throw new \InvalidArgumentException('La durée minimale doit être supérieure à zéro.');
         }
@@ -37,6 +44,18 @@ class FeasibilityService
             $fitnessScore - $difficultyScore + $preparationBonus <= 1 => FeasibilityLevel::GOOD,
             default => FeasibilityLevel::OPTIMAL,
         };
+    }
+
+    private function requiredParameter(string $key): float
+    {
+        if ($this->parameterService === null) {
+            throw new \LogicException(sprintf('Le paramètre algorithmique "%s" doit être fourni.', $key));
+        }
+
+        $parameters = $this->parameterService->getCurrentParameters();
+
+        return $parameters[$key]
+            ?? throw new \LogicException(sprintf('Le paramètre algorithmique "%s" est manquant.', $key));
     }
 
     private function fitnessScore(Profile $profile): int

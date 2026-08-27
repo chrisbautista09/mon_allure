@@ -3,17 +3,15 @@
 namespace App\Service;
 
 use App\Dto\TrainingPlanDTO;
-use App\Entity\AlgorithmParameter;
 use App\Entity\Profile;
 use App\Entity\TrainingPlan;
 use App\Entity\User;
-use App\Repository\AlgorithmParameterRepository;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class TrainingPlanGeneratorService
 {
     public function __construct(
-        private readonly AlgorithmParameterRepository $parameterRepository,
+        private readonly AlgorithmParameterService $parameterService,
         private readonly ValidatorInterface $validator,
         private readonly FeasibilityService $feasibilityService,
         private readonly SessionGeneratorService $sessionGenerator,
@@ -34,7 +32,7 @@ class TrainingPlanGeneratorService
             throw new \InvalidArgumentException('L’objectif d’entraînement est invalide.');
         }
 
-        $parameters = $this->parameterMap();
+        $parameters = $this->parameterService->getCurrentParameters();
         $minimumWeeks = $this->positiveIntegerParameter($parameters, 'default_plan_min_weeks');
         $maximumWeeks = $this->positiveIntegerParameter($parameters, 'default_plan_max_weeks');
         $poleType = (string) $data->poleType;
@@ -72,29 +70,11 @@ class TrainingPlanGeneratorService
 
         $user->addTrainingPlan($plan);
         $plan->setFeasibilityIndicator(
-            $this->feasibilityService->evaluate($profile, $plan, $minimumWeeks)->value
+            $this->feasibilityService->evaluate($profile, $plan)->value
         );
-        $this->sessionGenerator->generate($plan, $profile, $sessionsPerWeek);
+        $this->sessionGenerator->generate($plan, $profile);
 
         return $plan;
-    }
-
-    /** @return array<string, float> */
-    private function parameterMap(): array
-    {
-        $parameters = [];
-
-        foreach ($this->parameterRepository->findAll() as $parameter) {
-            if (!$parameter instanceof AlgorithmParameter
-                || $parameter->getParameterKey() === null
-                || $parameter->getParameterValue() === null) {
-                continue;
-            }
-
-            $parameters[$parameter->getParameterKey()] = $parameter->getParameterValue();
-        }
-
-        return $parameters;
     }
 
     /** @param array<string, float> $parameters */

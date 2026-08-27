@@ -65,6 +65,35 @@ final class AdminSecurityTest extends WebTestCase
         self::assertContains('ROLE_USER', $administrator->getRoles());
     }
 
+    public function testAlgorithmParametersPageIsRestrictedAndDisplaysAllGroupedFields(): void
+    {
+        $this->client->request('GET', '/admin/algorithm-parameters');
+        self::assertResponseRedirects('http://localhost/login');
+
+        $this->client->loginUser($this->persist($this->user()));
+        $this->client->request('GET', '/admin/algorithm-parameters');
+        self::assertResponseStatusCodeSame(403);
+
+        $administrator = $this->persist($this->user()->setRoles(['ROLE_ADMIN']));
+        $this->client->loginUser($administrator);
+        $this->client->request('GET', '/admin/algorithm-parameters');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="admin-algorithm-parameters"]');
+        self::assertSelectorTextContains('#algorithm-parameters-title', 'Paramètres de l’algorithme');
+        self::assertSelectorCount(2, 'nav[aria-label="Navigation de l’administration"] a');
+        self::assertSelectorCount(6, '[data-parameter-category]');
+        self::assertSelectorCount(14, 'input[data-algorithm-parameter-key][type="number"][required]');
+        self::assertSelectorExists('[data-parameter-category="progression"]');
+        self::assertSelectorExists('[data-parameter-category="volume"]');
+        self::assertSelectorExists('[data-parameter-category="sessions"]');
+        self::assertSelectorExists('[data-parameter-category="coefficients"]');
+        self::assertSelectorExists('[data-parameter-category="validation"]');
+        self::assertSelectorExists('[data-parameter-category="duration"]');
+        self::assertSelectorExists('[data-admin-algorithm-parameters-form][hidden]');
+        self::assertSelectorExists('[data-admin-algorithm-parameters-save][disabled]');
+    }
+
     private function user(): User
     {
         return (new User())

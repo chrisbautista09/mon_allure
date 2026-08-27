@@ -8,7 +8,6 @@ use App\Entity\Performance;
 use App\Entity\Session;
 use App\Enum\AdaptationDecision;
 use App\Enum\PerformanceEvaluationResult;
-use App\Repository\AlgorithmParameterRepository;
 use App\Repository\SessionRepository;
 
 final class AdaptationService
@@ -18,7 +17,7 @@ final class AdaptationService
         private readonly ProgressScoreCalculatorService $progressScoreCalculator,
         private readonly SessionGeneratorService $sessionGenerator,
         private readonly SessionRepository $sessionRepository,
-        private readonly AlgorithmParameterRepository $parameterRepository,
+        private readonly AlgorithmParameterService $parameterService,
     ) {
     }
 
@@ -70,42 +69,21 @@ final class AdaptationService
                 $currentDate,
                 $currentDate->modify('+1 day'),
             );
-            $successParameter = $this->parameterRepository->findOneBy([
-                'parameterKey' => 'success_validation_rate',
-            ]);
-
-            if (!$successParameter instanceof AlgorithmParameter) {
-                throw new \LogicException('Le paramètre algorithmique "success_validation_rate" est manquant.');
-            }
-
-            $successValidationRate = $successParameter->getSuccessValidationRate();
-            if ($this->meetsSuccessValidationRate($successRate, $successParameter)) {
-                $progressionParameter = $this->parameterRepository->findOneBy([
-                    'parameterKey' => 'progression_max_percent',
-                ]);
-
-                if (!$progressionParameter instanceof AlgorithmParameter) {
-                    throw new \LogicException('Le paramètre algorithmique "progression_max_percent" est manquant.');
-                }
+            $parameters = $this->parameterService->getCurrentParameters();
+            $successValidationRate = $parameters[AlgorithmParameter::KEY_SUCCESS_VALIDATION_RATE];
+            if ($successRate >= $successValidationRate) {
 
                 $decision = AdaptationDecision::INCREASE;
-                $loadFactor = 1 + ($progressionParameter->getProgressionMaxPercent() / 100);
+                $loadFactor = 1 + ($parameters[AlgorithmParameter::KEY_PROGRESSION_MAX_PERCENT] / 100);
             } else {
-                $recoveryParameter = $this->parameterRepository->findOneBy([
-                    'parameterKey' => 'recovery_week_frequency',
-                ]);
-
-                if (!$recoveryParameter instanceof AlgorithmParameter) {
-                    throw new \LogicException('Le paramètre algorithmique "recovery_week_frequency" est manquant.');
-                }
-
                 $currentWeek = $currentSession->getWeekIndex();
 
                 if ($currentWeek === null) {
                     throw new \LogicException('La séance courante doit appartenir à une semaine du plan.');
                 }
 
-                $isRecoveryDue = ($currentWeek + 1) % $recoveryParameter->getRecoveryWeekFrequency() === 0;
+                $recoveryFrequency = (int) round($parameters[AlgorithmParameter::KEY_RECOVERY_WEEK_FREQUENCY]);
+                $isRecoveryDue = ($currentWeek + 1) % $recoveryFrequency === 0;
                 [$decision, $loadFactor] = $isRecoveryDue
                     ? [AdaptationDecision::REDUCE, 0.90]
                     : [AdaptationDecision::MAINTAIN, 1.0];

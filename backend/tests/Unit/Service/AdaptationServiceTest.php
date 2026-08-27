@@ -15,6 +15,7 @@ use App\Repository\IntensityZoneRepository;
 use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Service\AdaptationService;
+use App\Service\AlgorithmParameterService;
 use App\Service\PerformanceEvaluationService;
 use App\Service\ProgressScoreCalculatorService;
 use App\Service\SessionGeneratorService;
@@ -201,10 +202,10 @@ final class AdaptationServiceTest extends TestCase
     {
         $parameter = (new AlgorithmParameter())
             ->setParameterKey('progression_max_percent')
-            ->setParameterValue(10.01);
+            ->setParameterValue(30.01);
 
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('0 et 10');
+        $this->expectExceptionMessage('0 et 30');
         $parameter->getProgressionMaxPercent();
     }
 
@@ -289,16 +290,14 @@ final class AdaptationServiceTest extends TestCase
                 ->setParameterKey('recovery_week_frequency')
                 ->setParameterValue($recoveryWeekFrequency),
         ];
-        $parameterRepository->method('findOneBy')->willReturnCallback(
-            static fn (array $criteria): ?AlgorithmParameter => $parameters[$criteria['parameterKey']] ?? null,
-        );
+        $parameterRepository->method('findCurrent')->willReturn($parameters);
 
         return new AdaptationService(
             new PerformanceEvaluationService($repository),
             new ProgressScoreCalculatorService($performanceRepository),
             $sessionGenerator ?? $this->createStub(SessionGeneratorService::class),
             $sessionRepository,
-            $parameterRepository,
+            new AlgorithmParameterService($parameterRepository),
         );
     }
 

@@ -16,4 +16,10 @@ final class AdminDashboardController extends AbstractController
     {
         return $this->render('admin/users/index.html.twig');
     }
+
+    #[Route('/algorithm-parameters', name: 'algorithm_parameters', methods: ['GET'])]
+    public function algorithmParameters(): Response
+    {
+        return $this->render('admin/algorithm_parameters/index.html.twig');
+    }
 }
