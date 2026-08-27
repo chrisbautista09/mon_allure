@@ -11,6 +11,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: TrainingPlanRepository::class)]
+#[ORM\Index(name: 'IDX_TRAINING_PLAN_MONITORING_CREATED_AT', columns: ['created_at'])]
+#[ORM\Index(name: 'IDX_TRAINING_PLAN_MONITORING_FEASIBILITY', columns: ['feasibility_indicator'])]
+#[ORM\Index(name: 'IDX_TRAINING_PLAN_MONITORING_PROGRESS', columns: ['progress_score'])]
 class TrainingPlan
 {
     #[ORM\Id]
