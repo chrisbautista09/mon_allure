@@ -51,10 +51,11 @@ final class TrainingGoalControllerTest extends WebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/training/weekly');
+        self::assertResponseRedirects('/dashboard');
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('#training-plan-title', 'Objectif 21.1 km');
+        self::assertSelectorExists('[data-testid="user-dashboard"]');
+        self::assertSelectorTextContains('body', 'Objectif 21.1 km');
         self::assertSame(1, $this->entityManager->getRepository(TrainingPlan::class)->count([]));
         self::assertSame(36, $this->entityManager->getRepository(Session::class)->count([]));
         self::assertNull($this->client->getRequest()->getSession()->get('training_goal'));
@@ -98,9 +99,10 @@ final class TrainingGoalControllerTest extends WebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/training/weekly');
+        self::assertResponseRedirects('/dashboard');
         $this->client->followRedirect();
-        self::assertSelectorTextContains('#training-plan-title', 'Épreuve 10 km en 45 min');
+        self::assertSelectorExists('[data-testid="user-dashboard"]');
+        self::assertSelectorTextContains('body', 'Épreuve 10 km en 45 min');
 
         $plan = $this->entityManager->getRepository(TrainingPlan::class)->findOneBy([]);
         self::assertInstanceOf(TrainingPlan::class, $plan);

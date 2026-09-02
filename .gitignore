@@ -19,6 +19,12 @@ backend/.env.*.local
 backend/vendor/
 backend/var/
 backend/public/bundles/
+backend/public/assets/
+
+# Fichiers de travail temporaires locaux
+.tmp/
+__pycache__/
+*.py[cod]
 
 # Documents de validation générés localement
 output/

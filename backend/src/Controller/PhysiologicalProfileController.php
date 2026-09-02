@@ -26,7 +26,7 @@ class PhysiologicalProfileController extends AbstractController
             $this->addFlash('info', 'Votre profil physiologique est déjà renseigné.');
 
             return $this->redirectToRoute(
-                $this->hasActiveTrainingPlan($user) ? 'app_training_weekly' : 'app_training_goal',
+                $this->hasActiveTrainingPlan($user) ? 'app_dashboard' : 'app_training_goal',
             );
         }
 

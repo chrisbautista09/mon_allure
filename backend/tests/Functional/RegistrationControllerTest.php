@@ -24,6 +24,18 @@ final class RegistrationControllerTest extends WebTestCase
         $schemaTool->createSchema($metadata);
     }
 
+    public function testRegistrationDisplaysOneVisibilityToggleForBothPasswords(): void
+    {
+        $this->client->request('GET', '/register');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorCount(2, 'input[type="password"][data-password-field]');
+        self::assertSelectorExists(
+            'input#showRegistrationPasswords[type="checkbox"][data-password-toggle][aria-controls="registration_form_plainPassword_first registration_form_plainPassword_second"]'
+        );
+        self::assertSelectorTextContains('.account-password-toggle', 'Afficher les mots de passe');
+    }
+
     public function testInvalidRegistrationIsRejectedAndNotPersisted(): void
     {
         $crawler = $this->client->request('GET', '/register');

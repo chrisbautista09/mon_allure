@@ -120,10 +120,11 @@ final class OnboardingJourneyTest extends WebTestCase
         ]);
         $this->client->submit($form);
 
-        self::assertResponseRedirects('/training/weekly');
+        self::assertResponseRedirects('/dashboard');
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('#training-plan-title', 'Objectif 42.2 km');
+        self::assertSelectorExists('[data-testid="user-dashboard"]');
+        self::assertSelectorTextContains('body', 'Objectif 42.2 km');
     }
 
     private function persistAlgorithmData(): void

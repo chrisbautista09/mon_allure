@@ -33,6 +33,33 @@ class SessionRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /** @return list<Session> */
+    public function findCalendarSessionsOwnedBy(
+        User $user,
+        \DateTimeImmutable $start,
+        \DateTimeImmutable $end,
+    ): array {
+        if ($end <= $start) {
+            throw new \InvalidArgumentException('La fin de la période doit être postérieure à son début.');
+        }
+
+        return $this->createQueryBuilder('session')
+            ->innerJoin('session.trainingPlan', 'plan')
+            ->addSelect('plan')
+            ->andWhere('plan.user = :user')
+            ->andWhere('plan.isActive = :active')
+            ->andWhere('session.date >= :start')
+            ->andWhere('session.date < :end')
+            ->setParameter('user', $user)
+            ->setParameter('active', true)
+            ->setParameter('start', $start, Types::DATE_IMMUTABLE)
+            ->setParameter('end', $end, Types::DATE_IMMUTABLE)
+            ->orderBy('session.date', 'ASC')
+            ->addOrderBy('session.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /** @return Paginator<Session> */
     public function findPastSessionsByUser(
         User $user,

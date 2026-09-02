@@ -35,15 +35,26 @@ final class AuthenticationControllerTest extends WebTestCase
         self::assertTrue($this->client->getResponse()->headers->hasCacheControlDirective('no-store'));
         self::assertTrue($this->client->getResponse()->headers->hasCacheControlDirective('private'));
         self::assertSelectorTextSame('h1', 'Se connecter');
+        self::assertSelectorExists('[data-testid="mon-allure-logo"] img[alt="Logo Mon Allure"]');
         self::assertSelectorExists('form[method="post"]');
         self::assertSelectorExists('label[for="inputEmail"]');
         self::assertSelectorExists('input#inputEmail[name="email"][type="email"][autocomplete="email"][required]');
         self::assertSelectorExists('label[for="inputPassword"]');
-        self::assertSelectorExists('input#inputPassword[name="password"][type="password"][autocomplete="current-password"][required]');
+        self::assertSelectorExists('input#inputPassword[name="password"][type="password"][autocomplete="current-password"][required][data-password-field]');
+        self::assertSelectorExists('input#showLoginPassword[type="checkbox"][data-password-toggle][aria-controls="inputPassword"]');
         self::assertSelectorExists('input[name="_csrf_token"][type="hidden"][value]:not([value=""])');
         self::assertSelectorTextContains('button[type="submit"]', 'Se connecter');
         self::assertSelectorExists('a[href="/register"]');
         self::assertSelectorExists('a[href="/"]');
+    }
+
+    public function testPublicHomeDoesNotExposeAdministrationAccess(): void
+    {
+        $this->client->request('GET', '/');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('a[href="/admin"]');
+        self::assertSelectorTextNotContains('nav[aria-label="Navigation principale"]', 'Administrateur');
     }
 
     public function testFailedLoginDisplaysErrorAndKeepsSubmittedEmail(): void
@@ -132,6 +143,9 @@ final class AuthenticationControllerTest extends WebTestCase
         yield 'accueil' => ['/'];
         yield 'inscription' => ['/register'];
         yield 'connexion' => ['/login'];
+        yield 'semaine de démonstration' => ['/training/weekly'];
+        yield 'séance de démonstration' => ['/training/daily/2'];
+        yield 'calendrier de démonstration' => ['/api/calendar/events'];
     }
 
     #[DataProvider('privateRouteProvider')]
@@ -147,10 +161,34 @@ final class AuthenticationControllerTest extends WebTestCase
     {
         yield 'profil sportif' => ['/profile/calibration'];
         yield 'objectif sportif' => ['/training-goal'];
-        yield 'plan hebdomadaire' => ['/training/weekly'];
         yield 'API profil' => ['/api/profile'];
         yield 'API plans' => ['/api/training-plans/1'];
-        yield 'API calendrier auparavant exposée' => ['/api/calendar/events'];
+    }
+
+    public function testVisitorCanNavigateFromDemoWeekToSessionContent(): void
+    {
+        $crawler = $this->client->request('GET', '/training/weekly');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="visitor-training-week"]');
+        self::assertCount(7, $crawler->filter('a[href^="/training/daily/"]'));
+
+        $this->client->click($crawler->filter('a[href="/training/daily/2"]')->link());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="visitor-session-detail"]');
+        self::assertSelectorTextContains('h1', 'VMA courte');
+        self::assertSelectorNotExists('form[name="performance"]');
+    }
+
+    public function testVisitorCalendarReturnsSevenPublicDemoSessions(): void
+    {
+        $this->client->request('GET', '/api/calendar/events');
+
+        self::assertResponseIsSuccessful();
+        $events = json_decode((string) $this->client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        self::assertCount(7, $events);
+        self::assertSame('/training/daily/1', $events[0]['url']);
     }
 
     public function testAuthenticatedUserCanAccessPreviouslyExposedCalendarApi(): void
@@ -202,7 +240,7 @@ final class AuthenticationControllerTest extends WebTestCase
         self::assertSelectorExists('[data-testid="logout-button"]');
     }
 
-    public function testValidLoginRedirectsFullyOnboardedUserToWeeklyPlan(): void
+    public function testValidLoginRedirectsFullyOnboardedUserToDashboard(): void
     {
         $user = $this->persistLoginUser('with-plan@example.com', 'with-plan-runner');
         $profile = (new Profile())
@@ -230,11 +268,39 @@ final class AuthenticationControllerTest extends WebTestCase
 
         $this->submitLogin((string) $user->getEmail());
 
-        self::assertResponseRedirects('/training/weekly');
+        self::assertResponseRedirects('/dashboard');
         $this->client->followRedirect();
         self::assertResponseIsSuccessful();
-        self::assertSelectorTextContains('#training-plan-title', 'Plan de connexion');
+        self::assertSelectorExists('[data-testid="user-dashboard"]');
+        self::assertSelectorExists('[data-testid="mon-allure-logo"] img[alt="Logo Mon Allure"]');
+        self::assertSelectorExists('[data-testid="user-navigation"]');
+        self::assertSelectorCount(3, '[data-testid="user-navigation"] details[data-auto-close-menu]');
+        self::assertSelectorTextContains('[data-testid="user-navigation"]', 'Mes infos');
+        self::assertSelectorTextContains('[data-testid="user-navigation"]', 'Mon suivi');
         self::assertSelectorExists('[data-testid="logout-button"]');
+    }
+
+    public function testValidAdministratorLoginRedirectsToAdministration(): void
+    {
+        $administrator = $this->persistLoginUser('admin-login@example.com', 'admin-login');
+        $administrator->setRoles(['ROLE_ADMIN']);
+        $this->entityManager->flush();
+
+        $this->submitLogin((string) $administrator->getEmail());
+
+        self::assertResponseRedirects('/admin');
+    }
+
+    public function testAdministratorVisitingHomeIsRedirectedToAdministration(): void
+    {
+        $administrator = $this->persistLoginUser('admin-home@example.com', 'admin-home');
+        $administrator->setRoles(['ROLE_ADMIN']);
+        $this->entityManager->flush();
+        $this->client->loginUser($administrator);
+
+        $this->client->request('GET', '/');
+
+        self::assertResponseRedirects('/admin');
     }
 
     public function testKnownUserWithWrongPasswordRemainsAnonymous(): void

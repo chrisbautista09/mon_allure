@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Repository\CommentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,5 +28,13 @@ final class AdminDashboardController extends AbstractController
     public function trainingPlans(): Response
     {
         return $this->render('admin/training_plans/index.html.twig');
+    }
+
+    #[Route('/comments', name: 'comments', methods: ['GET'])]
+    public function comments(CommentRepository $commentRepository): Response
+    {
+        return $this->render('admin/comments/index.html.twig', [
+            'comments' => $commentRepository->findLatestForAdministration(),
+        ]);
     }
 }

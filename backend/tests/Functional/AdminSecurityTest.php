@@ -81,7 +81,7 @@ final class AdminSecurityTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-testid="admin-algorithm-parameters"]');
         self::assertSelectorTextContains('#algorithm-parameters-title', 'Paramètres de l’algorithme');
-        self::assertSelectorCount(3, 'nav[aria-label="Navigation de l’administration"] a');
+        self::assertSelectorCount(4, 'nav[aria-label="Navigation de l’administration"] a');
         self::assertSelectorCount(6, '[data-parameter-category]');
         self::assertSelectorCount(14, 'input[data-algorithm-parameter-key][type="number"][required]');
         self::assertSelectorExists('[data-parameter-category="progression"]');
@@ -111,7 +111,7 @@ final class AdminSecurityTest extends WebTestCase
         self::assertSelectorExists('[data-testid="admin-training-plans"]');
         self::assertSelectorTextContains('#training-plans-title', 'Plans d’entraînement générés');
         self::assertSelectorExists('[data-admin-training-plans][data-admin-training-plans-url="/api/admin/training-plans"]');
-        self::assertSelectorCount(3, 'nav[aria-label="Navigation de l’administration"] a');
+        self::assertSelectorCount(4, 'nav[aria-label="Navigation de l’administration"] a');
         self::assertSelectorCount(8, '[data-testid="admin-training-plans-table"] thead th');
         self::assertSelectorExists('form[data-admin-training-plans-filters]');
         self::assertSelectorExists('input[type="search"][data-admin-training-plans-user]');

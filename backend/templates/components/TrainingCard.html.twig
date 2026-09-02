@@ -1,5 +1,5 @@
-{% set planName = demoPlan.title ?? 'Marathon -3h' %}
-{% set progress = 75 %}
+{% set planName = plan is defined and plan ? plan.name : (demoPlan.title ?? 'Marathon -3h') %}
+{% set progress = progressPercentage|default(75) %}
 
 <section
     class="
@@ -52,7 +52,11 @@
             </h3>
 
             <p class="mt-1 text-xs text-slate-400">
-                Semaine 4 à 12 · 45 km / 60 km
+                {% if plan is defined and plan %}
+                    Semaine {{ plan.currentWeek }} sur {{ plan.durationWeeks }} · {{ currentPhase|default('Programme en cours') }}
+                {% else %}
+                    Semaine 4 à 12 · 45 km / 60 km
+                {% endif %}
             </p>
         </div>
 

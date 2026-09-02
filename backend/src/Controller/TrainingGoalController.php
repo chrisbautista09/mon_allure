@@ -69,7 +69,7 @@ class TrainingGoalController extends AbstractController
             $request->getSession()->remove('training_goal');
             $this->addFlash('success', 'Votre plan d’entraînement a bien été généré.');
 
-            return $this->redirectToRoute('app_training_weekly');
+            return $this->redirectToRoute('app_dashboard');
         }
 
         return $this->render('training_goal/define.html.twig', [

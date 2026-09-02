@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      APP_ENV: "${APP_ENV:-prod}"
+      APP_SECRET: "${APP_SECRET:-change-me-before-production}"
+      DEFAULT_URI: "http://localhost:${APP_PORT:-8080}"
+      DATABASE_URL: "mysql://mon_allure_user:${MYSQL_PASSWORD:-mon_allure_local}@database:3306/mon_allure?serverVersion=8.0&charset=utf8mb4"
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: mon_allure
+      MYSQL_USER: mon_allure_user
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-mon_allure_local}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-mon_allure_root_local}"
+    volumes:
+      - database_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  database_data:

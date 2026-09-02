@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,13 +13,26 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // if ($this->getUser()) {
-        //     return $this->redirectToRoute('target_path');
-        // }
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
 
-        // get the login error if there is one
+            if ($user->getProfile() === null) {
+                return $this->redirectToRoute('app_profile_calibration');
+            }
+
+            foreach ($user->getTrainingPlans() as $plan) {
+                if ($plan->isActive()) {
+                    return $this->redirectToRoute('app_dashboard');
+                }
+            }
+
+            return $this->redirectToRoute('app_training_goal');
+        }
+
         $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
         $response = $this->render('security/login.html.twig', [

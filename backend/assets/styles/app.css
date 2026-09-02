@@ -214,6 +214,31 @@
 .account-check { display: flex; align-items: center; gap: 0.5rem; }
 .account-check input,
 .account-terms input { accent-color: var(--color-mon-allure-cyan); }
+.account-password-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.45rem;
+    width: fit-content;
+    margin: 0.45rem 0 0 !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-size: 0.76rem !important;
+    font-weight: 650 !important;
+    cursor: pointer;
+    user-select: none;
+}
+.account-password-toggle input {
+    width: 1rem !important;
+    min-height: 1rem !important;
+    margin: 0;
+    padding: 0 !important;
+    accent-color: var(--color-mon-allure-cyan);
+    cursor: pointer;
+}
+.account-password-toggle:focus-within {
+    outline: 2px solid var(--color-mon-allure-cyan);
+    outline-offset: 0.2rem;
+    border-radius: 0.2rem;
+}
 .account-muted-link { color: var(--color-mon-allure-cyan); }
 
 .account-submit {

@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon objectif actuel | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="mx-auto min-h-screen w-full max-w-3xl px-4 py-10 text-white sm:px-6">
+        <section class="overflow-hidden rounded-3xl border border-cyan-300/25 bg-slate-950/80 p-6 shadow-2xl shadow-cyan-950/30 sm:p-9" aria-labelledby="current-goal-title" data-testid="current-goal">
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Mon programme en cours</p>
+            <h1 id="current-goal-title" class="mt-2 text-3xl font-black sm:text-4xl">Mon objectif actuel</h1>
+
+            {% if plan is null %}
+                <div class="mt-7 rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+                    <p class="font-bold text-white/65">Aucun objectif actif n’est actuellement associé à votre compte.</p>
+                </div>
+            {% else %}
+                <div class="mt-7 rounded-3xl border border-cyan-300/15 bg-gradient-to-br from-blue-950/80 to-slate-950 p-6 sm:p-8">
+                    <p class="text-sm font-bold uppercase tracking-widest text-white/45">Objectif principal</p>
+                    <p class="mt-3 text-4xl font-black text-cyan-300 sm:text-5xl" data-testid="current-goal-value">
+                        {{ plan.targetValue|number_format(plan.targetValue % 1 == 0 ? 0 : 1, ',', ' ') }} {{ plan.targetUnit }}
+                    </p>
+
+                    {% if plan.targetDurationMinutes is not null %}
+                        <p class="mt-2 text-lg font-bold text-white/75">
+                            Temps visé :
+                            {% if (plan.targetDurationMinutes // 60) > 0 %}{{ plan.targetDurationMinutes // 60 }} h {% endif %}{{ '%02d'|format(plan.targetDurationMinutes % 60) }} min
+                        </p>
+                    {% endif %}
+
+                    <dl class="mt-7 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl bg-white/5 p-4">
+                            <dt class="text-xs font-bold uppercase tracking-wider text-white/40">Plan</dt>
+                            <dd class="mt-1 font-extrabold text-white">{{ plan.name }}</dd>
+                        </div>
+                        <div class="rounded-2xl bg-white/5 p-4">
+                            <dt class="text-xs font-bold uppercase tracking-wider text-white/40">Terrain</dt>
+                            <dd class="mt-1 font-extrabold text-white">{{ plan.terrainType == 'trail' ? 'Trail' : (plan.terrainType == 'road' ? 'Route' : plan.terrainType|capitalize) }}</dd>
+                        </div>
+                        {% if plan.elevationTargetDPlus is not null %}
+                            <div class="rounded-2xl bg-white/5 p-4">
+                                <dt class="text-xs font-bold uppercase tracking-wider text-white/40">Dénivelé cible</dt>
+                                <dd class="mt-1 font-extrabold text-white">D+ {{ plan.elevationTargetDPlus }} m</dd>
+                            </div>
+                        {% endif %}
+                        <div class="rounded-2xl bg-white/5 p-4">
+                            <dt class="text-xs font-bold uppercase tracking-wider text-white/40">Période</dt>
+                            <dd class="mt-1 font-extrabold text-white">Du {{ plan.startDate|date('d/m/Y') }} au {{ plan.endDate|date('d/m/Y') }}</dd>
+                        </div>
+                        <div class="rounded-2xl bg-white/5 p-4">
+                            <dt class="text-xs font-bold uppercase tracking-wider text-white/40">Faisabilité</dt>
+                            <dd class="mt-1 font-extrabold text-cyan-200">{{ plan.feasibilityIndicator|capitalize }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+{% endblock %}

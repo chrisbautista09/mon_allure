@@ -6,6 +6,8 @@ import "./controllers/admin_users.js";
 import "./controllers/admin_algorithm_parameters.js";
 import "./controllers/admin_training_plans.js";
 import "./controllers/training_goal.js";
+import "./controllers/navigation_menus.js";
+import "./controllers/password_visibility.js";
 import "./stimulus_bootstrap.js";
 /*
  * Welcome to your app's main JavaScript file!

@@ -1,6 +1,7 @@
-const root = document.querySelector("[data-admin-training-plans]");
+const initializeAdminTrainingPlans = (root) => {
+    if (root.dataset.adminTrainingPlansInitialized === "true") return;
+    root.dataset.adminTrainingPlansInitialized = "true";
 
-if (root) {
     const status = root.querySelector("[data-admin-training-plans-status]");
     const table = root.querySelector("[data-admin-training-plans-table]");
     const body = root.querySelector("[data-admin-training-plans-body]");
@@ -189,14 +190,48 @@ if (root) {
         }
     };
 
-    previous.addEventListener("click", () => load(currentPage - 1));
-    next.addEventListener("click", () => load(currentPage + 1));
-    filters.addEventListener("submit", (event) => {
+    root.adminTrainingPlansPreviousHandler = () => load(currentPage - 1);
+    root.adminTrainingPlansNextHandler = () => load(currentPage + 1);
+    root.adminTrainingPlansSubmitHandler = (event) => {
         event.preventDefault();
         load(1);
-    });
-    feasibilityFilter.addEventListener("change", () => load(1));
-    statusFilter.addEventListener("change", () => load(1));
-    filters.addEventListener("reset", () => window.setTimeout(() => load(1), 0));
+    };
+    root.adminTrainingPlansFilterHandler = () => load(1);
+    root.adminTrainingPlansResetHandler = () => window.setTimeout(() => load(1), 0);
+
+    previous.addEventListener("click", root.adminTrainingPlansPreviousHandler);
+    next.addEventListener("click", root.adminTrainingPlansNextHandler);
+    filters.addEventListener("submit", root.adminTrainingPlansSubmitHandler);
+    feasibilityFilter.addEventListener("change", root.adminTrainingPlansFilterHandler);
+    statusFilter.addEventListener("change", root.adminTrainingPlansFilterHandler);
+    filters.addEventListener("reset", root.adminTrainingPlansResetHandler);
     load();
-}
+};
+
+const destroyAdminTrainingPlans = (root) => {
+    root.querySelector("[data-admin-training-plans-previous]")
+        ?.removeEventListener("click", root.adminTrainingPlansPreviousHandler);
+    root.querySelector("[data-admin-training-plans-next]")
+        ?.removeEventListener("click", root.adminTrainingPlansNextHandler);
+    root.querySelector("[data-admin-training-plans-filters]")
+        ?.removeEventListener("submit", root.adminTrainingPlansSubmitHandler);
+    root.querySelector("[data-admin-training-plans-feasibility]")
+        ?.removeEventListener("change", root.adminTrainingPlansFilterHandler);
+    root.querySelector("[data-admin-training-plans-status-filter]")
+        ?.removeEventListener("change", root.adminTrainingPlansFilterHandler);
+    root.querySelector("[data-admin-training-plans-filters]")
+        ?.removeEventListener("reset", root.adminTrainingPlansResetHandler);
+    delete root.dataset.adminTrainingPlansInitialized;
+};
+
+const initializeAllAdminTrainingPlans = () => document
+    .querySelectorAll("[data-admin-training-plans]")
+    .forEach(initializeAdminTrainingPlans);
+
+document.addEventListener("DOMContentLoaded", initializeAllAdminTrainingPlans);
+document.addEventListener("turbo:load", initializeAllAdminTrainingPlans);
+document.addEventListener("turbo:before-cache", () => document
+    .querySelectorAll("[data-admin-training-plans]")
+    .forEach(destroyAdminTrainingPlans));
+
+initializeAllAdminTrainingPlans();

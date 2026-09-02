@@ -11,6 +11,7 @@ use App\Repository\PerformanceRepository;
 use App\Repository\SessionRepository;
 use App\Repository\TrainingPlanRepository;
 use App\Service\AdaptationService;
+use App\Service\DemoTrainingCatalog;
 use App\Service\FormStatusService;
 use App\Service\ObjectiveCountdownService;
 use App\Service\PerformanceStatisticsService;
@@ -29,11 +30,16 @@ final class TrainingController extends AbstractController
         TrainingPlanRepository $repository,
         ProgressService $progressService,
         ObjectiveCountdownService $countdownService,
-        FormStatusService $formStatusService,
-        PerformanceStatisticsService $performanceStatisticsService,
         EntityManagerInterface $entityManager,
+        DemoTrainingCatalog $demoTrainingCatalog,
     ): Response {
-        $user = $this->authenticatedUser();
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->render('training/demo_weekly.html.twig', [
+                'sessions' => $demoTrainingCatalog->sessions(),
+            ]);
+        }
 
         if ($user->getProfile() === null) {
             return $this->redirectToRoute('app_profile_calibration');
@@ -69,6 +75,38 @@ final class TrainingController extends AbstractController
             'isPlanCompleted' => $progressService->isPlanCompleted($plan),
             'countdown' => $countdownService->calculateRemainingTime($plan),
             'timelineComparison' => $countdownService->calculateTimelineComparison($plan),
+        ]);
+    }
+
+    #[Route('/training/report', name: 'app_training_report', methods: ['GET'])]
+    public function report(
+        TrainingPlanRepository $repository,
+        ProgressService $progressService,
+        FormStatusService $formStatusService,
+        PerformanceStatisticsService $performanceStatisticsService,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $user = $this->authenticatedUser();
+
+        if ($user->getProfile() === null) {
+            return $this->redirectToRoute('app_profile_calibration');
+        }
+
+        $plan = $repository->findLatestActiveOwnedWithSessions($user);
+        if ($plan === null) {
+            return $this->redirectToRoute('app_training_goal');
+        }
+
+        if ($progressService->synchronizeCurrentWeek($plan)) {
+            $entityManager->flush();
+        }
+
+        return $this->render('training/report.html.twig', [
+            'plan' => $plan,
+            'progressPercentage' => $progressService->calculatePlanProgress($plan),
+            'sportsProgress' => $progressService->getSportsProgress($plan),
+            'currentPhase' => $progressService->getCurrentPhase($plan),
+            'isPlanCompleted' => $progressService->isPlanCompleted($plan),
             'formStatus' => $formStatusService->calculate($user),
             'performanceStatistics' => $performanceStatisticsService->getSummaryStatistics($user),
         ]);
@@ -87,8 +125,22 @@ final class TrainingController extends AbstractController
         PerformanceRepository $performanceRepository,
         AdaptationService $adaptationService,
         EntityManagerInterface $entityManager,
+        DemoTrainingCatalog $demoTrainingCatalog,
     ): Response {
-        $user = $this->authenticatedUser();
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            $demoSession = $demoTrainingCatalog->find($id);
+
+            if ($demoSession === null) {
+                throw $this->createNotFoundException('La séance de démonstration demandée n’existe pas.');
+            }
+
+            return $this->render('training/demo_daily.html.twig', [
+                'session' => $demoSession,
+            ]);
+        }
+
         $session = $sessionRepository->findOneOwned($id, $user);
 
         if ($session === null) {

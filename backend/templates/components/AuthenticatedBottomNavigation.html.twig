@@ -1,0 +1,55 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+{% set triggerClass = 'flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-950 bg-[#0c1018] px-2 text-[10px] font-normal uppercase tracking-[0.08em] text-cyan-300 opacity-90 shadow-[0_0_20px_rgba(0,242,255,0.30)] transition hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cyan-300' %}
+{% set optionClass = 'flex min-h-10 w-full items-center justify-center rounded-lg border border-cyan-300/15 bg-slate-700/95 px-2 text-center text-[11px] font-semibold uppercase text-cyan-300 shadow-lg transition hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-300' %}
+
+<nav
+    class="fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-[402px] rounded-t-2xl border border-b-0 border-cyan-300/10 bg-gradient-to-t from-[#080d18] via-[#080d18]/98 to-[#080d18]/90 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl"
+    aria-label="Navigation principale"
+    data-testid="user-navigation"
+>
+    <div class="grid grid-cols-3 gap-1.5">
+        <details class="group relative" data-auto-close-menu>
+            <summary class="list-none marker:hidden">
+                <span class="{{ triggerClass }}">
+                    <span>Mes infos</span>
+                    <img src="{{ asset('images/navigation/info.svg') }}" alt="" class="size-6 shrink-0" aria-hidden="true">
+                </span>
+            </summary>
+            <div class="absolute inset-x-0 bottom-[calc(100%+0.5rem)] grid gap-1" role="menu">
+                <a href="{{ path('app_current_profile') }}" class="{{ optionClass }}" role="menuitem">Profil</a>
+                <a href="{{ path('app_current_goal') }}" class="{{ optionClass }}" role="menuitem">Objectif</a>
+            </div>
+        </details>
+
+        <details class="group relative" data-auto-close-menu>
+            <summary class="list-none marker:hidden">
+                <span class="{{ triggerClass }}">
+                    <span>Mon suivi</span>
+                    <img src="{{ asset('images/navigation/tracking.svg') }}" alt="" class="size-6 shrink-0" aria-hidden="true">
+                </span>
+            </summary>
+            <div class="absolute inset-x-0 bottom-[calc(100%+0.5rem)] grid gap-1" role="menu">
+                <a href="{{ path('app_training_weekly') }}" class="{{ optionClass }}" role="menuitem">Entraînement</a>
+                <a href="{{ path('app_history_sessions') }}" class="{{ optionClass }}" role="menuitem">Statistiques</a>
+                <a href="{{ path('app_training_report') }}" class="{{ optionClass }}" role="menuitem">Bilan</a>
+            </div>
+        </details>
+
+        <details class="group relative" data-auto-close-menu>
+            <summary class="list-none marker:hidden">
+                <span class="{{ triggerClass }}">
+                    <span>Menu</span>
+                    <img src="{{ asset('images/navigation/menu.svg') }}" alt="" class="size-6 shrink-0" aria-hidden="true">
+                </span>
+            </summary>
+            <div class="absolute inset-x-0 bottom-[calc(100%+0.5rem)] grid gap-1" role="menu">
+                <a href="{{ path('app_dashboard') }}" class="{{ optionClass }}" role="menuitem" {{ currentRoute == 'app_dashboard' ? 'aria-current="page"' : '' }}>Accueil</a>
+                <a href="{{ path('app_comment_new') }}" class="{{ optionClass }}" role="menuitem">Commentaires</a>
+                <form method="post" action="{{ path('app_logout') }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}" data-controller="csrf-protection">
+                    <button type="submit" class="{{ optionClass }}" role="menuitem" data-testid="logout-button">Se déconnecter</button>
+                </form>
+            </div>
+        </details>
+    </div>
+</nav>

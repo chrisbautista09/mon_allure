@@ -15,13 +15,17 @@ final class HomeController extends AbstractController
         $user = $this->getUser();
 
         if ($user instanceof User) {
+            if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+
             if ($user->getProfile() === null) {
                 return $this->redirectToRoute('app_profile_calibration');
             }
 
             foreach ($user->getTrainingPlans() as $plan) {
                 if ($plan->isActive()) {
-                    return $this->redirectToRoute('app_training_weekly');
+                    return $this->redirectToRoute('app_dashboard');
                 }
             }
 

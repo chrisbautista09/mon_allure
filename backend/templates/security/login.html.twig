@@ -11,12 +11,19 @@
         <div class="account-copy"><h2>Bienvenue sur Mon Allure</h2><p>Connectez-vous pour accéder à vos plans d'entraînement personnalisés.</p></div>
         {% for message in app.flashes('success') %}<div class="account-alert account-alert--success" role="status">{{ message }}</div>{% endfor %}
         {% if error %}<div class="account-alert account-alert--error" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>{% endif %}
-        <form method="post" class="account-form">
+        <form method="post" action="{{ path('app_login') }}" class="account-form" data-testid="login-form">
             <div class="account-field"><label for="inputEmail">Email</label><div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">✉</span><input type="email" value="{{ last_username }}" name="email" id="inputEmail" autocomplete="email" placeholder="Votre adresse email" required autofocus></div></div>
-            <div class="account-field"><label for="inputPassword">Mot de passe</label><div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">⌑</span><input type="password" name="password" id="inputPassword" autocomplete="current-password" placeholder="Votre mot de passe" required></div></div>
+            <div class="account-field">
+                <label for="inputPassword">Mot de passe</label>
+                <div class="account-input-wrap"><span class="account-input-icon" aria-hidden="true">⌑</span><input type="password" name="password" id="inputPassword" autocomplete="current-password" placeholder="Votre mot de passe" required data-password-field></div>
+                <label class="account-password-toggle" for="showLoginPassword">
+                    <input type="checkbox" id="showLoginPassword" data-password-toggle aria-controls="inputPassword">
+                    <span>Afficher le mot de passe</span>
+                </label>
+            </div>
             <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
             <div class="account-form-options"><label class="account-check"><input type="checkbox" name="_remember_me"> Se souvenir de moi</label><span class="account-muted-link" aria-disabled="true">Mot de passe oublié ?</span></div>
-            <button class="account-submit" type="submit">Se connecter <span aria-hidden="true">→</span></button>
+            <button class="account-submit" type="submit" data-testid="login-submit">Se connecter <span aria-hidden="true">→</span></button>
         </form>
         <div class="account-separator"><span>ou</span></div>
         <p class="account-switch">Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a></p>

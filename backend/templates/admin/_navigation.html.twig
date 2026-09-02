@@ -8,4 +8,11 @@
     <a href="{{ path('app_admin_training_plans') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_training_plans' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
         Plans générés
     </a>
+    <a href="{{ path('app_admin_comments') }}" class="rounded-xl border px-4 py-2 text-sm font-extrabold transition {{ app.request.attributes.get('_route') == 'app_admin_comments' ? 'border-cyan-300 bg-cyan-300 text-slate-950' : 'border-white/15 text-white/70 hover:border-cyan-300/60 hover:text-cyan-200' }}">
+        Commentaires
+    </a>
+    <form method="post" action="{{ path('app_logout') }}" class="sm:ml-auto">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}" data-controller="csrf-protection">
+        <button type="submit" class="rounded-xl border border-rose-300/25 px-4 py-2 text-sm font-extrabold text-rose-100 transition hover:bg-rose-300/10" data-testid="logout-button">Se déconnecter</button>
+    </form>
 </nav>

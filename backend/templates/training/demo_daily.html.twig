@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ session.title }} | Démonstration Mon Allure{% endblock %}
+
+{% set dayNames = {1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi', 7: 'Dimanche'} %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
+        <section class="mx-auto max-w-4xl" data-testid="visitor-session-detail">
+            <article class="rounded-3xl border border-cyan-300/30 bg-slate-950/75 p-6 shadow-2xl sm:p-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-cyan-300">Séance de démonstration</p>
+                <p class="mt-3 text-white/55">{{ dayNames[session.dayOfWeek] }} {{ session.date|date('d F Y') }}</p>
+                <h1 class="mt-2 text-3xl font-bold">{{ session.title }}</h1>
+                <p class="mt-2 text-white/60">{{ session.sessionType|replace({'_': ' '})|capitalize }}</p>
+
+                <dl class="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-xl bg-white/5 p-4"><dt class="text-xs uppercase text-white/50">Durée prévue</dt><dd class="mt-1 font-bold">{{ session.plannedDurationMin ? session.plannedDurationMin ~ ' min' : 'Récupération' }}</dd></div>
+                    <div class="rounded-xl bg-white/5 p-4"><dt class="text-xs uppercase text-white/50">Distance prévue</dt><dd class="mt-1 font-bold">{{ session.plannedDistanceKm ? session.plannedDistanceKm ~ ' km' : '—' }}</dd></div>
+                    <div class="rounded-xl bg-white/5 p-4"><dt class="text-xs uppercase text-white/50">Zone cible</dt><dd class="mt-1 font-bold">{{ session.plannedFcmZone }}</dd></div>
+                </dl>
+
+                <div class="mt-6 border-t border-white/10 pt-6">
+                    <h2 class="font-bold text-cyan-200">Consignes</h2>
+                    <p class="mt-2 leading-7 text-white/75">{{ session.description }}</p>
+                </div>
+            </article>
+
+            <aside class="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/5 p-5 text-center">
+                <p class="text-white/70">Après inscription, votre séance comporte aussi le suivi et la saisie de votre performance.</p>
+            </aside>
+
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a href="{{ path('app_training_weekly') }}" class="rounded-full border border-cyan-300 px-7 py-3 font-bold text-cyan-300">Voir la semaine</a>
+                <a href="{{ path('app_register') }}" class="rounded-full bg-cyan-300 px-7 py-3 font-bold text-slate-950">Créer mon programme</a>
+            </div>
+        </section>
+    </main>
+{% endblock %}

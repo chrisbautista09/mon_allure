@@ -47,26 +47,8 @@
                     </div>
                 </header>
 
-                {% include 'dashboard/_form_status.html.twig' with {
-                    formStatus: formStatus
-                } only %}
-
                 {% include 'dashboard/_weather.html.twig' with {
                     location: app.user.profile ? app.user.profile.trainingLocation : null
-                } only %}
-
-                {% include 'dashboard/_performance_graphs.html.twig' with {
-                    statistics: performanceStatistics
-                } only %}
-
-                {% include 'dashboard/_intensity_distribution.html.twig' %}
-
-                {% include 'training_plan/_progress.html.twig' with {
-                    plan: plan,
-                    progressPercentage: progressPercentage,
-                    sportsProgress: sportsProgress,
-                    currentPhase: currentPhase,
-                    isPlanCompleted: isPlanCompleted
                 } only %}
 
                 {% include 'training_plan/_countdown.html.twig' with {

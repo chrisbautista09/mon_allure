@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Session;
+use App\Entity\User;
+use App\Repository\SessionRepository;
+use App\Service\DemoTrainingCatalog;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,107 +21,61 @@ final class CalendarController extends AbstractController
         name: 'app_calendar_events',
         methods: ['GET']
     )]
-    public function events(Request $request): JsonResponse
+    public function events(
+        Request $request,
+        SessionRepository $repository,
+        DemoTrainingCatalog $demoTrainingCatalog,
+    ): JsonResponse
     {
-        /*
-         * FullCalendar ajoute automatiquement les paramètres start et end.
-         * Nous les récupérons dès maintenant pour préparer la future requête
-         * sur SessionRepository.
-         */
-        $start = new DateTimeImmutable(
-            $request->query->get('start', '2026-07-01')
-        );
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(array_map(fn (array $session): array => [
+                'id' => $session['id'],
+                'title' => $session['title'],
+                'start' => $session['date']->format('Y-m-d'),
+                'allDay' => true,
+                'url' => $this->generateUrl('app_training_daily', ['id' => $session['id']]),
+                'classNames' => [
+                    'training-event',
+                    sprintf('training-event--%s', str_replace('_', '-', $session['sessionType'])),
+                    'training-event--status-planned',
+                ],
+                'extendedProps' => [
+                    'status' => 'planned',
+                    'week' => 1,
+                    'durationMinutes' => $session['plannedDurationMin'],
+                    'distanceKm' => $session['plannedDistanceKm'],
+                    'zone' => $session['plannedFcmZone'],
+                ],
+            ], $demoTrainingCatalog->sessions()));
+        }
 
-        $end = new DateTimeImmutable(
-            $request->query->get('end', '2026-08-01')
-        );
+        try {
+            $start = new DateTimeImmutable($request->query->getString('start', 'first day of this month'));
+            $end = new DateTimeImmutable($request->query->getString('end', 'first day of next month'));
+            $sessions = $repository->findCalendarSessionsOwnedBy($user, $start, $end);
+        } catch (\Exception $exception) {
+            return $this->json(['message' => 'La période du calendrier est invalide.'], 400);
+        }
 
-        $events = [
-            [
-                'id' => 1,
-                'title' => 'Repos complet',
-                'start' => '2026-07-06',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 1]
-                ),
-                'classNames' => ['training-event', 'training-event--recovery'],
+        return $this->json(array_map(fn (Session $session): array => [
+            'id' => $session->getId(),
+            'title' => $session->getTitle(),
+            'start' => $session->getDate()?->format('Y-m-d'),
+            'allDay' => true,
+            'url' => $this->generateUrl('app_training_daily', ['id' => $session->getId()]),
+            'classNames' => [
+                'training-event',
+                sprintf('training-event--%s', str_replace('_', '-', (string) $session->getSessionType())),
+                sprintf('training-event--status-%s', $session->getStatus()),
             ],
-            [
-                'id' => 2,
-                'title' => 'VMA courte',
-                'start' => '2026-07-07',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 2]
-                ),
-                'classNames' => ['training-event', 'training-event--vma'],
+            'extendedProps' => [
+                'status' => $session->getStatus(),
+                'week' => $session->getWeekIndex(),
+                'durationMinutes' => $session->getPlannedDurationMin(),
+                'distanceKm' => $session->getPlannedDistanceKm(),
+                'zone' => $session->getPlannedFcmZone(),
             ],
-            [
-                'id' => 3,
-                'title' => 'Footing récupération',
-                'start' => '2026-07-08',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 3]
-                ),
-                'classNames' => ['training-event', 'training-event--endurance'],
-            ],
-            [
-                'id' => 4,
-                'title' => 'Séance de côtes',
-                'start' => '2026-07-09',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 4]
-                ),
-                'classNames' => ['training-event', 'training-event--threshold'],
-            ],
-            [
-                'id' => 5,
-                'title' => 'Repos ou étirements',
-                'start' => '2026-07-10',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 5]
-                ),
-                'classNames' => ['training-event', 'training-event--recovery'],
-            ],
-            [
-                'id' => 6,
-                'title' => 'Footing plaisir',
-                'start' => '2026-07-11',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 6]
-                ),
-                'classNames' => ['training-event', 'training-event--endurance'],
-            ],
-            [
-                'id' => 7,
-                'title' => 'Sortie longue',
-                'start' => '2026-07-12',
-                'allDay' => true,
-                'url' => $this->generateUrl(
-                    'app_training_daily',
-                    ['id' => 7]
-                ),
-                'classNames' => ['training-event', 'training-event--long-run'],
-            ],
-        ];
-
-        /*
-         * Ces variables seront utilisées plus tard lorsque les événements
-         * viendront véritablement de la base.
-         */
-        unset($start, $end);
-
-        return $this->json($events);
+        ], $sessions));
     }
 }

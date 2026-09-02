@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Semaine de démonstration | Mon Allure{% endblock %}
+
+{% set dayNames = {1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi', 7: 'Dimanche'} %}
+
+{% block body %}
+    <main class="min-h-screen px-4 py-10 text-white sm:px-6">
+        <section class="mx-auto max-w-5xl" aria-labelledby="demo-week-title" data-testid="visitor-training-week">
+            <header class="mb-8 rounded-3xl border border-cyan-300/30 bg-slate-950/75 p-6 shadow-2xl sm:p-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-cyan-300">Aperçu visiteur</p>
+                <h1 id="demo-week-title" class="mt-2 text-3xl font-bold sm:text-4xl">Une semaine avec Mon Allure</h1>
+                <p class="mt-3 max-w-2xl text-white/65">Découvrez le contenu d’un programme avant de créer votre plan personnalisé.</p>
+            </header>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                {% for session in sessions %}
+                    <article class="rounded-2xl border border-white/10 bg-slate-950/75 p-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-bold text-cyan-200">{{ dayNames[session.dayOfWeek] }} · {{ session.date|date('d/m') }}</p>
+                                <h2 class="mt-2 text-xl font-semibold">{{ session.title }}</h2>
+                            </div>
+                            <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/70">{{ session.plannedFcmZone }}</span>
+                        </div>
+                        <p class="mt-4 line-clamp-2 text-sm leading-6 text-white/65">{{ session.description }}</p>
+                        <a href="{{ path('app_training_daily', {id: session.id}) }}" class="mt-4 inline-block font-bold text-cyan-300 hover:text-cyan-100">Voir le contenu de la séance</a>
+                    </article>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a href="{{ path('app_home') }}" class="rounded-full border border-cyan-300 px-7 py-3 font-bold text-cyan-300">Retour à l’accueil</a>
+                <a href="{{ path('app_register') }}" class="rounded-full bg-cyan-300 px-7 py-3 font-bold text-slate-950">Créer mon programme</a>
+            </div>
+        </section>
+    </main>
+{% endblock %}

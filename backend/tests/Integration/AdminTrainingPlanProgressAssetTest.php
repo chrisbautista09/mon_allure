@@ -21,4 +21,18 @@ final class AdminTrainingPlanProgressAssetTest extends KernelTestCase
         self::assertStringContainsString('setAttribute("aria-valuenow"', $script);
         self::assertStringContainsString('styles[level].bar', $script);
     }
+
+    public function testPlansAreInitializedAfterTurboNavigation(): void
+    {
+        self::bootKernel();
+        $projectDirectory = self::getContainer()->getParameter('kernel.project_dir');
+        self::assertIsString($projectDirectory);
+        $script = file_get_contents($projectDirectory.'/assets/controllers/admin_training_plans.js');
+        self::assertIsString($script);
+
+        self::assertStringContainsString('const initializeAdminTrainingPlans = (root)', $script);
+        self::assertStringContainsString('document.addEventListener("turbo:load", initializeAllAdminTrainingPlans)', $script);
+        self::assertStringContainsString('document.addEventListener("turbo:before-cache"', $script);
+        self::assertStringContainsString('root.dataset.adminTrainingPlansInitialized', $script);
+    }
 }

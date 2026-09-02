@@ -111,6 +111,17 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('#training-plan-title', 'Objectif 10 km');
         self::assertSelectorTextContains('#week-1', 'Semaine 1');
+        self::assertSelectorExists('[data-testid="weather-card"]');
+        self::assertSelectorExists('[data-testid="objective-countdown"]');
+        self::assertSelectorExists('[data-testid="training-plan-weeks"]');
+        self::assertSelectorNotExists('[data-testid="form-status-card"]');
+        self::assertSelectorNotExists('[data-testid="performance-graphs"]');
+        self::assertSelectorNotExists('[data-testid="intensity-distribution"]');
+        self::assertSelectorNotExists('[data-testid="training-plan-progress"]');
+
+        $this->client->request('GET', '/training/report');
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('[data-testid="training-report"]');
         self::assertSelectorTextContains('[data-testid="current-week"]', 'Semaine 1 / 8');
         self::assertSelectorTextContains('[data-testid="current-phase"]', 'Mise en condition');
         self::assertSelectorExists('[data-testid="plan-progress-bar"]');
@@ -167,6 +178,9 @@ final class TrainingPlanControllerTest extends WebTestCase
         self::assertSelectorTextSame('[data-performance-summary="sessionCount"]', '0');
         self::assertSelectorTextSame('[data-performance-summary="averageDistance"]', '0 km');
         self::assertSelectorTextSame('[data-performance-summary="averageTime"]', '0 min 00 s');
+
+        $crawler = $this->client->request('GET', '/training/weekly');
+        self::assertResponseIsSuccessful();
         self::assertSelectorExists('[data-testid="objective-countdown"][data-countdown-status="upcoming"]');
         self::assertSelectorExists(sprintf(
             '[data-testid="objective-date"][datetime="%s"]',
@@ -458,7 +472,7 @@ final class TrainingPlanControllerTest extends WebTestCase
         $this->entityManager->flush();
         $this->client->loginUser($owner);
 
-        $this->client->request('GET', '/training/weekly');
+        $this->client->request('GET', '/training/report');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains(

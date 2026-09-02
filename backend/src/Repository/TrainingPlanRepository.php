@@ -34,14 +34,19 @@ class TrainingPlanRepository extends ServiceEntityRepository
 
     public function findLatestActiveOwnedWithSessions(User $user): ?TrainingPlan
     {
-        $plan = $this->findOneBy(
-            ['user' => $user, 'isActive' => true],
-            ['id' => 'DESC'],
-        );
+        $plan = $this->findLatestActiveOwned($user);
 
         return $plan instanceof TrainingPlan && $plan->getId() !== null
             ? $this->findOneOwnedWithSessions($plan->getId(), $user)
             : null;
+    }
+
+    public function findLatestActiveOwned(User $user): ?TrainingPlan
+    {
+        return $this->findOneBy(
+            ['user' => $user, 'isActive' => true],
+            ['id' => 'DESC'],
+        );
     }
 
     /** @return Paginator<TrainingPlan> */

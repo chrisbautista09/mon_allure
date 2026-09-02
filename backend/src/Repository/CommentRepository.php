@@ -15,4 +15,17 @@ class CommentRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Comment::class);
     }
+
+    /** @return list<Comment> */
+    public function findLatestForAdministration(int $limit = 100): array
+    {
+        return $this->createQueryBuilder('comment')
+            ->addSelect('user')
+            ->innerJoin('comment.user', 'user')
+            ->orderBy('comment.createdAt', 'DESC')
+            ->addOrderBy('comment.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

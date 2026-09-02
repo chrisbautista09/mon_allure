@@ -39,6 +39,9 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/api/calendar/events$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/training/weekly$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/training/daily/\d+$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/admin(?:/|$), roles: ROLE_ADMIN }
         - { path: ^/admin(?:/|$), roles: ROLE_ADMIN }
         - { path: ^/training-goal, roles: ROLE_USER }

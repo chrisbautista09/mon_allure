@@ -1,81 +1,127 @@
 # 🏃 Mon Allure
 
-**Mon Allure** est une application web qui génère et adapte automatiquement des plans d'entraînement de course à pied personnalisés, en fonction du profil physiologique du coureur, de son objectif de course et de ses performances réelles.
+Mon Allure est une application web de suivi de course à pied. Elle génère un plan d'entraînement personnalisé à partir du profil physiologique et de l'objectif du coureur, puis suit sa progression à partir des séances réalisées.
 
-## 🎯 Objectif du projet
+## Fonctionnalités disponibles
 
-Permettre à un coureur, débutant ou confirmé, de définir un objectif de course (distance et/ou temps) et de recevoir un plan d'entraînement sur mesure qui s'ajuste automatiquement semaine après semaine selon ses résultats réels — sans avoir besoin d'un coach humain.
+- inscription, authentification et contrôle des accès utilisateur/administrateur ;
+- profil physiologique : VMA, fréquences cardiaques, âge et données sportives ;
+- définition d'un objectif et génération d'un plan hebdomadaire personnalisé ;
+- tableau de bord avec progression, échéance, forme, météo et graphiques ;
+- calendrier, saisie des performances, historique et bilan d'entraînement ;
+- export PDF du plan ;
+- espace administrateur : utilisateurs, plans générés, commentaires et paramètres de l'algorithme ;
+- jeux de données de démonstration pour présenter plusieurs profils de coureurs.
 
-## ✨ Fonctionnalités principales
+## Architecture et choix techniques
 
-- **Authentification & compte** — création de compte, connexion sécurisée
-- **Profil physiologique** — VMA, FCM, FCR, âge, mis à jour au fil du temps
-- **Génération de plan d'entraînement** — plan dynamique et personnalisé selon l'objectif et le niveau
-- **Adaptation automatique** — recalcul du plan selon les séances réussies ou manquées
-- **Export PDF** — plan consultable hors ligne
-- **Dashboard** — avancement du plan, temps restant, état de forme, météo
-- **Suivi & statistiques** — historique des séances, performances passées, répartition par zones d'intensité
-- **Administration** — gestion des comptes, ajustement des paramètres de l'algorithme, supervision des plans générés
+| Couche | Technologies | Rôle |
+|---|---|---|
+| Serveur | PHP 8.4+, Symfony 8.1 | Contrôleurs, sécurité, formulaires et logique métier |
+| Interface | Twig, Turbo, Stimulus, Tailwind CSS | Interface responsive rendue côté serveur et interactions progressives |
+| Données | MySQL 8, Doctrine ORM, migrations | Persistance relationnelle et évolution contrôlée du schéma |
+| Assets | AssetMapper et Importmap | Dépendances JavaScript sans chaîne de build Node.js |
+| Visualisation | Chart.js 4.5.1 via Importmap | Graphiques du tableau de bord et des performances |
+| Documents | Dompdf | Export des plans d'entraînement au format PDF |
+| Tests | PHPUnit 13 | Tests unitaires, d'intégration et fonctionnels |
+| Exécution | Docker Compose, Apache | Environnement reproductible pour l'application et MySQL |
 
-## 🏗️ Stack technique
+### Pourquoi Chart.js via Importmap ?
 
-- **Backend** : **Symfony (PHP)** : Choisi pour sa robustesse, sa sécurité native et sa puissance dans la gestion des bases de données relationnelles. Symfony servira exclusivement d'API pour piloter de maniére ultra-fiable la logique métier, les algorithmes de calcul (VMA/VO2 max) et la génération dynamique des plans d'entraînement.
-- **Base de données** : **MySQL** (via Doctrine ORM)
-- **Frontend** : **React.js** Utilisé pour concevoir une interface utilisateur de type Single Page Application (SPA). Ce framework garantit une navigation instantanée, fluide et sans rechargement de page, ce qui est idéal pour l'interactivité. Ce choix technique "découplé" ouvre également la porte à une évolution future trés simple vers une application mobile native (via React Native).
-- **Design & UI (Tailwind CSS)** : Ce framework CSS utilitaire permettra de concevoir une interface épurée, moderne et respectant scrupuleusement les contraintes d'affichage Mobile-First, indispensables pour un coureur consultant ses séances sur le terrain.
+Chart.js est importé directement dans [`backend/importmap.php`](backend/importmap.php), puis utilisé par les contrôleurs JavaScript de l'application. Ce choix reste cohérent avec Symfony AssetMapper : il évite d'ajouter npm, Vite ou Webpack uniquement pour les graphiques, réduit le nombre d'outils à installer et conserve un déploiement simple pour une interface Twig/Turbo.
 
-## 📐 Documentation & conception
+La contrepartie est assumée : le cycle de vie des graphiques, notamment lors des navigations Turbo, est géré explicitement dans le code JavaScript plutôt que par une couche Symfony UX supplémentaire.
 
-Toute la documentation de conception se trouve dans le dossier [`/docs`](./docs) :
+## Démarrage avec Docker
 
-| Fichier | Contenu |
-|---|---|
-| `docs/user-stories.md` | Epics et user stories du projet |
-| `docs/mcd.png` / `docs/mld.png` | Modèle Conceptuel et Logique de Données |
-| `docs/diagrams/er-diagram.md` | Diagramme entité-relation (Mermaid) |
-| `docs/diagrams/flowchart-generation.md` | Flux de génération d'un plan d'entraînement |
-| `docs/diagrams/sequence-generation.md` | Diagramme de séquence — génération initiale |
-| `docs/diagrams/sequence-adaptation.md` | Diagramme de séquence — boucle d'adaptation |
-
-## 🗺️ Roadmap (Epics)
-
-- [ ] **Epic 1** — Authentification & compte
-- [ ] **Epic 2** — Profil & calibrage sportif
-- [ ] **Epic 3** — Génération du plan d'entraînement
-- [ ] **Epic 4** — Dashboard utilisateur
-- [ ] **Epic 5** — Suivi & statistiques
-- [ ] **Epic 6** — Administration & algorithme
-
-Le détail de chaque Epic, découpé en User Stories et tickets techniques, est disponible dans les [Issues GitHub](../../issues) du repository.
-
-## 🚀 Installation
-
-_À compléter une fois le squelette du projet initialisé._
+Prérequis : Docker Engine avec le plugin Docker Compose.
 
 ```bash
-# Cloner le projet
-git clone <url-du-repo>
-cd mon-allure
+git clone <url-du-depot>
+cd mon_allure
+cp .env.docker.example .env
+# Remplacer les valeurs de secret et de mots de passe dans .env
+docker compose up --build -d
+```
 
-# Installer les dépendances
+L'application est ensuite accessible sur <http://localhost:8080>. Au démarrage, le conteneur attend que MySQL soit disponible puis applique automatiquement les migrations Doctrine.
+
+Commandes utiles :
+
+```bash
+# Suivre les journaux
+docker compose logs -f app
+
+# Créer un compte administrateur
+docker compose exec app php bin/console app:create-admin admin@example.test 'MotDePasseSolide'
+
+# Générer les comptes et historiques prévus pour la démonstration
+docker compose exec app php bin/console app:demo-data:seed
+
+# Réinitialiser ces données de démonstration
+docker compose exec app php bin/console app:demo-data:reset
+
+# Arrêter les conteneurs en conservant la base
+docker compose down
+```
+
+Pour repartir avec une base vide, supprimer volontairement le volume avec `docker compose down -v`.
+
+## Installation locale sans Docker
+
+Prérequis : PHP 8.4+, Composer, MySQL 8 et Symfony CLI (recommandé).
+
+```bash
+cd backend
 composer install
-
-# Configurer l'environnement
 cp .env .env.local
-# éditer .env.local avec vos identifiants de BDD
-
-# Créer la base de données et lancer les migrations
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
-
-# Lancer le serveur
+# Adapter DATABASE_URL dans .env.local
+php bin/console doctrine:database:create --if-not-exists
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console tailwind:build
 symfony server:start
 ```
 
-## 📌 Statut du projet
+## Tests et contrôles
 
-🚧 En cours de développement — phase de mise en place du squelette technique.
+Depuis `backend/` :
 
-## 📄 Licence
+```bash
+php bin/phpunit
+php bin/console doctrine:schema:validate
+php bin/console doctrine:migrations:status
+```
 
-_À définir._
+La suite couvre les services métier, les entités, les gabarits et les principaux parcours HTTP. Les migrations constituent la source de vérité du schéma de base de données.
+
+Dernière vérification locale (28 août 2026) : **463 tests et 2 783 assertions, tous validés**.
+
+## Structure du dépôt
+
+```text
+mon_allure/
+├── backend/            application Symfony
+│   ├── assets/         JavaScript, Stimulus et styles
+│   ├── config/         configuration Symfony et Importmap
+│   ├── migrations/     migrations Doctrine
+│   ├── src/            code PHP métier et HTTP
+│   ├── templates/      vues Twig
+│   └── tests/          tests PHPUnit
+├── docs/               conception fonctionnelle et diagrammes
+├── compose.yaml        orchestration application + MySQL
+└── README.md
+```
+
+Le dossier `frontend/` présent dans certains environnements est un vestige d'un prototype React. L'interface active est celle de Symfony/Twig ; une SPA séparée reste une évolution possible, mais elle n'est pas nécessaire au fonctionnement actuel.
+
+## Documentation du projet
+
+Les user stories, règles métier, choix météo et diagrammes sont regroupés dans [`docs/`](docs/). Le dossier projet de formation reste un document de référence figé ; ce README décrit l'état exécutable le plus récent du dépôt.
+
+## Statut
+
+Le socle fonctionnel du projet est opérationnel. Les évolutions envisagées peuvent notamment porter sur l'industrialisation du déploiement, l'observabilité, l'enrichissement des algorithmes et une éventuelle application cliente dédiée.
+
+## Licence
+
+Projet de formation — tous droits réservés.

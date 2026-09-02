@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contacter l’administration | Mon Allure{% endblock %}
+
+{% block body %}
+    <main class="mx-auto min-h-screen w-full max-w-3xl px-4 py-10 text-white sm:px-6">
+        <section class="overflow-hidden rounded-3xl border border-cyan-300/25 bg-slate-950/80 p-6 shadow-2xl shadow-cyan-950/30 sm:p-9" aria-labelledby="comment-title" data-testid="user-comment-form">
+            <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-cyan-300">Message à l’administration</p>
+            <h1 id="comment-title" class="mt-2 text-3xl font-black sm:text-4xl">Envoyer un commentaire</h1>
+            <p class="mt-3 max-w-2xl leading-7 text-white/60">
+                Votre message sera transmis aux administrateurs de Mon Allure. Cet espace ne propose pas de conversation ni de réponse directe.
+            </p>
+
+            {% for message in app.flashes('success') %}
+                <div class="mt-6 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 font-bold text-emerald-200" role="status">{{ message }}</div>
+            {% endfor %}
+
+            {% if errors is not empty %}
+                <div class="mt-6 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-rose-100" role="alert">
+                    <ul class="list-disc space-y-1 pl-5">
+                        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_comment_new') }}" class="mt-7 grid gap-4">
+                <input type="hidden" name="_token" value="{{ csrf_token('user_comment') }}">
+                <label for="comment-content" class="font-bold text-cyan-100">Votre commentaire</label>
+                <textarea id="comment-content" name="content" rows="8" maxlength="2000" required class="min-h-48 resize-y rounded-2xl border border-white/15 bg-blue-950/55 px-4 py-4 leading-7 text-white outline-none transition placeholder:text-white/30 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/20" placeholder="Décrivez votre remarque, votre suggestion ou le problème rencontré…">{{ content }}</textarea>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-sm text-white/45">2 000 caractères maximum</p>
+                    <button type="submit" class="rounded-xl bg-cyan-300 px-6 py-3 font-black text-slate-950 transition hover:bg-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-100">Transmettre à l’administrateur</button>
+                </div>
+            </form>
+        </section>
+    </main>
+{% endblock %}
